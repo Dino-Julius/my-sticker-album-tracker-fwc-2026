@@ -45,6 +45,14 @@ export type RegistrationEvent = {
   note?: string;
 };
 
+export type UserProfile = {
+  userId: string;
+  email?: string;
+  fullName?: string;
+  nickname?: string;
+  updatedAt?: string;
+};
+
 export type Filters = {
   query: string;
   country: string;

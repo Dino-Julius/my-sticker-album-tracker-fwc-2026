@@ -132,13 +132,13 @@ En Supabase URL Configuration:
 Ejecuta este SQL manualmente en Supabase para crear tablas y RLS:
 
 ```sql
-create table public.album_progress (
+create table if not exists public.album_progress (
   user_id uuid primary key references auth.users(id) on delete cascade,
   progress jsonb not null default '{}'::jsonb,
   updated_at timestamptz not null default now()
 );
 
-create table public.trade_records (
+create table if not exists public.trade_records (
   user_id uuid not null references auth.users(id) on delete cascade,
   id text not null,
   created_at text not null,
@@ -148,6 +148,14 @@ create table public.trade_records (
   received jsonb not null default '[]'::jsonb,
   saved_at timestamptz not null default now(),
   primary key (user_id, id)
+);
+
+create table if not exists public.profiles (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  email text,
+  full_name text,
+  nickname text,
+  updated_at timestamptz not null default now()
 );
 
 create table if not exists public.registration_events (
@@ -167,6 +175,7 @@ on public.registration_events (user_id, created_at desc);
 
 alter table public.album_progress enable row level security;
 alter table public.trade_records enable row level security;
+alter table public.profiles enable row level security;
 alter table public.registration_events enable row level security;
 
 create policy "Users can read own progress"
@@ -212,6 +221,25 @@ on public.trade_records
 for delete
 to authenticated
 using (auth.uid() = user_id);
+
+create policy "Users can read own profile"
+on public.profiles
+for select
+to authenticated
+using (auth.uid() = user_id);
+
+create policy "Users can insert own profile"
+on public.profiles
+for insert
+to authenticated
+with check (auth.uid() = user_id);
+
+create policy "Users can update own profile"
+on public.profiles
+for update
+to authenticated
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
 
 create policy "Users can read own registration events"
 on public.registration_events

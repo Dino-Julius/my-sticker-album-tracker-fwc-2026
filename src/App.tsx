@@ -3,6 +3,7 @@ import { FilterBar } from "./components/FilterBar";
 import { StickerList } from "./components/StickerList";
 import { useAlbumData, type MigrationPrompt, type SyncStatus } from "./hooks/useAlbumData";
 import { useAuth } from "./hooks/useAuth";
+import { useProfile } from "./hooks/useProfile";
 import { parseBulkStickerText } from "./lib/bulk";
 import {
   applyFilters,
@@ -40,6 +41,7 @@ import type {
   Sticker,
   TradeItem,
   TradeRecord,
+  UserProfile,
 } from "./types";
 
 const emptyFilters: Filters = {
@@ -147,6 +149,7 @@ Aquí está la información exportada desde otra app:
 
 function App() {
   const auth = useAuth();
+  const profileState = useProfile({ isCloudEnabled: auth.isConfigured, user: auth.user });
   const [catalog, setCatalog] = useState<Sticker[]>([]);
   const [catalogError, setCatalogError] = useState("");
   const [activeView, setActiveView] = useState<View>("dashboard");
@@ -331,8 +334,12 @@ function App() {
         isConfigured={auth.isConfigured}
         isLoading={auth.isLoading}
         hasPendingCloudChanges={hasPendingCloudChanges}
+        isSavingProfile={profileState.isSavingProfile}
+        profile={profileState.profile}
+        profileMessage={profileState.profileMessage}
         syncStatus={syncStatus}
         userEmail={auth.user?.email}
+        onSaveNickname={profileState.saveNickname}
         onSignInWithGoogle={auth.signInWithGoogle}
         onSignOut={auth.signOut}
         onSyncNow={syncNow}
@@ -516,8 +523,12 @@ function AuthPanel({
   hasPendingCloudChanges,
   isConfigured,
   isLoading,
+  isSavingProfile,
+  profile,
+  profileMessage,
   syncStatus,
   userEmail,
+  onSaveNickname,
   onSignInWithGoogle,
   onSignOut,
   onSyncNow,
@@ -526,13 +537,19 @@ function AuthPanel({
   hasPendingCloudChanges: boolean;
   isConfigured: boolean;
   isLoading: boolean;
+  isSavingProfile: boolean;
+  profile: UserProfile | null;
+  profileMessage: string;
   syncStatus: SyncStatus;
   userEmail?: string;
+  onSaveNickname: (nickname: string) => Promise<void>;
   onSignInWithGoogle: () => Promise<void>;
   onSignOut: () => Promise<void>;
   onSyncNow: () => Promise<void>;
 }) {
   const [manualSyncMessage, setManualSyncMessage] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
+  const [isEditingNickname, setIsEditingNickname] = useState(false);
+  const [nicknameDraft, setNicknameDraft] = useState("");
   const syncLabels: Record<SyncStatus, string> = {
     cloud: "Guardado en la nube",
     error: "Error al sincronizar",
@@ -542,6 +559,8 @@ function AuthPanel({
     saving: "Guardando en la nube...",
   };
   const syncLabel = syncLabels[syncStatus];
+  const displayName = profile?.fullName || profile?.nickname;
+  const displayEmail = profile?.email || userEmail;
   const handleSyncNow = async () => {
     setManualSyncMessage({ type: "info", text: "Sincronizando ahora..." });
 
@@ -554,6 +573,14 @@ function AuthPanel({
     } catch {
       setManualSyncMessage({ type: "error", text: "No se pudo sincronizar. Tus cambios siguen guardados en este dispositivo." });
     }
+  };
+  const startEditingNickname = () => {
+    setNicknameDraft(profile?.nickname ?? "");
+    setIsEditingNickname(true);
+  };
+  const saveNickname = async () => {
+    await onSaveNickname(nicknameDraft);
+    setIsEditingNickname(false);
   };
 
   if (!isConfigured) {
@@ -577,7 +604,31 @@ function AuthPanel({
       <section className="auth-panel">
         <div>
           <span>{syncLabel}</span>
-          <strong>Sesión iniciada como {userEmail}</strong>
+          <strong>Sesión iniciada como {displayName || displayEmail}</strong>
+          {displayEmail ? <p>{displayEmail}</p> : null}
+          {profile?.nickname ? <p>Apodo: {profile.nickname}</p> : null}
+        </div>
+        <div className="profile-actions">
+          {isEditingNickname ? (
+            <>
+              <label>
+                <span>Apodo</span>
+                <input value={nicknameDraft} placeholder="Tu apodo" onChange={(event) => setNicknameDraft(event.target.value)} />
+              </label>
+              <div className="sync-actions">
+                <button className="primary-button small" disabled={isSavingProfile} onClick={() => void saveNickname()}>
+                  Guardar apodo
+                </button>
+                <button className="ghost-button small" disabled={isSavingProfile} onClick={() => setIsEditingNickname(false)}>
+                  Cancelar
+                </button>
+              </div>
+            </>
+          ) : (
+            <button className="ghost-button small" onClick={startEditingNickname}>
+              {profile?.nickname ? "Editar apodo" : "Agregar apodo"}
+            </button>
+          )}
         </div>
         <div className="sync-actions">
           <button
@@ -596,6 +647,7 @@ function AuthPanel({
             {manualSyncMessage.text}
           </p>
         ) : null}
+        {profileMessage ? <p>{profileMessage}</p> : null}
         {authMessage ? <p>{authMessage}</p> : null}
       </section>
     );
