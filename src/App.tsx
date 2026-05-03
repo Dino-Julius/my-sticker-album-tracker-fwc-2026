@@ -63,6 +63,40 @@ const normalizeText = (value: string) =>
     .toLowerCase()
     .trim();
 
+const IMPORT_EXAMPLE = `{
+  "MEX1": 1,
+  "MEX2": 0,
+  "MEX3": 2,
+  "FWC5": 1,
+  "CC4": 3
+}`;
+
+const CHATGPT_CONVERSION_PROMPT = `Tengo un archivo/lista/exportación de stickers de otra app y quiero convertirlo al formato JSON de mi tracker del álbum FIFA World Cup 2026.
+
+Formato de salida requerido:
+{
+  "MEX1": 1,
+  "MEX2": 0,
+  "MEX3": 2
+}
+
+Reglas:
+- Devuelve únicamente JSON válido, sin explicación, sin markdown y sin texto extra.
+- Las llaves deben ser códigos exactos de estampas.
+- Los valores deben ser números enteros con la cantidad total que tengo.
+- 0 significa que me falta.
+- 1 significa que la tengo.
+- 2 o más significa que tengo repetidas.
+- Si una estampa aparece como “owned”, “tengo”, “pegada”, “collected” o similar, usa 1.
+- Si aparece como “missing”, “faltante” o similar, usa 0.
+- Si aparece con duplicados, extras o repeated, usa la cantidad total que tengo, no solo las extras.
+  Ejemplo: si tengo 1 pegada y 2 repetidas, el valor debe ser 3.
+- Ignora cualquier campo que no sea necesario.
+- Si hay códigos desconocidos o ambiguos, crea una sección separada llamada "_unknown" con esos elementos.
+
+Aquí está la información exportada desde otra app:
+[PEGA AQUÍ TU EXPORTACIÓN]`;
+
 function App() {
   const auth = useAuth();
   const [catalog, setCatalog] = useState<Sticker[]>([]);
@@ -70,6 +104,7 @@ function App() {
   const [activeView, setActiveView] = useState<View>("dashboard");
   const [selectedCollection, setSelectedCollection] = useState("");
   const [filters, setFilters] = useState<Filters>(emptyFilters);
+  const [showHelp, setShowHelp] = useState(false);
   const {
     addTrade,
     combineLocalAndCloudData,
@@ -144,10 +179,22 @@ function App() {
           <p className="eyebrow">Tracker personal</p>
           <h1>FIFA World Cup 2026</h1>
         </div>
-        <div className="completion-ring" aria-label={`Avance ${dashboard.completion}%`}>
-          {dashboard.completion}%
+        <div className="header-actions">
+          <div className="completion-ring" aria-label={`Avance ${dashboard.completion}%`}>
+            {dashboard.completion}%
+          </div>
+          <button
+            className="help-button"
+            type="button"
+            aria-controls="help-panel"
+            aria-expanded={showHelp}
+            onClick={() => setShowHelp((current) => !current)}
+          >
+            Ayuda
+          </button>
         </div>
       </header>
+      {showHelp ? <HelpPanel /> : null}
       <AuthPanel
         authMessage={auth.authMessage}
         isConfigured={auth.isConfigured}
@@ -248,7 +295,62 @@ function App() {
         />
       ) : null}
       {activeView === "datos" ? <DataView catalog={catalog} progress={progress} setProgress={setProgress} /> : null}
+      <AppFooter />
     </main>
+  );
+}
+
+function HelpPanel() {
+  return (
+    <section className="panel help-panel" id="help-panel" aria-label="¿Cómo funciona?">
+      <div>
+        <p className="eyebrow">¿Cómo funciona?</p>
+        <h2>Guía rápida del tracker</h2>
+      </div>
+      <ul className="info-list">
+        <li>
+          <strong>0 = Faltante.</strong> Todavía no tienes esa estampa.
+        </li>
+        <li>
+          <strong>1 = La tengo.</strong> Ya cuentas con una copia para tu álbum.
+        </li>
+        <li>
+          <strong>2+ = Repetida.</strong> Tienes copias extra para cambiar.
+        </li>
+        <li>
+          <strong>Extras para cambiar = cantidad - 1.</strong> Sólo las repetidas/extras están disponibles para intercambio.
+        </li>
+        <li>Tu progreso se guarda automáticamente mientras registras estampas.</li>
+        <li>Sin iniciar sesión, tus datos se guardan localmente en este navegador y dispositivo.</li>
+        <li>Con sesión, tu progreso se sincroniza en la nube y también queda una copia local como respaldo.</li>
+      </ul>
+      <div className="storage-note">
+        <strong>¿Dónde se guarda mi progreso?</strong>
+        <p>
+          La app es gratis y su código fuente es público en GitHub. En modo nube, los datos están protegidos por inicio de sesión y reglas de
+          acceso.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function AppFooter() {
+  return (
+    <footer className="app-footer">
+      <strong>Sticker Album Tracker FWC 2026</strong>
+      <span>Hecho por Julio Vivas</span>
+      <nav aria-label="Enlaces del proyecto">
+        <a href="https://github.com/Dino-Julius/my-sticker-album-tracker-fwc-2026" target="_blank" rel="noreferrer">
+          Código fuente disponible en GitHub
+        </a>
+        <a href="https://dino-julius.github.io/my-sticker-album-tracker-fwc-2026/" target="_blank" rel="noreferrer">
+          App en GitHub Pages
+        </a>
+      </nav>
+      <p>Datos guardados localmente o en Supabase si inicias sesión.</p>
+      <p>Proyecto personal. No afiliado oficialmente con FIFA, Panini ni Coca-Cola.</p>
+    </footer>
   );
 }
 
@@ -1184,12 +1286,35 @@ function DataView({
       notify("Progreso reiniciado.", "success", "reset");
     }
   };
-  const exportFeedback = feedback?.action?.startsWith("download") || feedback?.action?.startsWith("copy") ? feedback : null;
+  const exportActions = new Set(["download-progress", "copy-progress", "download-missing", "copy-missing", "download-repeated", "copy-repeated"]);
+  const exportFeedback = exportActions.has(feedback?.action ?? "") ? feedback : null;
+  const conversionFeedback = feedback?.action === "copy-conversion-prompt" ? feedback : null;
   const importFeedback = feedback?.action === "import" ? feedback : null;
   const resetFeedback = feedback?.action === "reset" ? feedback : null;
 
   return (
     <section className="view-stack">
+      <section className="panel action-panel import-guidance">
+        <h2>¿Tienes tus stickers en otra app?</h2>
+        <p>Puedes exportar tu lista desde otra app y convertirla al formato de este tracker.</p>
+        <pre className="code-example">{IMPORT_EXAMPLE}</pre>
+        <ul className="info-list">
+          <li>La llave es el código de la estampa.</li>
+          <li>El valor es la cantidad total que tienes.</li>
+          <li>0 = Faltante, 1 = La tengo, 2+ = Repetida.</li>
+          <li>Sólo se necesita el código y la cantidad.</li>
+        </ul>
+        <button
+          className={actionClass("ghost-button", "copy-conversion-prompt")}
+          onClick={() => copyText(CHATGPT_CONVERSION_PROMPT, "Prompt copiado", "copy-conversion-prompt")}
+        >
+          {feedback?.action === "copy-conversion-prompt" ? "Prompt copiado" : "Copiar prompt de conversión"}
+        </button>
+        {conversionFeedback ? (
+          <p className={conversionFeedback.type === "success" ? "toast-message" : "warning-message"}>{conversionFeedback.text}</p>
+        ) : null}
+      </section>
+
       <section className="panel action-panel">
         <h2>Exportar</h2>
         <button
@@ -1256,6 +1381,22 @@ function DataView({
           {feedback?.action === "import" && feedback.type === "success" ? "Importado correctamente" : "Importar JSON pegado"}
         </button>
         {importFeedback ? <p className={importFeedback.type === "success" ? "toast-message" : "warning-message"}>{importFeedback.text}</p> : null}
+      </section>
+
+      <section className="panel action-panel">
+        <h2>¿Dónde se guarda mi progreso?</h2>
+        <p>
+          Sin iniciar sesión, tu progreso se guarda en el almacenamiento local de este navegador. Es gratis, rápido y privado, pero sólo existe en
+          este dispositivo/navegador. Si limpias datos del navegador, podrías perderlo.
+        </p>
+        <p>
+          Con sesión, tu progreso se sincroniza en la nube para usarlo desde tu celular, computadora u otro navegador. También se guarda una copia
+          local como respaldo.
+        </p>
+        <p>
+          El código fuente es público en GitHub. La publishable key de Supabase es pública y apta para frontend; los datos se protegen con inicio de
+          sesión y reglas de acceso RLS. La service_role key nunca se debe exponer.
+        </p>
       </section>
 
       <section className="panel action-panel">
