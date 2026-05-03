@@ -6,22 +6,30 @@ import { STORAGE_KEY, TRADE_HISTORY_STORAGE_KEY } from "../lib/album";
 
 const CLOUD_SYNC_DEBOUNCE_MS = 7000;
 const UNSYNCED_CHANGES_MESSAGE = "Tienes cambios guardados en este dispositivo, pero aún no sincronizados en la nube.";
+const LOCAL_META_STORAGE_KEY = "my-sticker-album-tracker-fwc-2026-local-meta";
 
 export type SyncStatus = "local" | "loading" | "pending" | "saving" | "cloud" | "error";
+export type LocalMeta = {
+  updatedAt?: string;
+};
 export type MigrationPrompt =
   | {
       type: "upload-local";
       localProgress: Progress;
       localTrades: TradeRecord[];
+      localUpdatedAt?: string;
       remoteProgress: Progress;
       remoteTrades: TradeRecord[];
+      remoteUpdatedAt?: string;
     }
   | {
       type: "resolve-conflict";
       localProgress: Progress;
       localTrades: TradeRecord[];
+      localUpdatedAt?: string;
       remoteProgress: Progress;
       remoteTrades: TradeRecord[];
+      remoteUpdatedAt?: string;
     };
 
 function readLocalProgress(): Progress {
@@ -54,6 +62,25 @@ function readLocalTrades(): TradeRecord[] {
   }
 }
 
+function readLocalMeta(): LocalMeta {
+  const stored = localStorage.getItem(LOCAL_META_STORAGE_KEY);
+
+  if (!stored) {
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(stored) as LocalMeta;
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeLocalMeta(updatedAt = new Date().toISOString()) {
+  localStorage.setItem(LOCAL_META_STORAGE_KEY, JSON.stringify({ updatedAt }));
+}
+
 function hasProgressData(progress: Progress) {
   return Object.values(progress).some((quantity) => quantity > 0);
 }
@@ -81,6 +108,42 @@ function mergeTrades(localTrades: TradeRecord[], remoteTrades: TradeRecord[]) {
   return [...trades.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
+function serializeProgressSnapshot(progress: Progress) {
+  return JSON.stringify(
+    Object.keys(progress)
+      .sort()
+      .reduce<Progress>((snapshot, code) => {
+        const quantity = Number(progress[code]);
+        snapshot[code] = Number.isFinite(quantity) && quantity > 0 ? Math.floor(quantity) : 0;
+        return snapshot;
+      }, {}),
+  );
+}
+
+function serializeTradeSnapshot(trades: TradeRecord[]) {
+  return JSON.stringify(
+    [...trades]
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .map((trade) => ({
+        ...trade,
+        gave: [...trade.gave].sort((a, b) => a.code.localeCompare(b.code)),
+        received: [...trade.received].sort((a, b) => a.code.localeCompare(b.code)),
+      })),
+  );
+}
+
+function isSameAlbumData(
+  localProgress: Progress,
+  localTrades: TradeRecord[],
+  remoteProgress: Progress,
+  remoteTrades: TradeRecord[],
+) {
+  return (
+    serializeProgressSnapshot(localProgress) === serializeProgressSnapshot(remoteProgress) &&
+    serializeTradeSnapshot(localTrades) === serializeTradeSnapshot(remoteTrades)
+  );
+}
+
 export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boolean; userId?: string }) {
   const [progress, setProgress] = useState<Progress>(() => readLocalProgress());
   const [tradeHistory, setTradeHistory] = useState<TradeRecord[]>(() => readLocalTrades());
@@ -90,15 +153,17 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
   const hasLoadedRemote = useRef(false);
   const lastSavedProgress = useRef("");
   const latestProgress = useRef(progress);
-  const latestSerializedProgress = useRef(JSON.stringify(progress));
+  const latestSerializedProgress = useRef(serializeProgressSnapshot(progress));
   const saveTimerId = useRef<number | null>(null);
   const isSavingProgress = useRef(false);
   const saveAgainAfterCurrent = useRef(false);
   const hasPendingCloudChangesRef = useRef(false);
+  const hasInitializedProgressPersistence = useRef(false);
+  const hasInitializedTradePersistence = useRef(false);
   const flushPendingProgressRef = useRef<() => Promise<void>>(async () => {});
 
   latestProgress.current = progress;
-  latestSerializedProgress.current = JSON.stringify(progress);
+  latestSerializedProgress.current = serializeProgressSnapshot(progress);
 
   const clearSaveTimer = useCallback(() => {
     if (saveTimerId.current) {
@@ -135,7 +200,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
       }
 
       const progressToSave = progressOverride ?? latestProgress.current;
-      const serializedProgress = JSON.stringify(progressToSave);
+      const serializedProgress = serializeProgressSnapshot(progressToSave);
 
       if (serializedProgress === lastSavedProgress.current && !hasPendingCloudChangesRef.current) {
         updatePendingCloudChanges(false);
@@ -187,11 +252,23 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
   useEffect(() => () => clearSaveTimer(), [clearSaveTimer]);
 
   useEffect(() => {
+    if (!hasInitializedProgressPersistence.current) {
+      hasInitializedProgressPersistence.current = true;
+      return;
+    }
+
     localStorage.setItem(STORAGE_KEY, latestSerializedProgress.current);
+    writeLocalMeta();
   }, [progress]);
 
   useEffect(() => {
+    if (!hasInitializedTradePersistence.current) {
+      hasInitializedTradePersistence.current = true;
+      return;
+    }
+
     localStorage.setItem(TRADE_HISTORY_STORAGE_KEY, JSON.stringify(tradeHistory));
+    writeLocalMeta();
   }, [tradeHistory]);
 
   useEffect(() => {
@@ -211,14 +288,16 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
 
     const localProgress = readLocalProgress();
     const localTrades = readLocalTrades();
+    const localMeta = readLocalMeta();
 
     Promise.all([loadRemoteProgress(userId), loadRemoteTrades(userId)])
-      .then(([remoteProgress, remoteTrades]) => {
+      .then(([remoteProgressSnapshot, remoteTrades]) => {
         if (!isActive) {
           return;
         }
 
-        const normalizedRemoteProgress = remoteProgress ?? {};
+        const normalizedRemoteProgress = remoteProgressSnapshot?.progress ?? {};
+        const remoteUpdatedAt = remoteProgressSnapshot?.updatedAt;
         const localHasData = hasLocalData(localProgress, localTrades);
         const remoteHasData = hasLocalData(normalizedRemoteProgress, remoteTrades);
 
@@ -227,28 +306,38 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
             type: "upload-local",
             localProgress,
             localTrades,
+            localUpdatedAt: localMeta.updatedAt,
             remoteProgress: normalizedRemoteProgress,
             remoteTrades,
+            remoteUpdatedAt,
           });
-          lastSavedProgress.current = JSON.stringify(localProgress);
+          lastSavedProgress.current = serializeProgressSnapshot(localProgress);
           updatePendingCloudChanges(false);
         } else if (localHasData && remoteHasData) {
-          setMigrationPrompt({
-            type: "resolve-conflict",
-            localProgress,
-            localTrades,
-            remoteProgress: normalizedRemoteProgress,
-            remoteTrades,
-          });
-          lastSavedProgress.current = JSON.stringify(localProgress);
+          if (isSameAlbumData(localProgress, localTrades, normalizedRemoteProgress, remoteTrades)) {
+            setProgress(normalizedRemoteProgress);
+            setTradeHistory(remoteTrades);
+            lastSavedProgress.current = serializeProgressSnapshot(normalizedRemoteProgress);
+          } else {
+            setMigrationPrompt({
+              type: "resolve-conflict",
+              localProgress,
+              localTrades,
+              localUpdatedAt: localMeta.updatedAt,
+              remoteProgress: normalizedRemoteProgress,
+              remoteTrades,
+              remoteUpdatedAt,
+            });
+            lastSavedProgress.current = serializeProgressSnapshot(localProgress);
+          }
           updatePendingCloudChanges(false);
         } else if (remoteHasData) {
           setProgress(normalizedRemoteProgress);
           setTradeHistory(remoteTrades);
-          lastSavedProgress.current = JSON.stringify(normalizedRemoteProgress);
+          lastSavedProgress.current = serializeProgressSnapshot(normalizedRemoteProgress);
           updatePendingCloudChanges(false);
         } else {
-          lastSavedProgress.current = JSON.stringify(localProgress);
+          lastSavedProgress.current = serializeProgressSnapshot(localProgress);
           updatePendingCloudChanges(false);
         }
 
@@ -348,13 +437,14 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     updatePendingCloudChanges(true);
     setSyncStatus("saving");
     try {
-      await saveRemoteProgress(userId, nextProgress);
-      lastSavedProgress.current = JSON.stringify(nextProgress);
-      updatePendingCloudChanges(false);
+      const updatedAt = await saveRemoteProgress(userId, nextProgress);
       await Promise.all(nextTrades.map((trade) => insertRemoteTrade(userId, trade)));
+      lastSavedProgress.current = serializeProgressSnapshot(nextProgress);
+      writeLocalMeta(updatedAt);
+      updatePendingCloudChanges(false);
       setSyncStatus("cloud");
     } catch (error) {
-      updatePendingCloudChanges(JSON.stringify(nextProgress) !== lastSavedProgress.current);
+      updatePendingCloudChanges(serializeProgressSnapshot(nextProgress) !== lastSavedProgress.current);
       setSyncStatus("error");
       throw error;
     }
@@ -367,25 +457,30 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
 
     setProgress(migrationPrompt.remoteProgress);
     setTradeHistory(migrationPrompt.remoteTrades);
-    lastSavedProgress.current = JSON.stringify(migrationPrompt.remoteProgress);
+    localStorage.setItem(STORAGE_KEY, serializeProgressSnapshot(migrationPrompt.remoteProgress));
+    localStorage.setItem(TRADE_HISTORY_STORAGE_KEY, JSON.stringify(migrationPrompt.remoteTrades));
+    writeLocalMeta(migrationPrompt.remoteUpdatedAt);
+    lastSavedProgress.current = serializeProgressSnapshot(migrationPrompt.remoteProgress);
     clearSaveTimer();
     updatePendingCloudChanges(false);
     setMigrationPrompt(null);
     setSyncStatus("cloud");
   };
 
-  const uploadLocalData = () => {
+  const uploadLocalData = async () => {
     if (!migrationPrompt) {
       return;
     }
 
+    await saveProgressAndTradesRemote(migrationPrompt.localProgress, migrationPrompt.localTrades);
     setProgress(migrationPrompt.localProgress);
     setTradeHistory(migrationPrompt.localTrades);
+    localStorage.setItem(STORAGE_KEY, serializeProgressSnapshot(migrationPrompt.localProgress));
+    localStorage.setItem(TRADE_HISTORY_STORAGE_KEY, JSON.stringify(migrationPrompt.localTrades));
     setMigrationPrompt(null);
-    saveProgressAndTradesRemote(migrationPrompt.localProgress, migrationPrompt.localTrades).catch(() => {});
   };
 
-  const combineLocalAndCloudData = () => {
+  const combineLocalAndCloudData = async () => {
     if (!migrationPrompt) {
       return;
     }
@@ -393,10 +488,24 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     const nextProgress = mergeProgress(migrationPrompt.localProgress, migrationPrompt.remoteProgress);
     const nextTrades = mergeTrades(migrationPrompt.localTrades, migrationPrompt.remoteTrades);
 
+    await saveProgressAndTradesRemote(nextProgress, nextTrades);
     setProgress(nextProgress);
     setTradeHistory(nextTrades);
+    localStorage.setItem(STORAGE_KEY, serializeProgressSnapshot(nextProgress));
+    localStorage.setItem(TRADE_HISTORY_STORAGE_KEY, JSON.stringify(nextTrades));
     setMigrationPrompt(null);
-    saveProgressAndTradesRemote(nextProgress, nextTrades).catch(() => {});
+  };
+
+  const cancelMigration = () => {
+    if (!migrationPrompt) {
+      return;
+    }
+
+    lastSavedProgress.current = serializeProgressSnapshot(migrationPrompt.localProgress);
+    clearSaveTimer();
+    updatePendingCloudChanges(false);
+    setMigrationPrompt(null);
+    setSyncStatus("cloud");
   };
 
   const addTrade = (trade: TradeRecord) => {
@@ -421,6 +530,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
 
   return {
     addTrade,
+    cancelMigration,
     combineLocalAndCloudData,
     deleteTrade,
     hasPendingCloudChanges,

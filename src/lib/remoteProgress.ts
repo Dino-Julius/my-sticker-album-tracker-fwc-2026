@@ -7,39 +7,49 @@ type ProgressRow = {
   updated_at: string;
 };
 
-export async function loadRemoteProgress(userId: string): Promise<Progress | null> {
+export type RemoteProgressSnapshot = {
+  progress: Progress;
+  updatedAt?: string;
+};
+
+export async function loadRemoteProgress(userId: string): Promise<RemoteProgressSnapshot | null> {
   if (!supabase) {
     return null;
   }
 
   const { data, error } = await supabase
     .from("album_progress")
-    .select("progress")
+    .select("progress,updated_at")
     .eq("user_id", userId)
-    .maybeSingle<Pick<ProgressRow, "progress">>();
+    .maybeSingle<Pick<ProgressRow, "progress" | "updated_at">>();
 
   if (error) {
     throw error;
   }
 
-  return data?.progress ?? null;
+  return data ? { progress: data.progress ?? {}, updatedAt: data.updated_at } : null;
 }
 
-export async function saveRemoteProgress(userId: string, progress: Progress): Promise<void> {
+export async function saveRemoteProgress(userId: string, progress: Progress): Promise<string | undefined> {
   if (!supabase) {
-    return;
+    return undefined;
   }
 
-  const { error } = await supabase.from("album_progress").upsert(
-    {
-      user_id: userId,
-      progress,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "user_id" },
-  );
+  const updatedAt = new Date().toISOString();
+  const { error } = await supabase
+    .from("album_progress")
+    .upsert(
+      {
+        user_id: userId,
+        progress,
+        updated_at: updatedAt,
+      },
+      { onConflict: "user_id" },
+    );
 
   if (error) {
     throw error;
   }
+
+  return updatedAt;
 }

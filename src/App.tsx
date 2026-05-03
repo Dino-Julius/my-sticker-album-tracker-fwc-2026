@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { FilterBar } from "./components/FilterBar";
 import { StickerList } from "./components/StickerList";
-import { useAlbumData, type SyncStatus } from "./hooks/useAlbumData";
+import { useAlbumData, type MigrationPrompt, type SyncStatus } from "./hooks/useAlbumData";
 import { useAuth } from "./hooks/useAuth";
 import { parseBulkStickerText } from "./lib/bulk";
 import {
@@ -109,6 +109,7 @@ function App() {
   const [showHelp, setShowHelp] = useState(false);
   const {
     addTrade,
+    cancelMigration,
     combineLocalAndCloudData,
     deleteTrade,
     hasPendingCloudChanges,
@@ -224,7 +225,9 @@ function App() {
       />
       {migrationPrompt ? (
         <MigrationPanel
-          type={migrationPrompt.type}
+          catalog={catalog}
+          prompt={migrationPrompt}
+          onCancel={cancelMigration}
           onCombine={combineLocalAndCloudData}
           onUploadLocal={uploadLocalData}
           onUseCloud={useCloudData}
@@ -477,43 +480,187 @@ function AuthPanel({
   );
 }
 
+function formatDisplayDate(value?: string) {
+  if (!value) {
+    return "No disponible";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "No disponible";
+  }
+
+  return new Intl.DateTimeFormat("es", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
+
+function getMigrationSummary(catalog: Sticker[], progress: Progress, trades: TradeRecord[]) {
+  return {
+    completion: getCompletionPercentage(catalog, progress),
+    extras: getRepeatedExtras(catalog, progress),
+    missing: getMissingStickers(catalog, progress).length,
+    owned: getOwnedStickers(catalog, progress).length,
+    repeated: getRepeatedStickers(catalog, progress).length,
+    trades: trades.length,
+  };
+}
+
+function getMigrationRecommendation(localOwned: number, remoteOwned: number) {
+  if (remoteOwned > localOwned) {
+    return "La nube parece tener más progreso que este dispositivo.";
+  }
+
+  if (localOwned > remoteOwned) {
+    return "Este dispositivo parece tener más progreso que la nube.";
+  }
+
+  return "Ambos registros parecen similares.";
+}
+
 function MigrationPanel({
-  type,
+  catalog,
+  prompt,
+  onCancel,
   onCombine,
   onUploadLocal,
   onUseCloud,
 }: {
-  type: "upload-local" | "resolve-conflict";
-  onCombine: () => void;
-  onUploadLocal: () => void;
+  catalog: Sticker[];
+  prompt: MigrationPrompt;
+  onCancel: () => void;
+  onCombine: () => Promise<void>;
+  onUploadLocal: () => Promise<void>;
   onUseCloud: () => void;
 }) {
+  const [actionError, setActionError] = useState("");
+  const [isApplying, setIsApplying] = useState(false);
+  const localSummary = getMigrationSummary(catalog, prompt.localProgress, prompt.localTrades);
+  const cloudSummary = getMigrationSummary(catalog, prompt.remoteProgress, prompt.remoteTrades);
+  const hasCloudData = cloudSummary.owned > 0 || cloudSummary.repeated > 0 || cloudSummary.trades > 0;
+  const recommendation = getMigrationRecommendation(localSummary.owned, cloudSummary.owned);
+
+  const runAction = async (confirmation: string, action: () => void | Promise<void>) => {
+    if (!window.confirm(confirmation)) {
+      return;
+    }
+
+    setActionError("");
+    setIsApplying(true);
+
+    try {
+      await action();
+    } catch {
+      setActionError("No se pudo completar la acción. Revisa tu conexión y vuelve a intentar.");
+      setIsApplying(false);
+    }
+  };
+
   return (
     <section className="migration-panel">
       <div>
-        <strong>{type === "upload-local" ? "Datos locales encontrados" : "Datos locales y de nube encontrados"}</strong>
+        <strong>Elegir datos del álbum</strong>
         <p>
-          {type === "upload-local"
-            ? "Puedes subir tu progreso local a la nube. El almacenamiento local se conserva como respaldo."
-            : "Elige cómo resolver la diferencia. El almacenamiento local se conserva como respaldo."}
+          {prompt.type === "upload-local"
+            ? "Encontramos datos locales, pero todavía no hay progreso guardado en la nube para esta cuenta."
+            : "Encontramos datos locales y datos en la nube. Revisa ambos antes de decidir."}
         </p>
       </div>
-      <div className="quick-actions">
-        {type === "resolve-conflict" ? (
-          <button className="ghost-button" onClick={onUseCloud}>
-            Usar nube
-          </button>
-        ) : null}
-        <button className="ghost-button" onClick={onUploadLocal}>
-          {type === "upload-local" ? "Subir datos locales a la nube" : "Subir local"}
-        </button>
-        {type === "resolve-conflict" ? (
-          <button className="primary-button" onClick={onCombine}>
-            Combinar
-          </button>
-        ) : null}
+
+      <div className="migration-comparison">
+        <MigrationDataCard title="Datos locales" timestampLabel="Última modificación" timestamp={prompt.localUpdatedAt} summary={localSummary} />
+        <MigrationDataCard title="Datos en la nube" timestampLabel="Última sincronización" timestamp={prompt.remoteUpdatedAt} summary={cloudSummary} />
       </div>
+
+      <p className="migration-recommendation">{recommendation}</p>
+
+      <div className="migration-actions">
+        <button
+          className="ghost-button"
+          disabled={isApplying || !hasCloudData}
+          onClick={() =>
+            void runAction(
+              "Esto reemplazará los datos locales de este dispositivo con los datos guardados en la nube. ¿Continuar?",
+              onUseCloud,
+            )
+          }
+        >
+          Usar datos de la nube en este dispositivo
+        </button>
+        <button
+          className="ghost-button"
+          disabled={isApplying}
+          onClick={() =>
+            void runAction("Esto sobrescribirá los datos de la nube con los datos de este dispositivo. ¿Continuar?", onUploadLocal)
+          }
+        >
+          Subir datos locales a la nube
+        </button>
+        <button
+          className="primary-button"
+          disabled={isApplying || !hasCloudData}
+          onClick={() =>
+            void runAction("Se combinarán ambos registros usando la mayor cantidad por estampa. ¿Continuar?", onCombine)
+          }
+        >
+          Combinar local + nube
+        </button>
+        <button className="ghost-button" disabled={isApplying} onClick={onCancel}>
+          Cancelar
+        </button>
+      </div>
+      {actionError ? <p className="warning-message compact-message">{actionError}</p> : null}
     </section>
+  );
+}
+
+function MigrationDataCard({
+  summary,
+  timestamp,
+  timestampLabel,
+  title,
+}: {
+  summary: ReturnType<typeof getMigrationSummary>;
+  timestamp?: string;
+  timestampLabel: string;
+  title: string;
+}) {
+  return (
+    <article className="migration-card">
+      <h3>{title}</h3>
+      <dl>
+        <div>
+          <dt>{timestampLabel}</dt>
+          <dd>{formatDisplayDate(timestamp)}</dd>
+        </div>
+        <div>
+          <dt>Tengo</dt>
+          <dd>{summary.owned}</dd>
+        </div>
+        <div>
+          <dt>Faltantes</dt>
+          <dd>{summary.missing}</dd>
+        </div>
+        <div>
+          <dt>Repetidas</dt>
+          <dd>{summary.repeated}</dd>
+        </div>
+        <div>
+          <dt>Extras para cambiar</dt>
+          <dd>{summary.extras}</dd>
+        </div>
+        <div>
+          <dt>Intercambios</dt>
+          <dd>{summary.trades}</dd>
+        </div>
+        <div>
+          <dt>Completado</dt>
+          <dd>{summary.completion}%</dd>
+        </div>
+      </dl>
+    </article>
   );
 }
 
