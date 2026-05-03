@@ -449,6 +449,24 @@ textarea {
   line-height: 1.75;
 }
 
+.missing-group-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+}
+
+.missing-group-main {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
 .trade-code-list {
   display: flex;
   flex-wrap: wrap;
@@ -554,6 +572,18 @@ textarea {
   color: #92400e;
 }
 
+.success-button {
+  border-color: #16a34a;
+  background: #16a34a;
+  color: #fff;
+}
+
+.error-button {
+  border-color: #b91c1c;
+  background: #b91c1c;
+  color: #fff;
+}
+
 .trade-action-row,
 .trade-meta-grid,
 .trade-builder-grid {
@@ -566,6 +596,11 @@ textarea {
 .trade-builder {
   display: grid;
   gap: 14px;
+}
+
+.trade-builder {
+  grid-template-rows: auto auto auto auto minmax(96px, auto) minmax(240px, 1fr);
+  align-content: start;
 }
 
 .trade-note,
@@ -584,6 +619,38 @@ textarea {
 .trade-history-list {
   display: grid;
   gap: 8px;
+}
+
+.selected-trade-list {
+  align-content: start;
+  min-height: 96px;
+}
+
+.trade-candidates {
+  align-content: start;
+  max-height: 360px;
+  overflow: auto;
+}
+
+.quick-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quick-filter-row .small {
+  min-height: 36px;
+}
+
+.trade-filter-selectors {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.trade-filter-selectors select:disabled {
+  background: #f8fafc;
+  color: #94a3b8;
 }
 
 .selected-trade-item,
@@ -625,6 +692,7 @@ textarea {
   display: grid;
   gap: 2px;
   width: 100%;
+  min-height: 82px;
   color: #0f172a;
   text-align: left;
 }

@@ -7,11 +7,14 @@ import {
   createTradeSummary,
   createTradingText,
   exportMissingToCsv,
+  exportMissingToMarkdown,
   exportProgressToJson,
   exportRepeatedToCsv,
+  exportRepeatedToMarkdown,
   formatTradeItems,
   getCompletionPercentage,
   getCollectionName,
+  getRealGroups,
   getMissingStickers,
   getOwnedStickers,
   getRepeatedExtras,
@@ -52,6 +55,13 @@ const formatDateTimeLocal = (date: Date) => {
   const localDate = new Date(date.getTime() - offset * 60_000);
   return localDate.toISOString().slice(0, 16);
 };
+
+const normalizeText = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .trim();
 
 function App() {
   const [catalog, setCatalog] = useState<Sticker[]>([]);
@@ -213,6 +223,10 @@ function App() {
           progress={progress}
           stickers={applyFilters(catalog, progress, { ...filters, status: "missing" })}
           onFiltersChange={(nextFilters) => setFilters({ ...nextFilters, status: "all" })}
+          onOpenCollection={(collectionName) => {
+            setSelectedCollection(collectionName);
+            setActiveView("paises");
+          }}
         />
       ) : null}
       {activeView === "repetidas" ? (
@@ -380,6 +394,7 @@ function GroupedCodesView({
   progress,
   stickers,
   onFiltersChange,
+  onOpenCollection,
 }: {
   title: string;
   catalog: Sticker[];
@@ -387,8 +402,17 @@ function GroupedCodesView({
   progress: Progress;
   stickers: Sticker[];
   onFiltersChange: (filters: Filters) => void;
+  onOpenCollection: (collectionName: string) => void;
 }) {
   const groups = groupByCountry(stickers);
+  const [copiedCollection, setCopiedCollection] = useState("");
+
+  const copyCollectionMissing = async (collectionName: string, collectionStickers: Sticker[]) => {
+    const text = `Faltantes de ${collectionName}: ${collectionStickers.map((sticker) => sticker.code).join(", ")}`;
+    await navigator.clipboard.writeText(text);
+    setCopiedCollection(collectionName);
+    window.setTimeout(() => setCopiedCollection(""), 1800);
+  };
 
   return (
     <section className="view-stack">
@@ -399,11 +423,16 @@ function GroupedCodesView({
       </div>
       <div className="grouped-list">
         {[...groups.entries()].map(([country, countryStickers]) => (
-          <article className="panel" key={country}>
-            <h3>
-              {country} — faltan {countryStickers.length}
-            </h3>
-            <p className="code-list">{countryStickers.map((sticker) => sticker.code).join(", ")}</p>
+          <article className="panel missing-group-card" key={country}>
+            <button className="missing-group-main" onClick={() => onOpenCollection(country)}>
+              <h3>
+                {country} — faltan {countryStickers.length}
+              </h3>
+              <p className="code-list">{countryStickers.map((sticker) => sticker.code).join(", ")}</p>
+            </button>
+            <button className="ghost-button small" onClick={() => copyCollectionMissing(country, countryStickers)}>
+              {copiedCollection === country ? "Copiado" : "Copiar"}
+            </button>
           </article>
         ))}
       </div>
@@ -523,6 +552,19 @@ function RepeatedView({
     setGaveSearch("");
     setReceivedSearch("");
     setTradeMessage("Intercambio registrado.");
+    setIsFormOpen(false);
+  };
+
+  const cancelTrade = () => {
+    setDateTime(formatDateTimeLocal(new Date()));
+    setTradedWith("");
+    setNotes("");
+    setGave([]);
+    setReceived([]);
+    setGaveSearch("");
+    setReceivedSearch("");
+    setTradeMessage("");
+    setIsFormOpen(false);
   };
 
   const copyTradeRecord = async (trade: TradeRecord) => {
@@ -617,9 +659,12 @@ function RepeatedView({
           <button className="primary-button wide-button" onClick={confirmTrade}>
             Confirmar intercambio
           </button>
-          {tradeMessage ? <p className={tradeMessage === "Intercambio registrado." ? "toast-message" : "warning-message"}>{tradeMessage}</p> : null}
+          <button className="ghost-button wide-button" onClick={cancelTrade}>
+            Cancelar intercambio
+          </button>
         </section>
       ) : null}
+      {tradeMessage ? <p className={tradeMessage === "Intercambio registrado." ? "toast-message" : "warning-message"}>{tradeMessage}</p> : null}
 
       <div className="section-heading">
         <h2>Repetidas / Intercambio</h2>
@@ -707,6 +752,9 @@ function TradeBuilder({
   onUpdateQuantity: (code: string, quantity: number) => void;
   onRemove: (code: string) => void;
 }) {
+  const [quickFilter, setQuickFilter] = useState<"all" | "collection" | "group">("all");
+  const [collectionFilter, setCollectionFilter] = useState("");
+  const [groupFilter, setGroupFilter] = useState("");
   const selectedCodes = new Set(items.map((item) => item.code));
   const normalizedSearch = search
     .normalize("NFD")
@@ -716,6 +764,14 @@ function TradeBuilder({
   const candidates = catalog
     .filter((sticker) => {
       if (mode === "gave" && getStickerQuantity(sticker.code, progress) <= 1) {
+        return false;
+      }
+
+      if (quickFilter === "collection" && collectionFilter && getCollectionName(sticker) !== collectionFilter) {
+        return false;
+      }
+
+      if (quickFilter === "group" && groupFilter && sticker.group !== groupFilter) {
         return false;
       }
 
@@ -740,6 +796,8 @@ function TradeBuilder({
       return aRank - bRank || getCollectionName(a).localeCompare(getCollectionName(b), "es") || a.code.localeCompare(b.code);
     })
     .slice(0, 12);
+  const collectionOptions = getStatsByCollection(catalog, progress).map((collection) => collection.name);
+  const groupOptions = getRealGroups(catalog);
 
   return (
     <section className="trade-builder">
@@ -753,6 +811,48 @@ function TradeBuilder({
           onChange={(event) => onSearchChange(event.target.value)}
         />
       </label>
+      <div className="quick-filter-row" aria-label={`Filtros rápidos de ${title}`}>
+        <button className={quickFilter === "all" ? "primary-button small" : "ghost-button small"} onClick={() => setQuickFilter("all")}>
+          Todas
+        </button>
+        <button
+          className={quickFilter === "collection" ? "primary-button small" : "ghost-button small"}
+          onClick={() => setQuickFilter("collection")}
+        >
+          Colección
+        </button>
+        <button className={quickFilter === "group" ? "primary-button small" : "ghost-button small"} onClick={() => setQuickFilter("group")}>
+          Grupo
+        </button>
+      </div>
+      <div className="trade-filter-selectors">
+        <label>
+          <span>Filtrar por colección</span>
+          <select
+            value={collectionFilter}
+            onChange={(event) => setCollectionFilter(event.target.value)}
+            disabled={quickFilter !== "collection"}
+          >
+            <option value="">Todas</option>
+            {collectionOptions.map((collection) => (
+              <option key={collection} value={collection}>
+                {collection}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Filtrar por grupo</span>
+          <select value={groupFilter} onChange={(event) => setGroupFilter(event.target.value)} disabled={quickFilter !== "group"}>
+            <option value="">Todos</option>
+            {groupOptions.map((group) => (
+              <option key={group} value={group}>
+                {group}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
       <div className="selected-trade-list">
         {items.length === 0 ? <p className="empty-state">Sin estampas seleccionadas.</p> : null}
         {items.map((item) => {
@@ -822,7 +922,34 @@ function CollectionsView({
   const collection = selectedCollection && stats.some((item) => item.name === selectedCollection) ? selectedCollection : stats[0]?.name || "";
   const selectedStats = stats.find((item) => item.name === collection);
   const stickers = catalog.filter((sticker) => getCollectionName(sticker) === collection);
-  const visibleCollections = stats.filter((item) => item.name.toLowerCase().includes(collectionQuery.toLowerCase().trim()));
+  const normalizedCollectionQuery = normalizeText(collectionQuery);
+  const visibleCollections = normalizedCollectionQuery
+    ? stats.filter((item) => normalizeText(item.name).includes(normalizedCollectionQuery))
+    : stats;
+  const selectOptions = visibleCollections.length > 0 ? visibleCollections : stats;
+
+  useEffect(() => {
+    const exactMatch = stats.find((item) => normalizeText(item.name) === normalizedCollectionQuery);
+    const singleMatch = visibleCollections.length === 1 ? visibleCollections[0] : undefined;
+    const nextCollection = exactMatch ?? singleMatch;
+
+    if (normalizedCollectionQuery && nextCollection && nextCollection.name !== collection) {
+      onSelectedCollectionChange(nextCollection.name);
+    }
+  }, [collection, normalizedCollectionQuery, onSelectedCollectionChange, stats, visibleCollections]);
+
+  const selectCollection = (collectionName: string) => {
+    onSelectedCollectionChange(collectionName);
+    setCollectionQuery(collectionName);
+  };
+
+  const updateCollectionQuery = (query: string) => {
+    setCollectionQuery(query);
+
+    if (!query.trim() && !selectedCollection && stats[0]) {
+      onSelectedCollectionChange(stats[0].name);
+    }
+  };
 
   return (
     <section className="view-stack">
@@ -833,13 +960,13 @@ function CollectionsView({
             type="search"
             placeholder="FIFA / FWC, Coca-Cola o selección"
             value={collectionQuery}
-            onChange={(event) => setCollectionQuery(event.target.value)}
+            onChange={(event) => updateCollectionQuery(event.target.value)}
           />
         </label>
         <label>
           <span>Colección</span>
-          <select value={collection} onChange={(event) => onSelectedCollectionChange(event.target.value)}>
-            {visibleCollections.map((item) => (
+          <select value={collection} onChange={(event) => selectCollection(event.target.value)}>
+            {selectOptions.map((item) => (
               <option key={item.name} value={item.name}>
                 {item.name}
               </option>
@@ -877,15 +1004,42 @@ function DataView({
   setProgress: React.Dispatch<React.SetStateAction<Progress>>;
 }) {
   const [importText, setImportText] = useState("");
-  const [message, setMessage] = useState("");
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string; action?: string } | null>(null);
+
+  const notify = (text: string, type: "success" | "error" = "success", action?: string) => {
+    setFeedback({ type, text, action });
+    window.setTimeout(() => setFeedback((current) => (current?.text === text ? null : current)), 4200);
+  };
+
+  const actionClass = (baseClass: string, action: string) => {
+    if (feedback?.action !== action) {
+      return baseClass;
+    }
+
+    return `${baseClass} ${feedback.type === "success" ? "success-button" : "error-button"}`;
+  };
 
   const importTextProgress = (jsonText: string) => {
     try {
       setProgress(importProgressFromJson(jsonText, catalog));
-      setMessage("Progreso importado correctamente.");
+      notify("Progreso importado correctamente.", "success", "import");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "No se pudo importar el progreso.");
+      notify(error instanceof Error ? error.message : "No se pudo importar el progreso.", "error", "import");
     }
+  };
+
+  const copyText = async (text: string, successText: string, action: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      notify(successText, "success", action);
+    } catch {
+      notify("No se pudo copiar al portapapeles.", "error", action);
+    }
+  };
+
+  const downloadFile = (filename: string, content: string, type: string, action: string) => {
+    downloadTextFile(filename, content, type);
+    notify("Archivo descargado.", "success", action);
   };
 
   const handleFile = (file: File | undefined) => {
@@ -899,34 +1053,65 @@ function DataView({
   const resetProgress = () => {
     if (window.confirm("¿Seguro que quieres reiniciar todo tu progreso?")) {
       setProgress({});
-      setMessage("Progreso reiniciado.");
+      notify("Progreso reiniciado.", "success", "reset");
     }
   };
+  const exportFeedback = feedback?.action?.startsWith("download") || feedback?.action?.startsWith("copy") ? feedback : null;
+  const importFeedback = feedback?.action === "import" ? feedback : null;
+  const resetFeedback = feedback?.action === "reset" ? feedback : null;
 
   return (
     <section className="view-stack">
       <section className="panel action-panel">
         <h2>Exportar</h2>
         <button
-          className="primary-button"
+          className={actionClass("primary-button", "download-progress")}
           onClick={() =>
-            downloadTextFile("progreso-my-sticker-album-tracker-fwc-2026.json", exportProgressToJson(catalog, progress), "application/json")
+            downloadFile(
+              "progreso-my-sticker-album-tracker-fwc-2026.json",
+              exportProgressToJson(catalog, progress),
+              "application/json",
+              "download-progress",
+            )
           }
         >
-          Exportar progreso JSON
+          {feedback?.action === "download-progress" ? "Archivo descargado" : "Exportar progreso JSON"}
         </button>
         <button
-          className="ghost-button"
-          onClick={() => downloadTextFile("faltantes-my-sticker-album-tracker-fwc-2026.csv", exportMissingToCsv(catalog, progress), "text/csv")}
+          className={actionClass("ghost-button", "copy-progress")}
+          onClick={() => copyText(exportProgressToJson(catalog, progress), "JSON copiado al portapapeles.", "copy-progress")}
         >
-          Exportar faltantes CSV
+          {feedback?.action === "copy-progress" ? "Copiado" : "Copiar progreso JSON"}
         </button>
         <button
-          className="ghost-button"
-          onClick={() => downloadTextFile("repetidas-my-sticker-album-tracker-fwc-2026.csv", exportRepeatedToCsv(catalog, progress), "text/csv")}
+          className={actionClass("ghost-button", "download-missing")}
+          onClick={() =>
+            downloadFile("faltantes-my-sticker-album-tracker-fwc-2026.csv", exportMissingToCsv(catalog, progress), "text/csv", "download-missing")
+          }
         >
-          Exportar repetidas CSV
+          {feedback?.action === "download-missing" ? "Archivo descargado" : "Exportar faltantes CSV"}
         </button>
+        <button
+          className={actionClass("ghost-button", "copy-missing")}
+          onClick={() => copyText(exportMissingToMarkdown(catalog, progress), "Tabla de faltantes copiada.", "copy-missing")}
+        >
+          {feedback?.action === "copy-missing" ? "Copiado" : "Copiar faltantes como tabla"}
+        </button>
+        <button
+          className={actionClass("ghost-button", "download-repeated")}
+          onClick={() =>
+            downloadFile("repetidas-my-sticker-album-tracker-fwc-2026.csv", exportRepeatedToCsv(catalog, progress), "text/csv", "download-repeated")
+          }
+        >
+          {feedback?.action === "download-repeated" ? "Archivo descargado" : "Exportar repetidas CSV"}
+        </button>
+        <button
+          className={actionClass("ghost-button", "copy-repeated")}
+          onClick={() => copyText(exportRepeatedToMarkdown(catalog, progress), "Tabla de repetidas copiada.", "copy-repeated")}
+        >
+          {feedback?.action === "copy-repeated" ? "Copiado" : "Copiar repetidas como tabla"}
+        </button>
+        {exportFeedback ? <p className={exportFeedback.type === "success" ? "toast-message" : "warning-message"}>{exportFeedback.text}</p> : null}
       </section>
 
       <section className="panel action-panel">
@@ -939,23 +1124,23 @@ function DataView({
           <span>Pegar JSON</span>
           <textarea value={importText} onChange={(event) => setImportText(event.target.value)} rows={8} />
         </label>
-        <button className="primary-button" onClick={() => importTextProgress(importText)}>
-          Importar JSON pegado
+        <button className={actionClass("primary-button", "import")} onClick={() => importTextProgress(importText)}>
+          {feedback?.action === "import" && feedback.type === "success" ? "Importado correctamente" : "Importar JSON pegado"}
         </button>
+        {importFeedback ? <p className={importFeedback.type === "success" ? "toast-message" : "warning-message"}>{importFeedback.text}</p> : null}
       </section>
 
       <section className="panel action-panel">
         <h2>Reiniciar</h2>
-        <button className="danger-button" onClick={resetProgress}>
+        <button className={actionClass("danger-button", "reset")} onClick={resetProgress}>
           Reiniciar progreso
         </button>
         <p>
           El catálogo maestro no se modifica. Se guardan {Object.keys(serializeFullProgress(catalog, progress)).length} códigos en el
           respaldo exportado.
         </p>
+        {resetFeedback ? <p className={resetFeedback.type === "success" ? "toast-message" : "warning-message"}>{resetFeedback.text}</p> : null}
       </section>
-
-      {message ? <p className="toast-message">{message}</p> : null}
     </section>
   );
 }

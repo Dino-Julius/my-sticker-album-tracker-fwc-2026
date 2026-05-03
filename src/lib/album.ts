@@ -269,9 +269,9 @@ export function importProgressFromJson(jsonText: string, catalog: Sticker[]): Pr
   }, {});
 }
 
-export function toCsv(rows: Array<Record<string, string | number>>): string {
+export function toCsv(rows: Array<Record<string, string | number>>, fallbackHeaders: string[] = []): string {
   if (rows.length === 0) {
-    return "codigo,pais,grupo,seccion,cantidad,extras\n";
+    return `${fallbackHeaders.join(",")}\n`;
   }
 
   const headers = Object.keys(rows[0]);
@@ -285,34 +285,55 @@ export function toCsv(rows: Array<Record<string, string | number>>): string {
   );
 }
 
+export function getMissingExportRows(catalog: Sticker[], progress: Progress) {
+  return getMissingStickers(catalog, progress).map((sticker) => ({
+    Código: sticker.code,
+    Colección: getCollectionName(sticker),
+    Grupo: sticker.group,
+    Sección: sticker.section,
+  }));
+}
+
+export function getRepeatedExportRows(catalog: Sticker[], progress: Progress) {
+  return getRepeatedStickers(catalog, progress).map((sticker) => ({
+    Código: sticker.code,
+    Colección: getCollectionName(sticker),
+    Grupo: sticker.group,
+    Sección: sticker.section,
+    Extras: getStickerQuantity(sticker.code, progress) - 1,
+  }));
+}
+
+export function toMarkdownTable(rows: Array<Record<string, string | number>>, fallbackHeaders: string[] = []) {
+  const headers = rows.length > 0 ? Object.keys(rows[0]) : fallbackHeaders;
+
+  if (headers.length === 0) {
+    return "";
+  }
+
+  const formatCell = (value: string | number | undefined) => String(value ?? "").replace(/\|/g, "\\|");
+
+  return [
+    `| ${headers.join(" | ")} |`,
+    `| ${headers.map(() => "---").join(" | ")} |`,
+    ...rows.map((row) => `| ${headers.map((header) => formatCell(row[header])).join(" | ")} |`),
+  ].join("\n");
+}
+
 export function exportMissingToCsv(catalog: Sticker[], progress: Progress): string {
-  return toCsv(
-    getMissingStickers(catalog, progress).map((sticker) => ({
-      codigo: sticker.code,
-      pais: sticker.country,
-      grupo: sticker.group,
-      seccion: sticker.section,
-      cantidad: 0,
-      extras: 0,
-    })),
-  );
+  return toCsv(getMissingExportRows(catalog, progress), ["Código", "Colección", "Grupo", "Sección"]);
 }
 
 export function exportRepeatedToCsv(catalog: Sticker[], progress: Progress): string {
-  return toCsv(
-    getRepeatedStickers(catalog, progress).map((sticker) => {
-      const quantity = getStickerQuantity(sticker.code, progress);
+  return toCsv(getRepeatedExportRows(catalog, progress), ["Código", "Colección", "Grupo", "Sección", "Extras"]);
+}
 
-      return {
-        codigo: sticker.code,
-        pais: sticker.country,
-        grupo: sticker.group,
-        seccion: sticker.section,
-        cantidad: quantity,
-        extras: quantity - 1,
-      };
-    }),
-  );
+export function exportMissingToMarkdown(catalog: Sticker[], progress: Progress): string {
+  return toMarkdownTable(getMissingExportRows(catalog, progress), ["Código", "Colección", "Grupo", "Sección"]);
+}
+
+export function exportRepeatedToMarkdown(catalog: Sticker[], progress: Progress): string {
+  return toMarkdownTable(getRepeatedExportRows(catalog, progress), ["Código", "Colección", "Grupo", "Sección", "Extras"]);
 }
 
 export function createTradingText(catalog: Sticker[], progress: Progress): string {
