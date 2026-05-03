@@ -27,7 +27,6 @@ import {
   groupByCountry,
   importProgressFromJson,
   serializeFullProgress,
-  TRADE_HISTORY_STORAGE_KEY,
 } from "./lib/album";
 import { downloadTextFile } from "./lib/files";
 import type { Filters, Progress, Sticker, TradeItem, TradeRecord } from "./types";
@@ -71,23 +70,9 @@ function App() {
   const [activeView, setActiveView] = useState<View>("dashboard");
   const [selectedCollection, setSelectedCollection] = useState("");
   const [filters, setFilters] = useState<Filters>(emptyFilters);
-  const { progress, setProgress, syncStatus } = useAlbumData({
+  const { addTrade, deleteTrade, progress, setProgress, syncStatus, tradeHistory } = useAlbumData({
     isCloudEnabled: auth.isConfigured,
     userId: auth.user?.id,
-  });
-  const [tradeHistory, setTradeHistory] = useState<TradeRecord[]>(() => {
-    const stored = localStorage.getItem(TRADE_HISTORY_STORAGE_KEY);
-
-    if (!stored) {
-      return [];
-    }
-
-    try {
-      const parsed = JSON.parse(stored) as TradeRecord[];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
   });
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}catalog.json`)
@@ -101,10 +86,6 @@ function App() {
       .then((stickers) => setCatalog(stickers))
       .catch((error: Error) => setCatalogError(error.message));
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem(TRADE_HISTORY_STORAGE_KEY, JSON.stringify(tradeHistory));
-  }, [tradeHistory]);
 
   const dashboard = useMemo(() => {
     const owned = getOwnedStickers(catalog, progress);
@@ -233,8 +214,9 @@ function App() {
           progress={progress}
           tradeHistory={tradeHistory}
           onFiltersChange={setFilters}
+          onAddTrade={addTrade}
+          onDeleteTrade={deleteTrade}
           setProgress={setProgress}
-          setTradeHistory={setTradeHistory}
         />
       ) : null}
       {activeView === "paises" ? (
@@ -520,17 +502,19 @@ function RepeatedView({
   filters,
   progress,
   tradeHistory,
+  onAddTrade,
+  onDeleteTrade,
   onFiltersChange,
   setProgress,
-  setTradeHistory,
 }: {
   catalog: Sticker[];
   filters: Filters;
   progress: Progress;
   tradeHistory: TradeRecord[];
+  onAddTrade: (trade: TradeRecord) => void;
+  onDeleteTrade: (tradeId: string) => void;
   onFiltersChange: (filters: Filters) => void;
   setProgress: React.Dispatch<React.SetStateAction<Progress>>;
-  setTradeHistory: React.Dispatch<React.SetStateAction<TradeRecord[]>>;
 }) {
   const stickers = applyFilters(catalog, progress, { ...filters, status: "repeated" });
   const groups = groupByCountry(stickers);
@@ -616,7 +600,7 @@ function RepeatedView({
     };
 
     setProgress((currentProgress) => applyTradeToProgress(currentProgress, trade));
-    setTradeHistory((currentHistory) => [trade, ...currentHistory]);
+    onAddTrade(trade);
     setDateTime(formatDateTimeLocal(new Date()));
     setTradedWith("");
     setNotes("");
@@ -648,7 +632,7 @@ function RepeatedView({
 
   const deleteTradeRecord = (tradeId: string) => {
     if (window.confirm("¿Eliminar este intercambio del historial?")) {
-      setTradeHistory((currentHistory) => currentHistory.filter((trade) => trade.id !== tradeId));
+      onDeleteTrade(tradeId);
     }
   };
 

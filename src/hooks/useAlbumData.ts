@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import type { Progress } from "../types";
+import type { Progress, TradeRecord } from "../types";
 import { loadRemoteProgress, saveRemoteProgress } from "../lib/remoteProgress";
-import { STORAGE_KEY } from "../lib/album";
+import { deleteRemoteTrade, insertRemoteTrade, loadRemoteTrades } from "../lib/remoteTrades";
+import { STORAGE_KEY, TRADE_HISTORY_STORAGE_KEY } from "../lib/album";
 
 export type SyncStatus = "local" | "loading" | "saving" | "cloud" | "error";
 
@@ -20,8 +21,24 @@ function readLocalProgress(): Progress {
   }
 }
 
+function readLocalTrades(): TradeRecord[] {
+  const stored = localStorage.getItem(TRADE_HISTORY_STORAGE_KEY);
+
+  if (!stored) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(stored) as TradeRecord[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boolean; userId?: string }) {
   const [progress, setProgress] = useState<Progress>(() => readLocalProgress());
+  const [tradeHistory, setTradeHistory] = useState<TradeRecord[]>(() => readLocalTrades());
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("local");
   const hasLoadedRemote = useRef(false);
   const lastSavedProgress = useRef("");
@@ -29,6 +46,10 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
   }, [progress]);
+
+  useEffect(() => {
+    localStorage.setItem(TRADE_HISTORY_STORAGE_KEY, JSON.stringify(tradeHistory));
+  }, [tradeHistory]);
 
   useEffect(() => {
     hasLoadedRemote.current = false;
@@ -42,8 +63,8 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     let isActive = true;
     setSyncStatus("loading");
 
-    loadRemoteProgress(userId)
-      .then((remoteProgress) => {
+    Promise.all([loadRemoteProgress(userId), loadRemoteTrades(userId)])
+      .then(([remoteProgress, remoteTrades]) => {
         if (!isActive) {
           return;
         }
@@ -51,6 +72,10 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
         if (remoteProgress && Object.keys(remoteProgress).length > 0) {
           setProgress(remoteProgress);
           lastSavedProgress.current = JSON.stringify(remoteProgress);
+        }
+
+        if (remoteTrades.length > 0) {
+          setTradeHistory(remoteTrades);
         }
 
         hasLoadedRemote.current = true;
@@ -99,9 +124,32 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     };
   }, [isCloudEnabled, progress, userId]);
 
+  const addTrade = (trade: TradeRecord) => {
+    setTradeHistory((currentHistory) => [trade, ...currentHistory]);
+
+    if (isCloudEnabled && userId) {
+      insertRemoteTrade(userId, trade).catch(() => {
+        setSyncStatus("error");
+      });
+    }
+  };
+
+  const deleteTrade = (tradeId: string) => {
+    setTradeHistory((currentHistory) => currentHistory.filter((trade) => trade.id !== tradeId));
+
+    if (isCloudEnabled && userId) {
+      deleteRemoteTrade(userId, tradeId).catch(() => {
+        setSyncStatus("error");
+      });
+    }
+  };
+
   return {
+    addTrade,
+    deleteTrade,
     progress,
     setProgress,
     syncStatus,
+    tradeHistory,
   };
 }
