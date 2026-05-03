@@ -27,6 +27,26 @@ yarn build
 yarn preview
 ```
 
+## Instalar como app
+
+La app incluye soporte PWA basico, asi que puedes agregarla a la pantalla de inicio en dispositivos compatibles.
+
+En iPhone o iPad:
+
+1. Abre la app en Safari.
+2. Toca el boton de compartir.
+3. Elige `Agregar a pantalla de inicio`.
+4. Confirma el nombre y toca `Agregar`.
+
+En Android con Chrome:
+
+1. Abre la app en Chrome.
+2. Toca el menu de tres puntos.
+3. Elige `Agregar a pantalla principal` o `Instalar app`.
+4. Confirma la instalacion.
+
+En navegadores de escritorio compatibles, busca el icono de instalar en la barra de direcciones o usa el menu del navegador.
+
 ## Catalogo
 
 La app nunca modifica ni sube `public/catalog.json` a Supabase. El catalogo incluido contiene 994 stickers con nombres oficiales de pais/equipo. Para extender o corregir el catalogo, conserva una lista de objetos con esta forma:
@@ -178,3 +198,7 @@ base: "/NOMBRE_DEL_REPO/";
 ```
 
 El workflow de GitHub Actions instala dependencias con Yarn, construye la app y publica `dist` en GitHub Pages cuando haces push a `main`.
+
+## Licencia
+
+Licensed under the MIT License.
