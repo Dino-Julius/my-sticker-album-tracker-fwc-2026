@@ -165,6 +165,8 @@ function App() {
     deleteRegistrationEvent,
     deleteTrade,
     hasPendingCloudChanges,
+    lastCloudSyncAt,
+    lastLocalUpdateAt,
     migrationPrompt,
     progress,
     registrationEvents,
@@ -335,6 +337,8 @@ function App() {
         isLoading={auth.isLoading}
         hasPendingCloudChanges={hasPendingCloudChanges}
         isSavingProfile={profileState.isSavingProfile}
+        lastCloudSyncAt={lastCloudSyncAt}
+        lastLocalUpdateAt={lastLocalUpdateAt}
         profile={profileState.profile}
         profileMessage={profileState.profileMessage}
         syncStatus={syncStatus}
@@ -524,6 +528,8 @@ function AuthPanel({
   isConfigured,
   isLoading,
   isSavingProfile,
+  lastCloudSyncAt,
+  lastLocalUpdateAt,
   profile,
   profileMessage,
   syncStatus,
@@ -538,6 +544,8 @@ function AuthPanel({
   isConfigured: boolean;
   isLoading: boolean;
   isSavingProfile: boolean;
+  lastCloudSyncAt?: string;
+  lastLocalUpdateAt?: string;
   profile: UserProfile | null;
   profileMessage: string;
   syncStatus: SyncStatus;
@@ -607,6 +615,13 @@ function AuthPanel({
           <strong>Sesión iniciada como {displayName || displayEmail}</strong>
           {displayEmail ? <p>{displayEmail}</p> : null}
           {profile?.nickname ? <p>Apodo: {profile.nickname}</p> : null}
+          <div className="sync-details">
+            {lastCloudSyncAt ? <p>Última sincronización: {formatDisplayDate(lastCloudSyncAt)}</p> : null}
+            {lastLocalUpdateAt ? <p>Última edición local: {formatDisplayDate(lastLocalUpdateAt)}</p> : null}
+            {hasPendingCloudChanges ? (
+              <p>Tus cambios están guardados en este dispositivo, pero aún no sincronizados en la nube.</p>
+            ) : null}
+          </div>
         </div>
         <div className="profile-actions">
           {isEditingNickname ? (

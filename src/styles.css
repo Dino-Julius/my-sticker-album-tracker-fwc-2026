@@ -285,6 +285,18 @@ h3 {
   gap: 8px;
 }
 
+.sync-details {
+  display: grid;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.sync-details p {
+  color: #64748b;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
 .profile-actions {
   display: grid;
   gap: 8px;

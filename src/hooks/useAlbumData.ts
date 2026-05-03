@@ -100,6 +100,7 @@ function readLocalMeta(): LocalMeta {
 
 function writeLocalMeta(updatedAt = new Date().toISOString()) {
   localStorage.setItem(LOCAL_META_STORAGE_KEY, JSON.stringify({ updatedAt }));
+  return updatedAt;
 }
 
 function hasProgressData(progress: Progress) {
@@ -182,6 +183,8 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
   const [migrationPrompt, setMigrationPrompt] = useState<MigrationPrompt | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("local");
   const [hasPendingCloudChanges, setHasPendingCloudChanges] = useState(false);
+  const [lastCloudSyncAt, setLastCloudSyncAt] = useState<string | undefined>(undefined);
+  const [lastLocalUpdateAt, setLastLocalUpdateAt] = useState<string | undefined>(() => readLocalMeta().updatedAt);
   const hasLoadedRemote = useRef(false);
   const lastSavedProgress = useRef("");
   const latestProgress = useRef(progress);
@@ -246,8 +249,9 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
       setSyncStatus("saving");
 
       try {
-        await saveRemoteProgress(userId, progressToSave);
+        const updatedAt = await saveRemoteProgress(userId, progressToSave);
         lastSavedProgress.current = serializedProgress;
+        setLastCloudSyncAt(updatedAt);
 
         if (latestSerializedProgress.current === serializedProgress) {
           saveAgainAfterCurrent.current = false;
@@ -291,7 +295,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     }
 
     localStorage.setItem(STORAGE_KEY, latestSerializedProgress.current);
-    writeLocalMeta();
+    setLastLocalUpdateAt(writeLocalMeta());
   }, [progress]);
 
   useEffect(() => {
@@ -301,7 +305,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     }
 
     localStorage.setItem(TRADE_HISTORY_STORAGE_KEY, JSON.stringify(tradeHistory));
-    writeLocalMeta();
+    setLastLocalUpdateAt(writeLocalMeta());
   }, [tradeHistory]);
 
   useEffect(() => {
@@ -311,7 +315,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     }
 
     localStorage.setItem(REGISTRATION_EVENTS_STORAGE_KEY, JSON.stringify(registrationEvents));
-    writeLocalMeta();
+    setLastLocalUpdateAt(writeLocalMeta());
   }, [registrationEvents]);
 
   useEffect(() => {
@@ -347,6 +351,8 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
         const mergedRegistrationEvents = mergeRegistrationEvents(localRegistrationEvents, remoteRegistrationEvents);
         const normalizedRemoteProgress = remoteProgressSnapshot?.progress ?? {};
         const remoteUpdatedAt = remoteProgressSnapshot?.updatedAt;
+        setLastCloudSyncAt(remoteUpdatedAt);
+        setLastLocalUpdateAt(localMeta.updatedAt);
         const localHasData = hasLocalData(localProgress, localTrades);
         const remoteHasData = hasLocalData(normalizedRemoteProgress, remoteTrades);
 
@@ -502,7 +508,8 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
       const updatedAt = await saveRemoteProgress(userId, nextProgress);
       await Promise.all(nextTrades.map((trade) => insertRemoteTrade(userId, trade)));
       lastSavedProgress.current = serializeProgressSnapshot(nextProgress);
-      writeLocalMeta(updatedAt);
+      setLastCloudSyncAt(updatedAt);
+      setLastLocalUpdateAt(writeLocalMeta(updatedAt));
       updatePendingCloudChanges(false);
       setSyncStatus("cloud");
     } catch (error) {
@@ -521,7 +528,8 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     setTradeHistory(migrationPrompt.remoteTrades);
     localStorage.setItem(STORAGE_KEY, serializeProgressSnapshot(migrationPrompt.remoteProgress));
     localStorage.setItem(TRADE_HISTORY_STORAGE_KEY, JSON.stringify(migrationPrompt.remoteTrades));
-    writeLocalMeta(migrationPrompt.remoteUpdatedAt);
+    setLastCloudSyncAt(migrationPrompt.remoteUpdatedAt);
+    setLastLocalUpdateAt(writeLocalMeta(migrationPrompt.remoteUpdatedAt));
     lastSavedProgress.current = serializeProgressSnapshot(migrationPrompt.remoteProgress);
     clearSaveTimer();
     updatePendingCloudChanges(false);
@@ -618,6 +626,8 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     deleteRegistrationEvent,
     deleteTrade,
     hasPendingCloudChanges,
+    lastCloudSyncAt,
+    lastLocalUpdateAt,
     migrationPrompt,
     progress,
     registrationEvents,
