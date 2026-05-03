@@ -12,6 +12,20 @@ export type Sticker = {
 
 export type Progress = Record<string, number>;
 
+export type TradeItem = {
+  code: string;
+  quantity: number;
+};
+
+export type TradeRecord = {
+  id: string;
+  createdAt: string;
+  tradedWith?: string;
+  notes?: string;
+  gave: TradeItem[];
+  received: TradeItem[];
+};
+
 export type Filters = {
   query: string;
   country: string;

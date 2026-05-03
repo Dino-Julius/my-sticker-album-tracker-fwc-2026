@@ -1,7 +1,7 @@
 {
-  "name": "Álbum Mundial 2026",
-  "short_name": "Álbum 2026",
-  "description": "Tracker personal para estampas faltantes, repetidas y completadas.",
+  "name": "Tracker de Stickers FWC 2026",
+  "short_name": "Tracker FWC 2026",
+  "description": "Tracker personal de estampas para álbum de la copa del mundo 2026.",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#f8fafc",

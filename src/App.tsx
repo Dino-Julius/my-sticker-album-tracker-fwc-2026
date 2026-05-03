@@ -3,10 +3,13 @@ import { FilterBar } from "./components/FilterBar";
 import { StickerList } from "./components/StickerList";
 import {
   applyFilters,
+  applyTradeToProgress,
+  createTradeSummary,
   createTradingText,
   exportMissingToCsv,
   exportProgressToJson,
   exportRepeatedToCsv,
+  formatTradeItems,
   getCompletionPercentage,
   getCollectionName,
   getMissingStickers,
@@ -15,13 +18,15 @@ import {
   getRepeatedStickers,
   getStatsByCollection,
   getStickerQuantity,
+  getTradeItemTotal,
   groupByCountry,
   importProgressFromJson,
   serializeFullProgress,
   STORAGE_KEY,
+  TRADE_HISTORY_STORAGE_KEY,
 } from "./lib/album";
 import { downloadTextFile } from "./lib/files";
-import type { Filters, Progress, Sticker } from "./types";
+import type { Filters, Progress, Sticker, TradeItem, TradeRecord } from "./types";
 
 const emptyFilters: Filters = {
   query: "",
@@ -42,12 +47,32 @@ const views: Array<{ id: View; label: string }> = [
   { id: "datos", label: "Importar/Exportar" },
 ];
 
+const formatDateTimeLocal = (date: Date) => {
+  const offset = date.getTimezoneOffset();
+  const localDate = new Date(date.getTime() - offset * 60_000);
+  return localDate.toISOString().slice(0, 16);
+};
+
 function App() {
   const [catalog, setCatalog] = useState<Sticker[]>([]);
   const [catalogError, setCatalogError] = useState("");
   const [activeView, setActiveView] = useState<View>("dashboard");
   const [selectedCollection, setSelectedCollection] = useState("");
   const [filters, setFilters] = useState<Filters>(emptyFilters);
+  const [tradeHistory, setTradeHistory] = useState<TradeRecord[]>(() => {
+    const stored = localStorage.getItem(TRADE_HISTORY_STORAGE_KEY);
+
+    if (!stored) {
+      return [];
+    }
+
+    try {
+      const parsed = JSON.parse(stored) as TradeRecord[];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
   const [progress, setProgress] = useState<Progress>(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
 
@@ -78,6 +103,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
   }, [progress]);
+
+  useEffect(() => {
+    localStorage.setItem(TRADE_HISTORY_STORAGE_KEY, JSON.stringify(tradeHistory));
+  }, [tradeHistory]);
 
   const dashboard = useMemo(() => {
     const owned = getOwnedStickers(catalog, progress);
@@ -123,7 +152,7 @@ function App() {
       <header className="app-header">
         <div>
           <p className="eyebrow">Tracker personal</p>
-          <h1>Álbum Mundial 2026</h1>
+          <h1>FIFA World Cup 2026</h1>
         </div>
         <div className="completion-ring" aria-label={`Avance ${dashboard.completion}%`}>
           {dashboard.completion}%
@@ -187,7 +216,15 @@ function App() {
         />
       ) : null}
       {activeView === "repetidas" ? (
-        <RepeatedView catalog={catalog} filters={filters} progress={progress} onFiltersChange={setFilters} />
+        <RepeatedView
+          catalog={catalog}
+          filters={filters}
+          progress={progress}
+          tradeHistory={tradeHistory}
+          onFiltersChange={setFilters}
+          setProgress={setProgress}
+          setTradeHistory={setTradeHistory}
+        />
       ) : null}
       {activeView === "paises" ? (
         <CollectionsView
@@ -380,16 +417,32 @@ function RepeatedView({
   catalog,
   filters,
   progress,
+  tradeHistory,
   onFiltersChange,
+  setProgress,
+  setTradeHistory,
 }: {
   catalog: Sticker[];
   filters: Filters;
   progress: Progress;
+  tradeHistory: TradeRecord[];
   onFiltersChange: (filters: Filters) => void;
+  setProgress: React.Dispatch<React.SetStateAction<Progress>>;
+  setTradeHistory: React.Dispatch<React.SetStateAction<TradeRecord[]>>;
 }) {
   const stickers = applyFilters(catalog, progress, { ...filters, status: "repeated" });
   const groups = groupByCountry(stickers);
   const [copyLabel, setCopyLabel] = useState("Copiar lista para intercambio");
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [dateTime, setDateTime] = useState(formatDateTimeLocal(new Date()));
+  const [tradedWith, setTradedWith] = useState("");
+  const [notes, setNotes] = useState("");
+  const [gave, setGave] = useState<TradeItem[]>([]);
+  const [received, setReceived] = useState<TradeItem[]>([]);
+  const [gaveSearch, setGaveSearch] = useState("");
+  const [receivedSearch, setReceivedSearch] = useState("");
+  const [tradeMessage, setTradeMessage] = useState("");
+  const [copiedTradeId, setCopiedTradeId] = useState("");
 
   const copyTradeList = async () => {
     await navigator.clipboard.writeText(createTradingText(catalog, progress));
@@ -397,12 +450,177 @@ function RepeatedView({
     window.setTimeout(() => setCopyLabel("Copiar lista para intercambio"), 1800);
   };
 
+  const addTradeItem = (side: "gave" | "received", code: string) => {
+    const setter = side === "gave" ? setGave : setReceived;
+    setter((items) => {
+      const existingItem = items.find((item) => item.code === code);
+
+      if (existingItem) {
+        return items.map((item) => (item.code === code ? { ...item, quantity: item.quantity + 1 } : item));
+      }
+
+      return [...items, { code, quantity: 1 }];
+    });
+  };
+
+  const updateTradeItem = (side: "gave" | "received", code: string, quantity: number) => {
+    const setter = side === "gave" ? setGave : setReceived;
+    setter((items) =>
+      items.map((item) => (item.code === code ? { ...item, quantity: Math.max(1, Math.floor(quantity) || 1) } : item)),
+    );
+  };
+
+  const removeTradeItem = (side: "gave" | "received", code: string) => {
+    const setter = side === "gave" ? setGave : setReceived;
+    setter((items) => items.filter((item) => item.code !== code));
+  };
+
+  const validateTrade = () => {
+    if (gave.length === 0 || received.length === 0) {
+      return "Agrega al menos una estampa en Doy y una en Recibo.";
+    }
+
+    const invalidQuantity = [...gave, ...received].find((item) => !Number.isInteger(item.quantity) || item.quantity < 1);
+
+    if (invalidQuantity) {
+      return "Las cantidades deben ser enteros positivos.";
+    }
+
+    const invalidGaveItem = gave.find((item) => item.quantity > Math.max(0, getStickerQuantity(item.code, progress) - 1));
+
+    if (invalidGaveItem) {
+      const availableExtras = Math.max(0, getStickerQuantity(invalidGaveItem.code, progress) - 1);
+      return `Solo tienes ${availableExtras} extra(s) disponible(s) de ${invalidGaveItem.code}`;
+    }
+
+    return "";
+  };
+
+  const confirmTrade = () => {
+    const validationMessage = validateTrade();
+
+    if (validationMessage) {
+      setTradeMessage(validationMessage);
+      return;
+    }
+
+    const trade: TradeRecord = {
+      id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
+      createdAt: dateTime || formatDateTimeLocal(new Date()),
+      tradedWith: tradedWith.trim() || undefined,
+      notes: notes.trim() || undefined,
+      gave,
+      received,
+    };
+
+    setProgress((currentProgress) => applyTradeToProgress(currentProgress, trade));
+    setTradeHistory((currentHistory) => [trade, ...currentHistory]);
+    setDateTime(formatDateTimeLocal(new Date()));
+    setTradedWith("");
+    setNotes("");
+    setGave([]);
+    setReceived([]);
+    setGaveSearch("");
+    setReceivedSearch("");
+    setTradeMessage("Intercambio registrado.");
+  };
+
+  const copyTradeRecord = async (trade: TradeRecord) => {
+    await navigator.clipboard.writeText(createTradeSummary(trade));
+    setCopiedTradeId(trade.id);
+    window.setTimeout(() => setCopiedTradeId(""), 1800);
+  };
+
+  const deleteTradeRecord = (tradeId: string) => {
+    if (window.confirm("¿Eliminar este intercambio del historial?")) {
+      setTradeHistory((currentHistory) => currentHistory.filter((trade) => trade.id !== tradeId));
+    }
+  };
+
+  const gaveTotal = getTradeItemTotal(gave);
+  const receivedTotal = getTradeItemTotal(received);
+
   return (
     <section className="view-stack">
       <FilterBar catalog={catalog} filters={{ ...filters, status: "repeated" }} onChange={onFiltersChange} showStatus={false} />
-      <button className="primary-button wide-button" onClick={copyTradeList}>
-        {copyLabel}
-      </button>
+      <div className="trade-action-row">
+        <button className="primary-button wide-button" onClick={() => setIsFormOpen((current) => !current)}>
+          Registrar intercambio
+        </button>
+        <button className="ghost-button wide-button" onClick={copyTradeList}>
+          {copyLabel}
+        </button>
+      </div>
+
+      {isFormOpen ? (
+        <section className="panel trade-form">
+          <div className="section-heading flush">
+            <h2>Registrar intercambio</h2>
+            <span>
+              Doy: {gaveTotal} estampas · Recibo: {receivedTotal} estampas
+            </span>
+          </div>
+          {gaveTotal !== receivedTotal && gaveTotal > 0 && receivedTotal > 0 ? <p className="trade-note">Intercambio no parejo</p> : null}
+
+          <div className="trade-meta-grid">
+            <label>
+              <span>Fecha y hora</span>
+              <input
+                type="datetime-local"
+                value={dateTime}
+                placeholder={formatDateTimeLocal(new Date())}
+                onChange={(event) => setDateTime(event.target.value)}
+              />
+            </label>
+            <label>
+              <span>Con quién intercambié</span>
+              <input value={tradedWith} placeholder="Nombre o apodo" onChange={(event) => setTradedWith(event.target.value)} />
+            </label>
+          </div>
+          <label>
+            <span>Notas</span>
+            <textarea
+              value={notes}
+              placeholder="Ej. Cambiamos después del entrenamiento"
+              rows={3}
+              onChange={(event) => setNotes(event.target.value)}
+            />
+          </label>
+
+          <div className="trade-builder-grid">
+            <TradeBuilder
+              title="Doy"
+              mode="gave"
+              catalog={catalog}
+              progress={progress}
+              items={gave}
+              search={gaveSearch}
+              onSearchChange={setGaveSearch}
+              onAdd={(code) => addTradeItem("gave", code)}
+              onUpdateQuantity={(code, quantity) => updateTradeItem("gave", code, quantity)}
+              onRemove={(code) => removeTradeItem("gave", code)}
+            />
+            <TradeBuilder
+              title="Recibo"
+              mode="received"
+              catalog={catalog}
+              progress={progress}
+              items={received}
+              search={receivedSearch}
+              onSearchChange={setReceivedSearch}
+              onAdd={(code) => addTradeItem("received", code)}
+              onUpdateQuantity={(code, quantity) => updateTradeItem("received", code, quantity)}
+              onRemove={(code) => removeTradeItem("received", code)}
+            />
+          </div>
+
+          <button className="primary-button wide-button" onClick={confirmTrade}>
+            Confirmar intercambio
+          </button>
+          {tradeMessage ? <p className={tradeMessage === "Intercambio registrado." ? "toast-message" : "warning-message"}>{tradeMessage}</p> : null}
+        </section>
+      ) : null}
+
       <div className="section-heading">
         <h2>Repetidas / Intercambio</h2>
         <span>{stickers.length} estampas</span>
@@ -426,6 +644,162 @@ function RepeatedView({
         ))}
       </div>
       {stickers.length === 0 ? <p className="empty-state">Todavía no tienes repetidas para intercambio.</p> : null}
+
+      <section className="panel trade-history">
+        <h2>Historial de intercambios</h2>
+        <p className="history-note">Eliminar del historial no revierte las cantidades del álbum.</p>
+        {tradeHistory.length === 0 ? <p className="empty-state">Todavía no hay intercambios registrados.</p> : null}
+        <div className="trade-history-list">
+          {tradeHistory.map((trade) => {
+            const uneven = getTradeItemTotal(trade.gave) !== getTradeItemTotal(trade.received);
+
+            return (
+              <article className="trade-history-card" key={trade.id}>
+                <div className="section-heading flush">
+                  <h3>{trade.tradedWith ? `Intercambio con ${trade.tradedWith}` : "Intercambio"}</h3>
+                  {uneven ? <span>Intercambio no parejo</span> : null}
+                </div>
+                <p>Fecha: {trade.createdAt.replace("T", " ")}</p>
+                <p>
+                  <strong>Di:</strong> {formatTradeItems(trade.gave)}
+                </p>
+                <p>
+                  <strong>Recibí:</strong> {formatTradeItems(trade.received)}
+                </p>
+                {trade.notes ? <p>Notas: {trade.notes}</p> : null}
+                <div className="quick-actions">
+                  <button className="ghost-button" onClick={() => copyTradeRecord(trade)}>
+                    {copiedTradeId === trade.id ? "Resumen copiado" : "Copiar resumen"}
+                  </button>
+                  <button className="danger-button" onClick={() => deleteTradeRecord(trade.id)}>
+                    Eliminar del historial
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+    </section>
+  );
+}
+
+function TradeBuilder({
+  title,
+  mode,
+  catalog,
+  progress,
+  items,
+  search,
+  onSearchChange,
+  onAdd,
+  onUpdateQuantity,
+  onRemove,
+}: {
+  title: string;
+  mode: "gave" | "received";
+  catalog: Sticker[];
+  progress: Progress;
+  items: TradeItem[];
+  search: string;
+  onSearchChange: (query: string) => void;
+  onAdd: (code: string) => void;
+  onUpdateQuantity: (code: string, quantity: number) => void;
+  onRemove: (code: string) => void;
+}) {
+  const selectedCodes = new Set(items.map((item) => item.code));
+  const normalizedSearch = search
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .trim();
+  const candidates = catalog
+    .filter((sticker) => {
+      if (mode === "gave" && getStickerQuantity(sticker.code, progress) <= 1) {
+        return false;
+      }
+
+      const searchable = [sticker.code, getCollectionName(sticker), sticker.country, sticker.group, sticker.section, sticker.number, sticker.displayName]
+        .filter(Boolean)
+        .join(" ")
+        .normalize("NFD")
+        .replace(/\p{Diacritic}/gu, "")
+        .toLowerCase();
+
+      return !normalizedSearch || searchable.includes(normalizedSearch);
+    })
+    .sort((a, b) => {
+      if (mode === "gave") {
+        return getStickerQuantity(b.code, progress) - getStickerQuantity(a.code, progress) || a.code.localeCompare(b.code);
+      }
+
+      const aQuantity = getStickerQuantity(a.code, progress);
+      const bQuantity = getStickerQuantity(b.code, progress);
+      const aRank = aQuantity === 0 ? 0 : aQuantity === 1 ? 1 : 2;
+      const bRank = bQuantity === 0 ? 0 : bQuantity === 1 ? 1 : 2;
+      return aRank - bRank || getCollectionName(a).localeCompare(getCollectionName(b), "es") || a.code.localeCompare(b.code);
+    })
+    .slice(0, 12);
+
+  return (
+    <section className="trade-builder">
+      <h3>{title}</h3>
+      <label>
+        <span>Agregar estampa</span>
+        <input
+          type="search"
+          value={search}
+          placeholder="Código, colección o equipo"
+          onChange={(event) => onSearchChange(event.target.value)}
+        />
+      </label>
+      <div className="selected-trade-list">
+        {items.length === 0 ? <p className="empty-state">Sin estampas seleccionadas.</p> : null}
+        {items.map((item) => {
+          const sticker = catalog.find((candidate) => candidate.code === item.code);
+          const availableExtras = Math.max(0, getStickerQuantity(item.code, progress) - 1);
+          const hasWarning = mode === "gave" && item.quantity > availableExtras;
+
+          return (
+            <div className="selected-trade-item" key={item.code}>
+              <div>
+                <strong>{item.code}</strong>
+                <span>{sticker ? getCollectionName(sticker) : ""}</span>
+                {hasWarning ? <small>Solo tienes {availableExtras} extra(s) disponible(s) de {item.code}</small> : null}
+              </div>
+              <input
+                type="number"
+                min="1"
+                value={item.quantity}
+                aria-label={`Cantidad de ${item.code}`}
+                onChange={(event) => onUpdateQuantity(item.code, Number(event.target.value))}
+              />
+              <button className="ghost-button small" onClick={() => onRemove(item.code)}>
+                Quitar
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      <div className="trade-candidates">
+        {candidates.map((sticker) => {
+          const quantity = getStickerQuantity(sticker.code, progress);
+          const extras = Math.max(0, quantity - 1);
+
+          return (
+            <button
+              className="trade-candidate"
+              key={sticker.code}
+              onClick={() => onAdd(sticker.code)}
+              disabled={selectedCodes.has(sticker.code) && mode === "gave" && items.find((item) => item.code === sticker.code)?.quantity === extras}
+            >
+              <strong>{sticker.code}</strong>
+              <span>{getCollectionName(sticker)}</span>
+              <small>{mode === "gave" ? `${extras} extra(s) disponible(s)` : quantity === 0 ? "Faltante" : `Cantidad actual: ${quantity}`}</small>
+            </button>
+          );
+        })}
+      </div>
     </section>
   );
 }

@@ -1,4 +1,14 @@
-import type { CollectionStats, CollectionType, CountryStats, Filters, Progress, Sticker, StickerStatus } from "../types";
+import type {
+  CollectionStats,
+  CollectionType,
+  CountryStats,
+  Filters,
+  Progress,
+  Sticker,
+  StickerStatus,
+  TradeItem,
+  TradeRecord,
+} from "../types";
 
 export const STATUS_LABELS: Record<StickerStatus, string> = {
   missing: "Faltante",
@@ -7,6 +17,7 @@ export const STATUS_LABELS: Record<StickerStatus, string> = {
 };
 
 export const STORAGE_KEY = "my-sticker-album-tracker-fwc-2026-progress";
+export const TRADE_HISTORY_STORAGE_KEY = "my-sticker-album-tracker-fwc-2026-trades";
 export const SPECIAL_COLLECTION_NAME = "FIFA / FWC";
 export const SPONSOR_COLLECTION_NAME = "Coca-Cola";
 export const TEAM_COLLECTION_NAME = "Teams / national selections";
@@ -347,4 +358,36 @@ export function getUniqueValues(catalog: Sticker[], key: keyof Pick<Sticker, "co
   }
 
   return ["Team", SPECIAL_COLLECTION_NAME, SPONSOR_COLLECTION_NAME];
+}
+
+export function getTradeItemTotal(items: TradeItem[]) {
+  return items.reduce((total, item) => total + item.quantity, 0);
+}
+
+export function formatTradeItems(items: TradeItem[]) {
+  return items.map((item) => `${item.code} x${item.quantity}`).join(", ");
+}
+
+export function applyTradeToProgress(progress: Progress, trade: Pick<TradeRecord, "gave" | "received">): Progress {
+  const nextProgress = { ...progress };
+
+  trade.gave.forEach((item) => {
+    nextProgress[item.code] = Math.max(0, getStickerQuantity(item.code, nextProgress) - item.quantity);
+  });
+
+  trade.received.forEach((item) => {
+    nextProgress[item.code] = getStickerQuantity(item.code, nextProgress) + item.quantity;
+  });
+
+  return nextProgress;
+}
+
+export function createTradeSummary(trade: TradeRecord) {
+  const title = trade.tradedWith ? `Intercambio con ${trade.tradedWith}` : "Intercambio";
+  const uneven = getTradeItemTotal(trade.gave) !== getTradeItemTotal(trade.received) ? "\nIntercambio no parejo" : "";
+  const notes = trade.notes ? `\nNotas: ${trade.notes}` : "";
+
+  return `${title}\nFecha: ${trade.createdAt.replace("T", " ")}${uneven}\nDi:\n${formatTradeItems(trade.gave)}\nRecibí:\n${formatTradeItems(
+    trade.received,
+  )}${notes}`;
 }
