@@ -8,17 +8,16 @@ import {
   exportProgressToJson,
   exportRepeatedToCsv,
   getCompletionPercentage,
+  getCollectionName,
   getMissingStickers,
   getOwnedStickers,
   getRepeatedExtras,
   getRepeatedStickers,
-  getStatsByCountry,
+  getStatsByCollection,
   getStickerQuantity,
-  getStickerStatus,
   groupByCountry,
   importProgressFromJson,
   serializeFullProgress,
-  STATUS_LABELS,
   STORAGE_KEY,
 } from "./lib/album";
 import { downloadTextFile } from "./lib/files";
@@ -39,7 +38,7 @@ const views: Array<{ id: View; label: string }> = [
   { id: "registro", label: "Registro" },
   { id: "faltantes", label: "Faltantes" },
   { id: "repetidas", label: "Intercambio" },
-  { id: "paises", label: "Países" },
+  { id: "paises", label: "Colecciones" },
   { id: "datos", label: "Importar/Exportar" },
 ];
 
@@ -47,6 +46,7 @@ function App() {
   const [catalog, setCatalog] = useState<Sticker[]>([]);
   const [catalogError, setCatalogError] = useState("");
   const [activeView, setActiveView] = useState<View>("dashboard");
+  const [selectedCollection, setSelectedCollection] = useState("");
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [progress, setProgress] = useState<Progress>(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -83,7 +83,7 @@ function App() {
     const owned = getOwnedStickers(catalog, progress);
     const missing = getMissingStickers(catalog, progress);
     const repeated = getRepeatedStickers(catalog, progress);
-    const statsByCountry = getStatsByCountry(catalog, progress);
+    const statsByCollection = getStatsByCollection(catalog, progress);
 
     return {
       total: catalog.length,
@@ -92,10 +92,10 @@ function App() {
       repeated: repeated.length,
       repeatedExtras: getRepeatedExtras(catalog, progress),
       completion: getCompletionPercentage(catalog, progress),
-      statsByCountry,
-      mostMissing: [...statsByCountry].sort((a, b) => b.missing - a.missing).slice(0, 5),
-      closest: [...statsByCountry]
-        .filter((country) => country.missing > 0)
+      statsByCollection,
+      mostMissing: [...statsByCollection].sort((a, b) => b.missing - a.missing).slice(0, 5),
+      closest: [...statsByCollection]
+        .filter((collection) => collection.missing > 0)
         .sort((a, b) => b.completionPercentage - a.completionPercentage || a.missing - b.missing)
         .slice(0, 5),
     };
@@ -145,7 +145,27 @@ function App() {
         ))}
       </nav>
 
-      {activeView === "dashboard" ? <DashboardView dashboard={dashboard} /> : null}
+      {activeView === "dashboard" ? (
+        <DashboardView
+          dashboard={dashboard}
+          onOpenRegistro={(status) => {
+            setFilters({ ...emptyFilters, status });
+            setActiveView("registro");
+          }}
+          onOpenFaltantes={() => {
+            setFilters(emptyFilters);
+            setActiveView("faltantes");
+          }}
+          onOpenRepetidas={() => {
+            setFilters(emptyFilters);
+            setActiveView("repetidas");
+          }}
+          onOpenCollection={(collectionName) => {
+            setSelectedCollection(collectionName);
+            setActiveView("paises");
+          }}
+        />
+      ) : null}
       {activeView === "registro" ? (
         <RegistroView
           catalog={catalog}
@@ -169,7 +189,15 @@ function App() {
       {activeView === "repetidas" ? (
         <RepeatedView catalog={catalog} filters={filters} progress={progress} onFiltersChange={setFilters} />
       ) : null}
-      {activeView === "paises" ? <CountriesView catalog={catalog} progress={progress} onSetQuantity={setQuantity} /> : null}
+      {activeView === "paises" ? (
+        <CollectionsView
+          catalog={catalog}
+          progress={progress}
+          selectedCollection={selectedCollection}
+          onSelectedCollectionChange={setSelectedCollection}
+          onSetQuantity={setQuantity}
+        />
+      ) : null}
       {activeView === "datos" ? <DataView catalog={catalog} progress={progress} setProgress={setProgress} /> : null}
     </main>
   );
@@ -177,6 +205,10 @@ function App() {
 
 function DashboardView({
   dashboard,
+  onOpenRegistro,
+  onOpenFaltantes,
+  onOpenRepetidas,
+  onOpenCollection,
 }: {
   dashboard: {
     total: number;
@@ -185,48 +217,61 @@ function DashboardView({
     repeated: number;
     repeatedExtras: number;
     completion: number;
-    statsByCountry: ReturnType<typeof getStatsByCountry>;
-    mostMissing: ReturnType<typeof getStatsByCountry>;
-    closest: ReturnType<typeof getStatsByCountry>;
+    statsByCollection: ReturnType<typeof getStatsByCollection>;
+    mostMissing: ReturnType<typeof getStatsByCollection>;
+    closest: ReturnType<typeof getStatsByCollection>;
   };
+  onOpenRegistro: (status: Filters["status"]) => void;
+  onOpenFaltantes: () => void;
+  onOpenRepetidas: () => void;
+  onOpenCollection: (collectionName: string) => void;
 }) {
   return (
     <section className="view-stack">
       <div className="metric-grid">
-        <MetricCard label="Total" value={dashboard.total} />
-        <MetricCard label="La tengo" value={dashboard.owned} />
-        <MetricCard label="Faltantes" value={dashboard.missing} />
-        <MetricCard label="Repetidas" value={dashboard.repeated} />
-        <MetricCard label="Extras para cambiar" value={dashboard.repeatedExtras} />
+        <MetricCard label="Total" value={dashboard.total} onClick={() => onOpenRegistro("all")} />
+        <MetricCard label="La tengo" value={dashboard.owned} onClick={() => onOpenRegistro("owned")} />
+        <MetricCard label="Faltantes" value={dashboard.missing} onClick={onOpenFaltantes} />
+        <MetricCard label="Repetidas" value={dashboard.repeated} onClick={onOpenRepetidas} />
+        <MetricCard label="Extras para cambiar" value={dashboard.repeatedExtras} onClick={onOpenRepetidas} />
         <MetricCard label="Completado" value={`${dashboard.completion}%`} />
       </div>
 
       <section className="panel">
-        <h2>Avance por país</h2>
+        <h2>Avance por colección</h2>
         <div className="country-progress-list">
-          {dashboard.statsByCountry.map((country) => (
-            <div className="country-progress" key={country.country}>
+          {dashboard.statsByCollection.map((collection) => (
+            <button className="country-progress collection-progress-button" key={collection.name} onClick={() => onOpenCollection(collection.name)}>
               <div>
-                <strong>{country.country}</strong>
+                <strong>{collection.name}</strong>
                 <span>
-                  {country.owned}/{country.total}
+                  {collection.owned}/{collection.total}
                 </span>
               </div>
-              <progress value={country.completionPercentage} max="100" />
-            </div>
+              <progress value={collection.completionPercentage} max="100" />
+            </button>
           ))}
         </div>
       </section>
 
       <div className="split-grid">
-        <MiniRanking title="Países con más faltantes" items={dashboard.mostMissing} valueKey="missing" suffix=" faltan" />
+        <MiniRanking title="Colecciones con más faltantes" items={dashboard.mostMissing} valueKey="missing" suffix=" faltan" />
         <MiniRanking title="Más cerca de completar" items={dashboard.closest} valueKey="completionPercentage" suffix="%" />
       </div>
     </section>
   );
 }
 
-function MetricCard({ label, value }: { label: string; value: string | number }) {
+function MetricCard({ label, value, onClick }: { label: string; value: string | number; onClick?: () => void }) {
+  if (onClick) {
+    return (
+      <button className="metric-card metric-button" onClick={onClick}>
+        <span>{label}</span>
+        <strong>{value}</strong>
+      </button>
+    );
+  }
+
   return (
     <article className="metric-card">
       <span>{label}</span>
@@ -242,7 +287,7 @@ function MiniRanking({
   suffix,
 }: {
   title: string;
-  items: ReturnType<typeof getStatsByCountry>;
+  items: ReturnType<typeof getStatsByCollection>;
   valueKey: "missing" | "completionPercentage";
   suffix: string;
 }) {
@@ -251,8 +296,8 @@ function MiniRanking({
       <h2>{title}</h2>
       <div className="ranking-list">
         {items.map((item) => (
-          <div key={item.country} className="ranking-row">
-            <span>{item.country}</span>
+          <div key={item.name} className="ranking-row">
+            <span>{item.name}</span>
             <strong>
               {item[valueKey]}
               {suffix}
@@ -385,43 +430,63 @@ function RepeatedView({
   );
 }
 
-function CountriesView({
+function CollectionsView({
   catalog,
   progress,
+  selectedCollection,
+  onSelectedCollectionChange,
   onSetQuantity,
 }: {
   catalog: Sticker[];
   progress: Progress;
+  selectedCollection: string;
+  onSelectedCollectionChange: (collectionName: string) => void;
   onSetQuantity: (code: string, quantity: number) => void;
 }) {
-  const stats = getStatsByCountry(catalog, progress);
-  const [selectedCountry, setSelectedCountry] = useState("");
-  const country = selectedCountry || stats[0]?.country || "";
-  const stickers = catalog.filter((sticker) => sticker.country === country);
+  const stats = getStatsByCollection(catalog, progress);
+  const [collectionQuery, setCollectionQuery] = useState("");
+  const collection = selectedCollection && stats.some((item) => item.name === selectedCollection) ? selectedCollection : stats[0]?.name || "";
+  const selectedStats = stats.find((item) => item.name === collection);
+  const stickers = catalog.filter((sticker) => getCollectionName(sticker) === collection);
+  const visibleCollections = stats.filter((item) => item.name.toLowerCase().includes(collectionQuery.toLowerCase().trim()));
 
   return (
     <section className="view-stack">
-      <div className="country-card-grid">
-        {stats.map((countryStats) => (
-          <button
-            key={countryStats.country}
-            className={`country-card ${country === countryStats.country ? "active" : ""}`}
-            onClick={() => setSelectedCountry(countryStats.country)}
-          >
-            <strong>{countryStats.country}</strong>
-            <span>{countryStats.completionPercentage}% completado</span>
-            <small>
-              {countryStats.owned} tengo · {countryStats.missing} faltan · {countryStats.repeatedExtras} extras
-            </small>
-          </button>
-        ))}
-      </div>
+      <section className="panel collection-selector-panel">
+        <label className="search-field">
+          <span>Buscar colección</span>
+          <input
+            type="search"
+            placeholder="FIFA / FWC, Coca-Cola o selección"
+            value={collectionQuery}
+            onChange={(event) => setCollectionQuery(event.target.value)}
+          />
+        </label>
+        <label>
+          <span>Colección</span>
+          <select value={collection} onChange={(event) => onSelectedCollectionChange(event.target.value)}>
+            {visibleCollections.map((item) => (
+              <option key={item.name} value={item.name}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      </section>
 
       <section className="panel">
         <div className="section-heading flush">
-          <h2>{country}</h2>
+          <h2>{collection}</h2>
           <span>{stickers.length} estampas</span>
         </div>
+        {selectedStats ? (
+          <div className="collection-summary">
+            <strong>{selectedStats.completionPercentage}% completado</strong>
+            <span>{selectedStats.owned} tengo</span>
+            <span>{selectedStats.missing} faltan</span>
+            <span>{selectedStats.repeatedExtras} extras</span>
+          </div>
+        ) : null}
         <StickerList stickers={stickers} progress={progress} onSetQuantity={onSetQuantity} compact />
       </section>
     </section>

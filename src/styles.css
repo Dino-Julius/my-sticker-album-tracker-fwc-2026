@@ -148,6 +148,7 @@ h3 {
 
 .metric-card {
   padding: 14px;
+  text-align: left;
 }
 
 .metric-card span {
@@ -166,6 +167,17 @@ h3 {
   line-height: 1;
 }
 
+.metric-button {
+  width: 100%;
+  cursor: pointer;
+}
+
+.metric-button:hover,
+.collection-progress-button:hover,
+.country-card:hover {
+  border-color: #075985;
+}
+
 .panel {
   padding: 16px;
 }
@@ -180,6 +192,15 @@ h3 {
 .country-progress {
   display: grid;
   gap: 8px;
+}
+
+.collection-progress-button {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
 }
 
 .country-progress div,
@@ -283,6 +304,10 @@ textarea {
   gap: 10px;
 }
 
+.filter-reset {
+  justify-self: start;
+}
+
 .sticker-cards {
   display: grid;
   gap: 10px;
@@ -329,8 +354,8 @@ textarea {
 }
 
 .status-repeated {
-  background: #fef3c7;
-  color: #92400e;
+  background: #d1fae5;
+  color: #047857;
 }
 
 .quantity-control,
@@ -469,6 +494,28 @@ textarea {
 
 .country-card small {
   color: #64748b;
+}
+
+.collection-selector-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.collection-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.collection-summary strong,
+.collection-summary span {
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #075985;
+  padding: 6px 10px;
+  font-size: 0.88rem;
+  font-weight: 850;
 }
 
 .action-panel {

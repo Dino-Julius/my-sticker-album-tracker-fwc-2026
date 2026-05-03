@@ -1,4 +1,4 @@
-import { getStickerQuantity, getStickerStatus, STATUS_LABELS } from "../lib/album";
+import { getCollectionName, getStickerQuantity, getStickerStatus, STATUS_LABELS } from "../lib/album";
 import type { Progress, Sticker } from "../types";
 
 type StickerListProps = {
@@ -32,7 +32,7 @@ export function StickerList({ stickers, progress, onSetQuantity, compact = false
           <thead>
             <tr>
               <th>Código</th>
-              <th>País</th>
+              <th>Colección</th>
               <th>Grupo</th>
               <th>Sección</th>
               <th>Estado</th>
@@ -50,11 +50,11 @@ export function StickerList({ stickers, progress, onSetQuantity, compact = false
                   <td>
                     <strong>{sticker.code}</strong>
                   </td>
-                  <td>{sticker.country}</td>
+                  <td>{getCollectionName(sticker)}</td>
                   <td>{sticker.group}</td>
                   <td>{sticker.section}</td>
                   <td>
-                    <span className={`status status-${status}`}>{STATUS_LABELS[status]}</span>
+                    <span className={`status status-${status}`}>{getStatusLabel(status, quantity)}</span>
                   </td>
                   <td>{quantity}</td>
                   <td>
@@ -102,10 +102,10 @@ function StickerCard({
       <div>
         <div className="sticker-title">
           <strong>{sticker.code}</strong>
-          <span className={`status status-${status}`}>{STATUS_LABELS[status]}</span>
+          <span className={`status status-${status}`}>{getStatusLabel(status, quantity)}</span>
         </div>
         <p>
-          {sticker.country} · {sticker.section}
+          {getCollectionName(sticker)} · {sticker.section}
         </p>
         {sticker.displayName ? <small>{sticker.displayName}</small> : null}
       </div>
@@ -131,4 +131,13 @@ function StickerCard({
       </div>
     </article>
   );
+}
+
+function getStatusLabel(status: "missing" | "owned" | "repeated", quantity: number) {
+  if (status !== "repeated") {
+    return STATUS_LABELS[status];
+  }
+
+  const extras = Math.max(0, quantity - 1);
+  return `Repetida x${extras} ${extras === 1 ? "extra" : "extras"}`;
 }

@@ -1,4 +1,4 @@
-import type { CountryStats, Filters, Progress, Sticker, StickerStatus } from "../types";
+import type { CollectionStats, CollectionType, CountryStats, Filters, Progress, Sticker, StickerStatus } from "../types";
 
 export const STATUS_LABELS: Record<StickerStatus, string> = {
   missing: "Faltante",
@@ -7,6 +7,9 @@ export const STATUS_LABELS: Record<StickerStatus, string> = {
 };
 
 export const STORAGE_KEY = "my-sticker-album-tracker-fwc-2026-progress";
+export const SPECIAL_COLLECTION_NAME = "FIFA / FWC";
+export const SPONSOR_COLLECTION_NAME = "Coca-Cola";
+export const TEAM_COLLECTION_NAME = "Teams / national selections";
 
 const normalize = (value: string) =>
   value
@@ -87,22 +90,129 @@ export function getStatsByCountry(catalog: Sticker[], progress: Progress): Count
     .sort((a, b) => a.country.localeCompare(b.country, "es"));
 }
 
+export function getCollectionType(sticker: Sticker): CollectionType {
+  if (sticker.country === "Coca-Cola" || sticker.section === "Coca-Cola") {
+    return "sponsor";
+  }
+
+  if (sticker.country === "FIFA" || sticker.section === "FIFA" || sticker.section === "FWC") {
+    return "special";
+  }
+
+  return "team";
+}
+
+export function getCollectionName(sticker: Sticker): string {
+  const type = getCollectionType(sticker);
+
+  if (type === "special") {
+    return SPECIAL_COLLECTION_NAME;
+  }
+
+  if (type === "sponsor") {
+    return SPONSOR_COLLECTION_NAME;
+  }
+
+  return sticker.country;
+}
+
+export function getCollectionTypeLabel(type: CollectionType): string {
+  if (type === "special") {
+    return SPECIAL_COLLECTION_NAME;
+  }
+
+  if (type === "sponsor") {
+    return SPONSOR_COLLECTION_NAME;
+  }
+
+  return TEAM_COLLECTION_NAME;
+}
+
+export function getCollectionFilterValue(sticker: Sticker): string {
+  const type = getCollectionType(sticker);
+
+  if (type === "team") {
+    return "Team";
+  }
+
+  return getCollectionTypeLabel(type);
+}
+
+function getCollectionSortWeight(type: CollectionType) {
+  if (type === "special") {
+    return 0;
+  }
+
+  if (type === "sponsor") {
+    return 1;
+  }
+
+  return 2;
+}
+
+export function getStatsByCollection(catalog: Sticker[], progress: Progress): CollectionStats[] {
+  const collections = new Map<string, Sticker[]>();
+
+  catalog.forEach((sticker) => {
+    const collectionName = getCollectionName(sticker);
+    collections.set(collectionName, [...(collections.get(collectionName) ?? []), sticker]);
+  });
+
+  return [...collections.entries()]
+    .map(([name, stickers]) => {
+      const owned = getOwnedStickers(stickers, progress).length;
+      const missing = getMissingStickers(stickers, progress).length;
+      const repeatedStickers = getRepeatedStickers(stickers, progress);
+      const repeatedExtras = repeatedStickers.reduce(
+        (total, sticker) => total + getStickerQuantity(sticker.code, progress) - 1,
+        0,
+      );
+      const type = getCollectionType(stickers[0]);
+
+      return {
+        name,
+        type,
+        total: stickers.length,
+        owned,
+        missing,
+        repeated: repeatedStickers.length,
+        repeatedExtras,
+        completionPercentage: stickers.length > 0 ? Math.round((owned / stickers.length) * 100) : 0,
+      };
+    })
+    .sort(
+      (a, b) =>
+        getCollectionSortWeight(a.type) - getCollectionSortWeight(b.type) ||
+        a.name.localeCompare(b.name, "es"),
+    );
+}
+
 export function applyFilters(stickers: Sticker[], progress: Progress, filters: Filters): Sticker[] {
   const query = normalize(filters.query);
 
   return stickers.filter((sticker) => {
     const status = getStickerStatus(sticker.code, progress);
+    const collectionName = getCollectionName(sticker);
+    const collectionFilterValue = getCollectionFilterValue(sticker);
     const searchableText = normalize(
-      [sticker.code, sticker.country, sticker.group, sticker.section, sticker.number, sticker.displayName]
+      [
+        sticker.code,
+        sticker.country,
+        collectionName,
+        sticker.group,
+        sticker.section,
+        sticker.number,
+        sticker.displayName,
+      ]
         .filter(Boolean)
         .join(" "),
     );
 
     return (
       (!query || searchableText.includes(query)) &&
-      (!filters.country || sticker.country === filters.country) &&
+      (!filters.country || collectionName === filters.country) &&
       (!filters.group || sticker.group === filters.group) &&
-      (!filters.section || sticker.section === filters.section) &&
+      (!filters.section || collectionFilterValue === filters.section) &&
       (filters.status === "all" || status === filters.status)
     );
   });
@@ -110,8 +220,9 @@ export function applyFilters(stickers: Sticker[], progress: Progress, filters: F
 
 export function groupByCountry(stickers: Sticker[]): Map<string, Sticker[]> {
   return stickers.reduce((groups, sticker) => {
-    const current = groups.get(sticker.country) ?? [];
-    groups.set(sticker.country, [...current, sticker]);
+    const collectionName = getCollectionName(sticker);
+    const current = groups.get(collectionName) ?? [];
+    groups.set(collectionName, [...current, sticker]);
     return groups;
   }, new Map<string, Sticker[]>());
 }
@@ -205,6 +316,35 @@ export function createTradingText(catalog: Sticker[], progress: Progress): strin
   return `Mis repetidas:\n${repeated || "No tengo repetidas"}\n\nMe faltan:\n${missing || "No me falta ninguna"}`;
 }
 
+export function getRealGroups(catalog: Sticker[]) {
+  return [...new Set(catalog.filter((sticker) => getCollectionType(sticker) === "team").map((sticker) => sticker.group))]
+    .filter((group) => /^Grupo [A-L]$/.test(group))
+    .sort((a, b) => a.localeCompare(b, "es"));
+}
+
+export function getTeamCollections(catalog: Sticker[], group = "") {
+  return [
+    ...new Set(
+      catalog
+        .filter((sticker) => getCollectionType(sticker) === "team")
+        .filter((sticker) => !group || sticker.group === group)
+        .map((sticker) => sticker.country),
+    ),
+  ].sort((a, b) => a.localeCompare(b, "es"));
+}
+
+export function getTeamGroup(catalog: Sticker[], teamName: string) {
+  return catalog.find((sticker) => getCollectionType(sticker) === "team" && sticker.country === teamName)?.group ?? "";
+}
+
 export function getUniqueValues(catalog: Sticker[], key: keyof Pick<Sticker, "country" | "group" | "section">) {
-  return [...new Set(catalog.map((sticker) => sticker[key]))].sort((a, b) => a.localeCompare(b, "es"));
+  if (key === "country") {
+    return getStatsByCollection(catalog, {}).map((collection) => collection.name);
+  }
+
+  if (key === "group") {
+    return getRealGroups(catalog);
+  }
+
+  return ["Team", SPECIAL_COLLECTION_NAME, SPONSOR_COLLECTION_NAME];
 }

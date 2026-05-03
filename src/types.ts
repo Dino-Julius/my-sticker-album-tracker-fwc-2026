@@ -1,4 +1,5 @@
 export type StickerStatus = "missing" | "owned" | "repeated";
+export type CollectionType = "special" | "team" | "sponsor";
 
 export type Sticker = {
   code: string;
@@ -21,6 +22,17 @@ export type Filters = {
 
 export type CountryStats = {
   country: string;
+  total: number;
+  owned: number;
+  missing: number;
+  repeated: number;
+  repeatedExtras: number;
+  completionPercentage: number;
+};
+
+export type CollectionStats = {
+  name: string;
+  type: CollectionType;
   total: number;
   owned: number;
   missing: number;
