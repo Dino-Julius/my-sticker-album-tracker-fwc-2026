@@ -107,6 +107,7 @@ function App() {
   const [selectedCollection, setSelectedCollection] = useState("");
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [showHelp, setShowHelp] = useState(false);
+  const [pwaUpdateWorker, setPwaUpdateWorker] = useState<ServiceWorker | null>(null);
   const {
     addTrade,
     cancelMigration,
@@ -137,6 +138,37 @@ function App() {
       .then((stickers) => setCatalog(stickers))
       .catch((error: Error) => setCatalogError(error.message));
   }, []);
+
+  useEffect(() => {
+    const handlePwaUpdate = (event: WindowEventMap["pwa-update-available"]) => {
+      setPwaUpdateWorker(event.detail.worker);
+    };
+
+    window.addEventListener("pwa-update-available", handlePwaUpdate);
+
+    return () => {
+      window.removeEventListener("pwa-update-available", handlePwaUpdate);
+    };
+  }, []);
+
+  const applyPwaUpdate = () => {
+    if (!pwaUpdateWorker) {
+      return;
+    }
+
+    let hasReloaded = false;
+    const reloadWhenControlled = () => {
+      if (hasReloaded) {
+        return;
+      }
+
+      hasReloaded = true;
+      window.location.reload();
+    };
+
+    navigator.serviceWorker.addEventListener("controllerchange", reloadWhenControlled, { once: true });
+    pwaUpdateWorker.postMessage({ type: "SKIP_WAITING" });
+  };
 
   const dashboard = useMemo(() => {
     const owned = getOwnedStickers(catalog, progress);
@@ -212,6 +244,7 @@ function App() {
         </div>
       </header>
       {showHelp ? <HelpPanel /> : null}
+      {pwaUpdateWorker ? <PwaUpdateBanner onDismiss={() => setPwaUpdateWorker(null)} onUpdate={applyPwaUpdate} /> : null}
       <AuthPanel
         authMessage={auth.authMessage}
         isConfigured={auth.isConfigured}
@@ -373,6 +406,25 @@ function AppFooter() {
       <p>Datos guardados localmente o en Supabase si inicias sesión.</p>
       <p>Proyecto personal. No afiliado oficialmente con FIFA, Panini ni Coca-Cola.</p>
     </footer>
+  );
+}
+
+function PwaUpdateBanner({ onDismiss, onUpdate }: { onDismiss: () => void; onUpdate: () => void }) {
+  return (
+    <section className="pwa-update-banner" aria-live="polite">
+      <div>
+        <strong>Nueva versión disponible</strong>
+        <span>Actualiza para usar la última versión de la app.</span>
+      </div>
+      <div className="pwa-update-actions">
+        <button className="primary-button small" onClick={onUpdate}>
+          Actualizar
+        </button>
+        <button className="ghost-button small" onClick={onDismiss}>
+          Después
+        </button>
+      </div>
+    </section>
   );
 }
 
