@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { FilterBar } from "./components/FilterBar";
 import { StickerList } from "./components/StickerList";
+import { useAuth } from "./hooks/useAuth";
 import {
   applyFilters,
   applyTradeToProgress,
@@ -64,6 +65,7 @@ const normalizeText = (value: string) =>
     .trim();
 
 function App() {
+  const auth = useAuth();
   const [catalog, setCatalog] = useState<Sticker[]>([]);
   const [catalogError, setCatalogError] = useState("");
   const [activeView, setActiveView] = useState<View>("dashboard");
@@ -168,6 +170,14 @@ function App() {
           {dashboard.completion}%
         </div>
       </header>
+      <AuthPanel
+        authMessage={auth.authMessage}
+        isConfigured={auth.isConfigured}
+        isLoading={auth.isLoading}
+        userEmail={auth.user?.email}
+        onSendMagicLink={auth.sendMagicLink}
+        onSignOut={auth.signOut}
+      />
 
       <nav className="tab-bar" aria-label="Vistas del álbum">
         {views.map((view) => (
@@ -251,6 +261,72 @@ function App() {
       ) : null}
       {activeView === "datos" ? <DataView catalog={catalog} progress={progress} setProgress={setProgress} /> : null}
     </main>
+  );
+}
+
+function AuthPanel({
+  authMessage,
+  isConfigured,
+  isLoading,
+  userEmail,
+  onSendMagicLink,
+  onSignOut,
+}: {
+  authMessage: string;
+  isConfigured: boolean;
+  isLoading: boolean;
+  userEmail?: string;
+  onSendMagicLink: (email: string) => Promise<void>;
+  onSignOut: () => Promise<void>;
+}) {
+  const [email, setEmail] = useState("");
+
+  if (!isConfigured) {
+    return (
+      <section className="auth-panel">
+        <span>Usando almacenamiento local</span>
+      </section>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <section className="auth-panel">
+        <span>Revisando sesión...</span>
+      </section>
+    );
+  }
+
+  if (userEmail) {
+    return (
+      <section className="auth-panel">
+        <div>
+          <span>Guardado en la nube</span>
+          <strong>Sesión iniciada como {userEmail}</strong>
+        </div>
+        <button className="ghost-button small" onClick={onSignOut}>
+          Cerrar sesión
+        </button>
+        {authMessage ? <p>{authMessage}</p> : null}
+      </section>
+    );
+  }
+
+  return (
+    <section className="auth-panel">
+      <div>
+        <span>Usando almacenamiento local</span>
+        <strong>Iniciar sesión</strong>
+      </div>
+      <label className="auth-email-field">
+        <span>Correo</span>
+        <input type="email" placeholder="tu@correo.com" value={email} onChange={(event) => setEmail(event.target.value)} />
+      </label>
+      <button className="primary-button small" onClick={() => onSendMagicLink(email)} disabled={!email.trim()}>
+        Enviar enlace mágico
+      </button>
+      {authMessage ? <p>{authMessage}</p> : null}
+    </section>
   );
 }
 
