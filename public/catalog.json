@@ -1,0 +1,7009 @@
+[
+  {
+    "code": "00",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FIFA",
+    "number": 0,
+    "displayName": "Opening sticker"
+  },
+  {
+    "code": "FWC1",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 1
+  },
+  {
+    "code": "FWC2",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 2
+  },
+  {
+    "code": "FWC3",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 3
+  },
+  {
+    "code": "FWC4",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 4
+  },
+  {
+    "code": "FWC5",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 5
+  },
+  {
+    "code": "FWC6",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 6
+  },
+  {
+    "code": "FWC7",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 7
+  },
+  {
+    "code": "FWC8",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 8
+  },
+  {
+    "code": "FWC9",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 9
+  },
+  {
+    "code": "FWC10",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 10
+  },
+  {
+    "code": "FWC11",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 11
+  },
+  {
+    "code": "FWC12",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 12
+  },
+  {
+    "code": "FWC13",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 13
+  },
+  {
+    "code": "FWC14",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 14
+  },
+  {
+    "code": "FWC15",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 15
+  },
+  {
+    "code": "FWC16",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 16
+  },
+  {
+    "code": "FWC17",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 17
+  },
+  {
+    "code": "FWC18",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 18
+  },
+  {
+    "code": "FWC19",
+    "country": "FIFA",
+    "group": "Especiales",
+    "section": "FWC",
+    "number": 19
+  },
+  {
+    "code": "MEX1",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "MEX2",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "MEX3",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "MEX4",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "MEX5",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "MEX6",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "MEX7",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "MEX8",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "MEX9",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "MEX10",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "MEX11",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "MEX12",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "MEX13",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "MEX14",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "MEX15",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "MEX16",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "MEX17",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "MEX18",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "MEX19",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "MEX20",
+    "country": "Mexico",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "RSA1",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "RSA2",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "RSA3",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "RSA4",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "RSA5",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "RSA6",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "RSA7",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "RSA8",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "RSA9",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "RSA10",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "RSA11",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "RSA12",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "RSA13",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "RSA14",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "RSA15",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "RSA16",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "RSA17",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "RSA18",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "RSA19",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "RSA20",
+    "country": "South Africa",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "KOR1",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "KOR2",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "KOR3",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "KOR4",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "KOR5",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "KOR6",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "KOR7",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "KOR8",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "KOR9",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "KOR10",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "KOR11",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "KOR12",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "KOR13",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "KOR14",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "KOR15",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "KOR16",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "KOR17",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "KOR18",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "KOR19",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "KOR20",
+    "country": "Korea Republic",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "CZE1",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "CZE2",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "CZE3",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "CZE4",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "CZE5",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "CZE6",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "CZE7",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "CZE8",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "CZE9",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "CZE10",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "CZE11",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "CZE12",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "CZE13",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "CZE14",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "CZE15",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "CZE16",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "CZE17",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "CZE18",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "CZE19",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "CZE20",
+    "country": "Czechia",
+    "group": "Grupo A",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "CAN1",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "CAN2",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "CAN3",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "CAN4",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "CAN5",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "CAN6",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "CAN7",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "CAN8",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "CAN9",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "CAN10",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "CAN11",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "CAN12",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "CAN13",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "CAN14",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "CAN15",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "CAN16",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "CAN17",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "CAN18",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "CAN19",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "CAN20",
+    "country": "Canada",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "BIH1",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "BIH2",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "BIH3",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "BIH4",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "BIH5",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "BIH6",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "BIH7",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "BIH8",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "BIH9",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "BIH10",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "BIH11",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "BIH12",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "BIH13",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "BIH14",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "BIH15",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "BIH16",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "BIH17",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "BIH18",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "BIH19",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "BIH20",
+    "country": "Bosnia-Herzegovina",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "QAT1",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "QAT2",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "QAT3",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "QAT4",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "QAT5",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "QAT6",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "QAT7",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "QAT8",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "QAT9",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "QAT10",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "QAT11",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "QAT12",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "QAT13",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "QAT14",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "QAT15",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "QAT16",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "QAT17",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "QAT18",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "QAT19",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "QAT20",
+    "country": "Qatar",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "SUI1",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "SUI2",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "SUI3",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "SUI4",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "SUI5",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "SUI6",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "SUI7",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "SUI8",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "SUI9",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "SUI10",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "SUI11",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "SUI12",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "SUI13",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "SUI14",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "SUI15",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "SUI16",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "SUI17",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "SUI18",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "SUI19",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "SUI20",
+    "country": "Switzerland",
+    "group": "Grupo B",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "BRA1",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "BRA2",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "BRA3",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "BRA4",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "BRA5",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "BRA6",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "BRA7",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "BRA8",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "BRA9",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "BRA10",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "BRA11",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "BRA12",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "BRA13",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "BRA14",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "BRA15",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "BRA16",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "BRA17",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "BRA18",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "BRA19",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "BRA20",
+    "country": "Brazil",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "MAR1",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "MAR2",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "MAR3",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "MAR4",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "MAR5",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "MAR6",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "MAR7",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "MAR8",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "MAR9",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "MAR10",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "MAR11",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "MAR12",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "MAR13",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "MAR14",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "MAR15",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "MAR16",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "MAR17",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "MAR18",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "MAR19",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "MAR20",
+    "country": "Morocco",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "HAI1",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "HAI2",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "HAI3",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "HAI4",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "HAI5",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "HAI6",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "HAI7",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "HAI8",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "HAI9",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "HAI10",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "HAI11",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "HAI12",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "HAI13",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "HAI14",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "HAI15",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "HAI16",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "HAI17",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "HAI18",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "HAI19",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "HAI20",
+    "country": "Haiti",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "SCO1",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "SCO2",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "SCO3",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "SCO4",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "SCO5",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "SCO6",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "SCO7",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "SCO8",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "SCO9",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "SCO10",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "SCO11",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "SCO12",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "SCO13",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "SCO14",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "SCO15",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "SCO16",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "SCO17",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "SCO18",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "SCO19",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "SCO20",
+    "country": "Scotland",
+    "group": "Grupo C",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "USA1",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "USA2",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "USA3",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "USA4",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "USA5",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "USA6",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "USA7",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "USA8",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "USA9",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "USA10",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "USA11",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "USA12",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "USA13",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "USA14",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "USA15",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "USA16",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "USA17",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "USA18",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "USA19",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "USA20",
+    "country": "USA",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "PAR1",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "PAR2",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "PAR3",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "PAR4",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "PAR5",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "PAR6",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "PAR7",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "PAR8",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "PAR9",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "PAR10",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "PAR11",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "PAR12",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "PAR13",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "PAR14",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "PAR15",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "PAR16",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "PAR17",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "PAR18",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "PAR19",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "PAR20",
+    "country": "Paraguay",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "AUS1",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "AUS2",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "AUS3",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "AUS4",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "AUS5",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "AUS6",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "AUS7",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "AUS8",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "AUS9",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "AUS10",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "AUS11",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "AUS12",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "AUS13",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "AUS14",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "AUS15",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "AUS16",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "AUS17",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "AUS18",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "AUS19",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "AUS20",
+    "country": "Australia",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "TUR1",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "TUR2",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "TUR3",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "TUR4",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "TUR5",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "TUR6",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "TUR7",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "TUR8",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "TUR9",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "TUR10",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "TUR11",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "TUR12",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "TUR13",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "TUR14",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "TUR15",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "TUR16",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "TUR17",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "TUR18",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "TUR19",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "TUR20",
+    "country": "Türkiye",
+    "group": "Grupo D",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "GER1",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "GER2",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "GER3",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "GER4",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "GER5",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "GER6",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "GER7",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "GER8",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "GER9",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "GER10",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "GER11",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "GER12",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "GER13",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "GER14",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "GER15",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "GER16",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "GER17",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "GER18",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "GER19",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "GER20",
+    "country": "Germany",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "CUW1",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "CUW2",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "CUW3",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "CUW4",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "CUW5",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "CUW6",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "CUW7",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "CUW8",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "CUW9",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "CUW10",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "CUW11",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "CUW12",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "CUW13",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "CUW14",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "CUW15",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "CUW16",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "CUW17",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "CUW18",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "CUW19",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "CUW20",
+    "country": "Curaçao",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "CIV1",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "CIV2",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "CIV3",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "CIV4",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "CIV5",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "CIV6",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "CIV7",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "CIV8",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "CIV9",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "CIV10",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "CIV11",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "CIV12",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "CIV13",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "CIV14",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "CIV15",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "CIV16",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "CIV17",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "CIV18",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "CIV19",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "CIV20",
+    "country": "Côte d'Ivoire",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "ECU1",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "ECU2",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "ECU3",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "ECU4",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "ECU5",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "ECU6",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "ECU7",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "ECU8",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "ECU9",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "ECU10",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "ECU11",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "ECU12",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "ECU13",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "ECU14",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "ECU15",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "ECU16",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "ECU17",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "ECU18",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "ECU19",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "ECU20",
+    "country": "Ecuador",
+    "group": "Grupo E",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "NED1",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "NED2",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "NED3",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "NED4",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "NED5",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "NED6",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "NED7",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "NED8",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "NED9",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "NED10",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "NED11",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "NED12",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "NED13",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "NED14",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "NED15",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "NED16",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "NED17",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "NED18",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "NED19",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "NED20",
+    "country": "Netherlands",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "JPN1",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "JPN2",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "JPN3",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "JPN4",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "JPN5",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "JPN6",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "JPN7",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "JPN8",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "JPN9",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "JPN10",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "JPN11",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "JPN12",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "JPN13",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "JPN14",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "JPN15",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "JPN16",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "JPN17",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "JPN18",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "JPN19",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "JPN20",
+    "country": "Japan",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "SWE1",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "SWE2",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "SWE3",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "SWE4",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "SWE5",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "SWE6",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "SWE7",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "SWE8",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "SWE9",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "SWE10",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "SWE11",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "SWE12",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "SWE13",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "SWE14",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "SWE15",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "SWE16",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "SWE17",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "SWE18",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "SWE19",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "SWE20",
+    "country": "Sweden",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "TUN1",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "TUN2",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "TUN3",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "TUN4",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "TUN5",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "TUN6",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "TUN7",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "TUN8",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "TUN9",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "TUN10",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "TUN11",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "TUN12",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "TUN13",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "TUN14",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "TUN15",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "TUN16",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "TUN17",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "TUN18",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "TUN19",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "TUN20",
+    "country": "Tunisia",
+    "group": "Grupo F",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "BEL1",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "BEL2",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "BEL3",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "BEL4",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "BEL5",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "BEL6",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "BEL7",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "BEL8",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "BEL9",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "BEL10",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "BEL11",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "BEL12",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "BEL13",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "BEL14",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "BEL15",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "BEL16",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "BEL17",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "BEL18",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "BEL19",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "BEL20",
+    "country": "Belgium",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "EGY1",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "EGY2",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "EGY3",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "EGY4",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "EGY5",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "EGY6",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "EGY7",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "EGY8",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "EGY9",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "EGY10",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "EGY11",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "EGY12",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "EGY13",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "EGY14",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "EGY15",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "EGY16",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "EGY17",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "EGY18",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "EGY19",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "EGY20",
+    "country": "Egypt",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "IRN1",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "IRN2",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "IRN3",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "IRN4",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "IRN5",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "IRN6",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "IRN7",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "IRN8",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "IRN9",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "IRN10",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "IRN11",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "IRN12",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "IRN13",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "IRN14",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "IRN15",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "IRN16",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "IRN17",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "IRN18",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "IRN19",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "IRN20",
+    "country": "IR Iran",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "NZL1",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "NZL2",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "NZL3",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "NZL4",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "NZL5",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "NZL6",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "NZL7",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "NZL8",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "NZL9",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "NZL10",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "NZL11",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "NZL12",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "NZL13",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "NZL14",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "NZL15",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "NZL16",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "NZL17",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "NZL18",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "NZL19",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "NZL20",
+    "country": "New Zealand",
+    "group": "Grupo G",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "ESP1",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "ESP2",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "ESP3",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "ESP4",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "ESP5",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "ESP6",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "ESP7",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "ESP8",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "ESP9",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "ESP10",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "ESP11",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "ESP12",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "ESP13",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "ESP14",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "ESP15",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "ESP16",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "ESP17",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "ESP18",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "ESP19",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "ESP20",
+    "country": "Spain",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "CPV1",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "CPV2",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "CPV3",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "CPV4",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "CPV5",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "CPV6",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "CPV7",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "CPV8",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "CPV9",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "CPV10",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "CPV11",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "CPV12",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "CPV13",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "CPV14",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "CPV15",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "CPV16",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "CPV17",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "CPV18",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "CPV19",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "CPV20",
+    "country": "Cabo Verde",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "KSA1",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "KSA2",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "KSA3",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "KSA4",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "KSA5",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "KSA6",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "KSA7",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "KSA8",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "KSA9",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "KSA10",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "KSA11",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "KSA12",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "KSA13",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "KSA14",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "KSA15",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "KSA16",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "KSA17",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "KSA18",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "KSA19",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "KSA20",
+    "country": "Saudi Arabia",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "URU1",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "URU2",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "URU3",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "URU4",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "URU5",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "URU6",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "URU7",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "URU8",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "URU9",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "URU10",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "URU11",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "URU12",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "URU13",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "URU14",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "URU15",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "URU16",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "URU17",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "URU18",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "URU19",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "URU20",
+    "country": "Uruguay",
+    "group": "Grupo H",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "FRA1",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "FRA2",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "FRA3",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "FRA4",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "FRA5",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "FRA6",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "FRA7",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "FRA8",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "FRA9",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "FRA10",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "FRA11",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "FRA12",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "FRA13",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "FRA14",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "FRA15",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "FRA16",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "FRA17",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "FRA18",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "FRA19",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "FRA20",
+    "country": "France",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "SEN1",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "SEN2",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "SEN3",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "SEN4",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "SEN5",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "SEN6",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "SEN7",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "SEN8",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "SEN9",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "SEN10",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "SEN11",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "SEN12",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "SEN13",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "SEN14",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "SEN15",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "SEN16",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "SEN17",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "SEN18",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "SEN19",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "SEN20",
+    "country": "Senegal",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "IRQ1",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "IRQ2",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "IRQ3",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "IRQ4",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "IRQ5",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "IRQ6",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "IRQ7",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "IRQ8",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "IRQ9",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "IRQ10",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "IRQ11",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "IRQ12",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "IRQ13",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "IRQ14",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "IRQ15",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "IRQ16",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "IRQ17",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "IRQ18",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "IRQ19",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "IRQ20",
+    "country": "Iraq",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "NOR1",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "NOR2",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "NOR3",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "NOR4",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "NOR5",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "NOR6",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "NOR7",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "NOR8",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "NOR9",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "NOR10",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "NOR11",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "NOR12",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "NOR13",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "NOR14",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "NOR15",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "NOR16",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "NOR17",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "NOR18",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "NOR19",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "NOR20",
+    "country": "Norway",
+    "group": "Grupo I",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "ARG1",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "ARG2",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "ARG3",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "ARG4",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "ARG5",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "ARG6",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "ARG7",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "ARG8",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "ARG9",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "ARG10",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "ARG11",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "ARG12",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "ARG13",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "ARG14",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "ARG15",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "ARG16",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "ARG17",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "ARG18",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "ARG19",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "ARG20",
+    "country": "Argentina",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "ALG1",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "ALG2",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "ALG3",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "ALG4",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "ALG5",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "ALG6",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "ALG7",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "ALG8",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "ALG9",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "ALG10",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "ALG11",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "ALG12",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "ALG13",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "ALG14",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "ALG15",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "ALG16",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "ALG17",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "ALG18",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "ALG19",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "ALG20",
+    "country": "Algeria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "AUT1",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "AUT2",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "AUT3",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "AUT4",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "AUT5",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "AUT6",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "AUT7",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "AUT8",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "AUT9",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "AUT10",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "AUT11",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "AUT12",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "AUT13",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "AUT14",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "AUT15",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "AUT16",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "AUT17",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "AUT18",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "AUT19",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "AUT20",
+    "country": "Austria",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "JOR1",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "JOR2",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "JOR3",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "JOR4",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "JOR5",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "JOR6",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "JOR7",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "JOR8",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "JOR9",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "JOR10",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "JOR11",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "JOR12",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "JOR13",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "JOR14",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "JOR15",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "JOR16",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "JOR17",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "JOR18",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "JOR19",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "JOR20",
+    "country": "Jordan",
+    "group": "Grupo J",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "POR1",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "POR2",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "POR3",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "POR4",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "POR5",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "POR6",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "POR7",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "POR8",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "POR9",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "POR10",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "POR11",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "POR12",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "POR13",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "POR14",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "POR15",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "POR16",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "POR17",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "POR18",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "POR19",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "POR20",
+    "country": "Portugal",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "COD1",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "COD2",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "COD3",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "COD4",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "COD5",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "COD6",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "COD7",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "COD8",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "COD9",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "COD10",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "COD11",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "COD12",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "COD13",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "COD14",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "COD15",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "COD16",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "COD17",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "COD18",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "COD19",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "COD20",
+    "country": "Congo DR",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "UZB1",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "UZB2",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "UZB3",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "UZB4",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "UZB5",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "UZB6",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "UZB7",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "UZB8",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "UZB9",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "UZB10",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "UZB11",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "UZB12",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "UZB13",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "UZB14",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "UZB15",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "UZB16",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "UZB17",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "UZB18",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "UZB19",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "UZB20",
+    "country": "Uzbekistan",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "COL1",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "COL2",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "COL3",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "COL4",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "COL5",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "COL6",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "COL7",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "COL8",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "COL9",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "COL10",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "COL11",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "COL12",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "COL13",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "COL14",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "COL15",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "COL16",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "COL17",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "COL18",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "COL19",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "COL20",
+    "country": "Colombia",
+    "group": "Grupo K",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "ENG1",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "ENG2",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "ENG3",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "ENG4",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "ENG5",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "ENG6",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "ENG7",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "ENG8",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "ENG9",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "ENG10",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "ENG11",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "ENG12",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "ENG13",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "ENG14",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "ENG15",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "ENG16",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "ENG17",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "ENG18",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "ENG19",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "ENG20",
+    "country": "England",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "CRO1",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "CRO2",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "CRO3",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "CRO4",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "CRO5",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "CRO6",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "CRO7",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "CRO8",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "CRO9",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "CRO10",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "CRO11",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "CRO12",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "CRO13",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "CRO14",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "CRO15",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "CRO16",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "CRO17",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "CRO18",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "CRO19",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "CRO20",
+    "country": "Croatia",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "GHA1",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "GHA2",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "GHA3",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "GHA4",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "GHA5",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "GHA6",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "GHA7",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "GHA8",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "GHA9",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "GHA10",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "GHA11",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "GHA12",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "GHA13",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "GHA14",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "GHA15",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "GHA16",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "GHA17",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "GHA18",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "GHA19",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "GHA20",
+    "country": "Ghana",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "PAN1",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 1,
+    "displayName": "Team badge"
+  },
+  {
+    "code": "PAN2",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 2
+  },
+  {
+    "code": "PAN3",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 3
+  },
+  {
+    "code": "PAN4",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 4
+  },
+  {
+    "code": "PAN5",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 5
+  },
+  {
+    "code": "PAN6",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 6
+  },
+  {
+    "code": "PAN7",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 7
+  },
+  {
+    "code": "PAN8",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 8
+  },
+  {
+    "code": "PAN9",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 9
+  },
+  {
+    "code": "PAN10",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 10
+  },
+  {
+    "code": "PAN11",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 11
+  },
+  {
+    "code": "PAN12",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 12
+  },
+  {
+    "code": "PAN13",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 13
+  },
+  {
+    "code": "PAN14",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 14
+  },
+  {
+    "code": "PAN15",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 15
+  },
+  {
+    "code": "PAN16",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 16
+  },
+  {
+    "code": "PAN17",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 17
+  },
+  {
+    "code": "PAN18",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 18
+  },
+  {
+    "code": "PAN19",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 19
+  },
+  {
+    "code": "PAN20",
+    "country": "Panama",
+    "group": "Grupo L",
+    "section": "Team",
+    "number": 20
+  },
+  {
+    "code": "CC1",
+    "country": "Coca-Cola",
+    "group": "Especiales",
+    "section": "Coca-Cola",
+    "number": 1
+  },
+  {
+    "code": "CC2",
+    "country": "Coca-Cola",
+    "group": "Especiales",
+    "section": "Coca-Cola",
+    "number": 2
+  },
+  {
+    "code": "CC3",
+    "country": "Coca-Cola",
+    "group": "Especiales",
+    "section": "Coca-Cola",
+    "number": 3
+  },
+  {
+    "code": "CC4",
+    "country": "Coca-Cola",
+    "group": "Especiales",
+    "section": "Coca-Cola",
+    "number": 4
+  },
+  {
+    "code": "CC5",
+    "country": "Coca-Cola",
+    "group": "Especiales",
+    "section": "Coca-Cola",
+    "number": 5
+  },
+  {
+    "code": "CC6",
+    "country": "Coca-Cola",
+    "group": "Especiales",
+    "section": "Coca-Cola",
+    "number": 6
+  },
+  {
+    "code": "CC7",
+    "country": "Coca-Cola",
+    "group": "Especiales",
+    "section": "Coca-Cola",
+    "number": 7
+  },
+  {
+    "code": "CC8",
+    "country": "Coca-Cola",
+    "group": "Especiales",
+    "section": "Coca-Cola",
+    "number": 8
+  },
+  {
+    "code": "CC9",
+    "country": "Coca-Cola",
+    "group": "Especiales",
+    "section": "Coca-Cola",
+    "number": 9
+  },
+  {
+    "code": "CC10",
+    "country": "Coca-Cola",
+    "group": "Especiales",
+    "section": "Coca-Cola",
+    "number": 10
+  },
+  {
+    "code": "CC11",
+    "country": "Coca-Cola",
+    "group": "Especiales",
+    "section": "Coca-Cola",
+    "number": 11
+  },
+  {
+    "code": "CC12",
+    "country": "Coca-Cola",
+    "group": "Especiales",
+    "section": "Coca-Cola",
+    "number": 12
+  },
+  {
+    "code": "CC13",
+    "country": "Coca-Cola",
+    "group": "Especiales",
+    "section": "Coca-Cola",
+    "number": 13
+  },
+  {
+    "code": "CC14",
+    "country": "Coca-Cola",
+    "group": "Especiales",
+    "section": "Coca-Cola",
+    "number": 14
+  }
+]
