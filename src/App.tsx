@@ -70,7 +70,18 @@ function App() {
   const [activeView, setActiveView] = useState<View>("dashboard");
   const [selectedCollection, setSelectedCollection] = useState("");
   const [filters, setFilters] = useState<Filters>(emptyFilters);
-  const { addTrade, deleteTrade, progress, setProgress, syncStatus, tradeHistory } = useAlbumData({
+  const {
+    addTrade,
+    combineLocalAndCloudData,
+    deleteTrade,
+    migrationPrompt,
+    progress,
+    setProgress,
+    syncStatus,
+    tradeHistory,
+    uploadLocalData,
+    useCloudData,
+  } = useAlbumData({
     isCloudEnabled: auth.isConfigured,
     userId: auth.user?.id,
   });
@@ -146,6 +157,14 @@ function App() {
         onSendMagicLink={auth.sendMagicLink}
         onSignOut={auth.signOut}
       />
+      {migrationPrompt ? (
+        <MigrationPanel
+          type={migrationPrompt.type}
+          onCombine={combineLocalAndCloudData}
+          onUploadLocal={uploadLocalData}
+          onUseCloud={useCloudData}
+        />
+      ) : null}
 
       <nav className="tab-bar" aria-label="Vistas del álbum">
         {views.map((view) => (
@@ -305,6 +324,46 @@ function AuthPanel({
         Enviar enlace mágico
       </button>
       {authMessage ? <p>{authMessage}</p> : null}
+    </section>
+  );
+}
+
+function MigrationPanel({
+  type,
+  onCombine,
+  onUploadLocal,
+  onUseCloud,
+}: {
+  type: "upload-local" | "resolve-conflict";
+  onCombine: () => void;
+  onUploadLocal: () => void;
+  onUseCloud: () => void;
+}) {
+  return (
+    <section className="migration-panel">
+      <div>
+        <strong>{type === "upload-local" ? "Datos locales encontrados" : "Datos locales y de nube encontrados"}</strong>
+        <p>
+          {type === "upload-local"
+            ? "Puedes subir tu progreso local a la nube. El almacenamiento local se conserva como respaldo."
+            : "Elige cómo resolver la diferencia. El almacenamiento local se conserva como respaldo."}
+        </p>
+      </div>
+      <div className="quick-actions">
+        {type === "resolve-conflict" ? (
+          <button className="ghost-button" onClick={onUseCloud}>
+            Usar nube
+          </button>
+        ) : null}
+        <button className="ghost-button" onClick={onUploadLocal}>
+          {type === "upload-local" ? "Subir datos locales a la nube" : "Subir local"}
+        </button>
+        {type === "resolve-conflict" ? (
+          <button className="primary-button" onClick={onCombine}>
+            Combinar
+          </button>
+        ) : null}
+      </div>
     </section>
   );
 }
