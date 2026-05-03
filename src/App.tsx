@@ -395,6 +395,7 @@ function AuthPanel({
   onSyncNow: () => Promise<void>;
 }) {
   const [email, setEmail] = useState("");
+  const [manualSyncMessage, setManualSyncMessage] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
   const trimmedEmail = email.trim();
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail);
   const showEmailError = trimmedEmail.length > 0 && !isEmailValid;
@@ -407,6 +408,19 @@ function AuthPanel({
     saving: "Guardando en la nube...",
   };
   const syncLabel = syncLabels[syncStatus];
+  const handleSyncNow = async () => {
+    setManualSyncMessage({ type: "info", text: "Sincronizando ahora..." });
+
+    try {
+      await onSyncNow();
+      setManualSyncMessage({ type: "success", text: "Progreso sincronizado en la nube." });
+      window.setTimeout(() => {
+        setManualSyncMessage((current) => (current?.text === "Progreso sincronizado en la nube." ? null : current));
+      }, 4200);
+    } catch {
+      setManualSyncMessage({ type: "error", text: "No se pudo sincronizar. Tus cambios siguen guardados en este dispositivo." });
+    }
+  };
 
   if (!isConfigured) {
     return (
@@ -432,13 +446,22 @@ function AuthPanel({
           <strong>Sesión iniciada como {userEmail}</strong>
         </div>
         <div className="sync-actions">
-          <button className="primary-button small" onClick={onSyncNow} disabled={!hasPendingCloudChanges || syncStatus === "saving" || syncStatus === "loading"}>
+          <button
+            className="primary-button small"
+            onClick={() => void handleSyncNow()}
+            disabled={!hasPendingCloudChanges || syncStatus === "saving" || syncStatus === "loading"}
+          >
             Sincronizar ahora
           </button>
           <button className="ghost-button small" onClick={onSignOut}>
             Cerrar sesión
           </button>
         </div>
+        {manualSyncMessage ? (
+          <p className={manualSyncMessage.type === "error" ? "warning-message compact-message" : "toast-message compact-message"}>
+            {manualSyncMessage.text}
+          </p>
+        ) : null}
         {authMessage ? <p>{authMessage}</p> : null}
       </section>
     );

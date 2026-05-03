@@ -197,6 +197,10 @@ h3 {
   gap: 8px;
 }
 
+.compact-message {
+  padding: 10px 12px;
+}
+
 .auth-email-field {
   text-transform: none;
 }

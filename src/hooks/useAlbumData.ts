@@ -124,7 +124,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
   );
 
   const flushPendingProgress = useCallback(
-    async (progressOverride?: Progress) => {
+    async (progressOverride?: Progress, shouldThrow = false) => {
       if (!isCloudEnabled || !userId || !hasLoadedRemote.current) {
         return;
       }
@@ -160,10 +160,14 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
           setSyncStatus("pending");
           saveAgainAfterCurrent.current = true;
         }
-      } catch {
+      } catch (error) {
         saveAgainAfterCurrent.current = false;
         updatePendingCloudChanges(true);
         setSyncStatus("error");
+
+        if (shouldThrow) {
+          throw error;
+        }
       } finally {
         isSavingProgress.current = false;
 
@@ -423,7 +427,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     migrationPrompt,
     progress,
     setProgress,
-    syncNow: flushPendingProgress,
+    syncNow: () => flushPendingProgress(undefined, true),
     syncStatus,
     tradeHistory,
     uploadLocalData,
