@@ -191,6 +191,12 @@ h3 {
   font-weight: 750;
 }
 
+.sync-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .auth-email-field {
   text-transform: none;
 }

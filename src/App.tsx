@@ -111,9 +111,11 @@ function App() {
     addTrade,
     combineLocalAndCloudData,
     deleteTrade,
+    hasPendingCloudChanges,
     migrationPrompt,
     progress,
     setProgress,
+    syncNow,
     syncStatus,
     tradeHistory,
     uploadLocalData,
@@ -166,6 +168,18 @@ function App() {
     });
   };
 
+  const setQuantities = (updates: Progress) => {
+    setProgress((current) => {
+      const nextProgress = { ...current };
+
+      Object.entries(updates).forEach(([code, quantity]) => {
+        nextProgress[code] = Math.max(0, Math.floor(quantity));
+      });
+
+      return nextProgress;
+    });
+  };
+
   if (catalogError) {
     return (
       <main className="app-shell">
@@ -201,10 +215,12 @@ function App() {
         authMessage={auth.authMessage}
         isConfigured={auth.isConfigured}
         isLoading={auth.isLoading}
+        hasPendingCloudChanges={hasPendingCloudChanges}
         syncStatus={syncStatus}
         userEmail={auth.user?.email}
         onSendMagicLink={auth.sendMagicLink}
         onSignOut={auth.signOut}
+        onSyncNow={syncNow}
       />
       {migrationPrompt ? (
         <MigrationPanel
@@ -259,6 +275,7 @@ function App() {
           progress={progress}
           onFiltersChange={setFilters}
           onSetQuantity={setQuantity}
+          onSetQuantities={setQuantities}
         />
       ) : null}
       {activeView === "faltantes" ? (
@@ -358,33 +375,38 @@ function AppFooter() {
 
 function AuthPanel({
   authMessage,
+  hasPendingCloudChanges,
   isConfigured,
   isLoading,
   syncStatus,
   userEmail,
   onSendMagicLink,
   onSignOut,
+  onSyncNow,
 }: {
   authMessage: string;
+  hasPendingCloudChanges: boolean;
   isConfigured: boolean;
   isLoading: boolean;
   syncStatus: SyncStatus;
   userEmail?: string;
   onSendMagicLink: (email: string) => Promise<void>;
   onSignOut: () => Promise<void>;
+  onSyncNow: () => Promise<void>;
 }) {
   const [email, setEmail] = useState("");
   const trimmedEmail = email.trim();
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail);
   const showEmailError = trimmedEmail.length > 0 && !isEmailValid;
-  const syncLabel =
-    syncStatus === "saving"
-      ? "Guardando..."
-      : syncStatus === "cloud"
-        ? "Guardado en la nube"
-        : syncStatus === "error"
-          ? "Error al sincronizar"
-          : "Usando almacenamiento local";
+  const syncLabels: Record<SyncStatus, string> = {
+    cloud: "Guardado en la nube",
+    error: "Error al sincronizar",
+    loading: "Cargando nube...",
+    local: "Usando almacenamiento local",
+    pending: "Cambios pendientes",
+    saving: "Guardando en la nube...",
+  };
+  const syncLabel = syncLabels[syncStatus];
 
   if (!isConfigured) {
     return (
@@ -409,9 +431,14 @@ function AuthPanel({
           <span>{syncLabel}</span>
           <strong>Sesión iniciada como {userEmail}</strong>
         </div>
-        <button className="ghost-button small" onClick={onSignOut}>
-          Cerrar sesión
-        </button>
+        <div className="sync-actions">
+          <button className="primary-button small" onClick={onSyncNow} disabled={!hasPendingCloudChanges || syncStatus === "saving" || syncStatus === "loading"}>
+            Sincronizar ahora
+          </button>
+          <button className="ghost-button small" onClick={onSignOut}>
+            Cerrar sesión
+          </button>
+        </div>
         {authMessage ? <p>{authMessage}</p> : null}
       </section>
     );
@@ -597,6 +624,7 @@ function RegistroView({
   progress,
   onFiltersChange,
   onSetQuantity,
+  onSetQuantities,
 }: {
   catalog: Sticker[];
   filters: Filters;
@@ -604,11 +632,12 @@ function RegistroView({
   progress: Progress;
   onFiltersChange: (filters: Filters) => void;
   onSetQuantity: (code: string, quantity: number) => void;
+  onSetQuantities: (updates: Progress) => void;
 }) {
   return (
     <section className="view-stack">
       <FilterBar catalog={catalog} filters={filters} onChange={onFiltersChange} />
-      <BulkRegisterPanel catalog={catalog} stickers={filteredStickers} progress={progress} onSetQuantity={onSetQuantity} />
+      <BulkRegisterPanel catalog={catalog} stickers={filteredStickers} progress={progress} onSetQuantities={onSetQuantities} />
       <div className="section-heading">
         <h2>Registro</h2>
         <span>{filteredStickers.length} estampas</span>
@@ -622,12 +651,12 @@ function BulkRegisterPanel({
   catalog,
   stickers,
   progress,
-  onSetQuantity,
+  onSetQuantities,
 }: {
   catalog: Sticker[];
   stickers: Sticker[];
   progress: Progress;
-  onSetQuantity: (code: string, quantity: number) => void;
+  onSetQuantities: (updates: Progress) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [bulkText, setBulkText] = useState("");
@@ -673,10 +702,10 @@ function BulkRegisterPanel({
       return;
     }
 
-    entries.forEach(([code, amount]) => {
+    const updates = entries.reduce<Progress>((nextUpdates, [code, amount]) => {
       const currentQuantity = getStickerQuantity(code, progress);
       const explicitQuantity = parsedBulk.quantities[code];
-      const nextQuantity =
+      nextUpdates[code] =
         bulkAction === "increment"
           ? currentQuantity + amount
           : bulkAction === "owned"
@@ -685,8 +714,10 @@ function BulkRegisterPanel({
               ? 0
               : Math.max(0, Math.floor(explicitQuantity ?? fixedQuantity));
 
-      onSetQuantity(code, nextQuantity);
-    });
+      return nextUpdates;
+    }, {});
+
+    onSetQuantities(updates);
 
     notifyBulk(`${selectedTotal} ${selectedTotal === 1 ? "estampa actualizada" : "estampas actualizadas"}.`);
   };

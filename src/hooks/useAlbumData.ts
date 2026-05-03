@@ -1,10 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Progress, TradeRecord } from "../types";
 import { loadRemoteProgress, saveRemoteProgress } from "../lib/remoteProgress";
 import { deleteRemoteTrade, insertRemoteTrade, loadRemoteTrades } from "../lib/remoteTrades";
 import { STORAGE_KEY, TRADE_HISTORY_STORAGE_KEY } from "../lib/album";
 
-export type SyncStatus = "local" | "loading" | "saving" | "cloud" | "error";
+const CLOUD_SYNC_DEBOUNCE_MS = 7000;
+const UNSYNCED_CHANGES_MESSAGE = "Tienes cambios guardados en este dispositivo, pero aún no sincronizados en la nube.";
+
+export type SyncStatus = "local" | "loading" | "pending" | "saving" | "cloud" | "error";
 export type MigrationPrompt =
   | {
       type: "upload-local";
@@ -83,11 +86,104 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
   const [tradeHistory, setTradeHistory] = useState<TradeRecord[]>(() => readLocalTrades());
   const [migrationPrompt, setMigrationPrompt] = useState<MigrationPrompt | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("local");
+  const [hasPendingCloudChanges, setHasPendingCloudChanges] = useState(false);
   const hasLoadedRemote = useRef(false);
   const lastSavedProgress = useRef("");
+  const latestProgress = useRef(progress);
+  const latestSerializedProgress = useRef(JSON.stringify(progress));
+  const saveTimerId = useRef<number | null>(null);
+  const isSavingProgress = useRef(false);
+  const saveAgainAfterCurrent = useRef(false);
+  const hasPendingCloudChangesRef = useRef(false);
+  const flushPendingProgressRef = useRef<() => Promise<void>>(async () => {});
+
+  latestProgress.current = progress;
+  latestSerializedProgress.current = JSON.stringify(progress);
+
+  const clearSaveTimer = useCallback(() => {
+    if (saveTimerId.current) {
+      window.clearTimeout(saveTimerId.current);
+      saveTimerId.current = null;
+    }
+  }, []);
+
+  const updatePendingCloudChanges = useCallback((isPending: boolean) => {
+    hasPendingCloudChangesRef.current = isPending;
+    setHasPendingCloudChanges(isPending);
+  }, []);
+
+  const schedulePendingSave = useCallback(
+    (delay = CLOUD_SYNC_DEBOUNCE_MS) => {
+      clearSaveTimer();
+      saveTimerId.current = window.setTimeout(() => {
+        saveTimerId.current = null;
+        void flushPendingProgressRef.current();
+      }, delay);
+    },
+    [clearSaveTimer],
+  );
+
+  const flushPendingProgress = useCallback(
+    async (progressOverride?: Progress) => {
+      if (!isCloudEnabled || !userId || !hasLoadedRemote.current) {
+        return;
+      }
+
+      if (isSavingProgress.current) {
+        saveAgainAfterCurrent.current = true;
+        return;
+      }
+
+      const progressToSave = progressOverride ?? latestProgress.current;
+      const serializedProgress = JSON.stringify(progressToSave);
+
+      if (serializedProgress === lastSavedProgress.current && !hasPendingCloudChangesRef.current) {
+        updatePendingCloudChanges(false);
+        setSyncStatus("cloud");
+        return;
+      }
+
+      clearSaveTimer();
+      isSavingProgress.current = true;
+      setSyncStatus("saving");
+
+      try {
+        await saveRemoteProgress(userId, progressToSave);
+        lastSavedProgress.current = serializedProgress;
+
+        if (latestSerializedProgress.current === serializedProgress) {
+          saveAgainAfterCurrent.current = false;
+          updatePendingCloudChanges(false);
+          setSyncStatus("cloud");
+        } else {
+          updatePendingCloudChanges(true);
+          setSyncStatus("pending");
+          saveAgainAfterCurrent.current = true;
+        }
+      } catch {
+        saveAgainAfterCurrent.current = false;
+        updatePendingCloudChanges(true);
+        setSyncStatus("error");
+      } finally {
+        isSavingProgress.current = false;
+
+        if (saveAgainAfterCurrent.current && latestSerializedProgress.current !== lastSavedProgress.current) {
+          saveAgainAfterCurrent.current = false;
+          schedulePendingSave(0);
+        }
+      }
+    },
+    [clearSaveTimer, isCloudEnabled, schedulePendingSave, updatePendingCloudChanges, userId],
+  );
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    flushPendingProgressRef.current = flushPendingProgress;
+  }, [flushPendingProgress]);
+
+  useEffect(() => () => clearSaveTimer(), [clearSaveTimer]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, latestSerializedProgress.current);
   }, [progress]);
 
   useEffect(() => {
@@ -95,8 +191,10 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
   }, [tradeHistory]);
 
   useEffect(() => {
+    clearSaveTimer();
     hasLoadedRemote.current = false;
     lastSavedProgress.current = "";
+    updatePendingCloudChanges(false);
     setMigrationPrompt(null);
 
     if (!isCloudEnabled || !userId) {
@@ -129,6 +227,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
             remoteTrades,
           });
           lastSavedProgress.current = JSON.stringify(localProgress);
+          updatePendingCloudChanges(false);
         } else if (localHasData && remoteHasData) {
           setMigrationPrompt({
             type: "resolve-conflict",
@@ -138,12 +237,15 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
             remoteTrades,
           });
           lastSavedProgress.current = JSON.stringify(localProgress);
+          updatePendingCloudChanges(false);
         } else if (remoteHasData) {
           setProgress(normalizedRemoteProgress);
           setTradeHistory(remoteTrades);
           lastSavedProgress.current = JSON.stringify(normalizedRemoteProgress);
+          updatePendingCloudChanges(false);
         } else {
           lastSavedProgress.current = JSON.stringify(localProgress);
+          updatePendingCloudChanges(false);
         }
 
         hasLoadedRemote.current = true;
@@ -161,47 +263,97 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     return () => {
       isActive = false;
     };
-  }, [isCloudEnabled, userId]);
+  }, [clearSaveTimer, isCloudEnabled, updatePendingCloudChanges, userId]);
 
   useEffect(() => {
     if (!isCloudEnabled || !userId || !hasLoadedRemote.current || migrationPrompt) {
       return;
     }
 
-    const serializedProgress = JSON.stringify(progress);
+    const serializedProgress = latestSerializedProgress.current;
 
     if (serializedProgress === lastSavedProgress.current) {
+      clearSaveTimer();
+      updatePendingCloudChanges(false);
+      if (!isSavingProgress.current) {
+        setSyncStatus("cloud");
+      }
       return;
     }
 
-    setSyncStatus("saving");
+    updatePendingCloudChanges(true);
 
-    const timeoutId = window.setTimeout(() => {
-      saveRemoteProgress(userId, progress)
-        .then(() => {
-          lastSavedProgress.current = serializedProgress;
-          setSyncStatus("cloud");
-        })
-        .catch(() => {
-          setSyncStatus("error");
-        });
-    }, 700);
+    if (!isSavingProgress.current) {
+      setSyncStatus("pending");
+      schedulePendingSave();
+    } else {
+      saveAgainAfterCurrent.current = true;
+    }
+  }, [clearSaveTimer, isCloudEnabled, migrationPrompt, progress, schedulePendingSave, updatePendingCloudChanges, userId]);
+
+  useEffect(() => {
+    if (!isCloudEnabled || !userId || !hasPendingCloudChanges) {
+      return;
+    }
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      void flushPendingProgressRef.current();
+      event.preventDefault();
+      event.returnValue = UNSYNCED_CHANGES_MESSAGE;
+      return UNSYNCED_CHANGES_MESSAGE;
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
-      window.clearTimeout(timeoutId);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [isCloudEnabled, migrationPrompt, progress, userId]);
+  }, [hasPendingCloudChanges, isCloudEnabled, userId]);
+
+  useEffect(() => {
+    if (!isCloudEnabled || !userId) {
+      return;
+    }
+
+    const flushIfPending = () => {
+      if (hasPendingCloudChangesRef.current) {
+        void flushPendingProgressRef.current();
+      }
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        flushIfPending();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pagehide", flushIfPending);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pagehide", flushIfPending);
+    };
+  }, [isCloudEnabled, userId]);
 
   const saveProgressAndTradesRemote = async (nextProgress: Progress, nextTrades: TradeRecord[]) => {
     if (!isCloudEnabled || !userId) {
       return;
     }
 
+    clearSaveTimer();
+    updatePendingCloudChanges(true);
     setSyncStatus("saving");
-    await saveRemoteProgress(userId, nextProgress);
-    await Promise.all(nextTrades.map((trade) => insertRemoteTrade(userId, trade)));
-    lastSavedProgress.current = JSON.stringify(nextProgress);
-    setSyncStatus("cloud");
+    try {
+      await saveRemoteProgress(userId, nextProgress);
+      lastSavedProgress.current = JSON.stringify(nextProgress);
+      updatePendingCloudChanges(false);
+      await Promise.all(nextTrades.map((trade) => insertRemoteTrade(userId, trade)));
+      setSyncStatus("cloud");
+    } catch (error) {
+      updatePendingCloudChanges(JSON.stringify(nextProgress) !== lastSavedProgress.current);
+      setSyncStatus("error");
+      throw error;
+    }
   };
 
   const useCloudData = () => {
@@ -212,7 +364,10 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     setProgress(migrationPrompt.remoteProgress);
     setTradeHistory(migrationPrompt.remoteTrades);
     lastSavedProgress.current = JSON.stringify(migrationPrompt.remoteProgress);
+    clearSaveTimer();
+    updatePendingCloudChanges(false);
     setMigrationPrompt(null);
+    setSyncStatus("cloud");
   };
 
   const uploadLocalData = () => {
@@ -223,9 +378,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     setProgress(migrationPrompt.localProgress);
     setTradeHistory(migrationPrompt.localTrades);
     setMigrationPrompt(null);
-    saveProgressAndTradesRemote(migrationPrompt.localProgress, migrationPrompt.localTrades).catch(() => {
-      setSyncStatus("error");
-    });
+    saveProgressAndTradesRemote(migrationPrompt.localProgress, migrationPrompt.localTrades).catch(() => {});
   };
 
   const combineLocalAndCloudData = () => {
@@ -239,9 +392,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     setProgress(nextProgress);
     setTradeHistory(nextTrades);
     setMigrationPrompt(null);
-    saveProgressAndTradesRemote(nextProgress, nextTrades).catch(() => {
-      setSyncStatus("error");
-    });
+    saveProgressAndTradesRemote(nextProgress, nextTrades).catch(() => {});
   };
 
   const addTrade = (trade: TradeRecord) => {
@@ -268,9 +419,11 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     addTrade,
     combineLocalAndCloudData,
     deleteTrade,
+    hasPendingCloudChanges,
     migrationPrompt,
     progress,
     setProgress,
+    syncNow: flushPendingProgress,
     syncStatus,
     tradeHistory,
     uploadLocalData,
