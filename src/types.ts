@@ -26,6 +26,25 @@ export type TradeRecord = {
   received: TradeItem[];
 };
 
+export type RegistrationEventSource = "manual" | "bulk" | "import" | "reset" | "collection";
+export type RegistrationEventAction = "increment" | "set-owned" | "set-missing" | "set-quantity" | "import" | "reset";
+
+export type RegistrationEventItem = {
+  code: string;
+  before: number;
+  after: number;
+  delta: number;
+};
+
+export type RegistrationEvent = {
+  id: string;
+  createdAt: string;
+  source: RegistrationEventSource;
+  action: RegistrationEventAction;
+  items: RegistrationEventItem[];
+  note?: string;
+};
+
 export type Filters = {
   query: string;
   country: string;

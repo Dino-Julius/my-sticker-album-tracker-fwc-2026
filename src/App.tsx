@@ -30,7 +30,17 @@ import {
   serializeFullProgress,
 } from "./lib/album";
 import { downloadTextFile } from "./lib/files";
-import type { Filters, Progress, Sticker, TradeItem, TradeRecord } from "./types";
+import type {
+  Filters,
+  Progress,
+  RegistrationEvent,
+  RegistrationEventAction,
+  RegistrationEventItem,
+  RegistrationEventSource,
+  Sticker,
+  TradeItem,
+  TradeRecord,
+} from "./types";
 
 const emptyFilters: Filters = {
   query: "",
@@ -42,6 +52,13 @@ const emptyFilters: Filters = {
 
 type View = "dashboard" | "registro" | "faltantes" | "repetidas" | "paises" | "datos";
 type BulkAction = "increment" | "owned" | "missing" | "set";
+
+const bulkActionToRegistrationAction: Record<BulkAction, RegistrationEventAction> = {
+  increment: "increment",
+  missing: "set-missing",
+  owned: "set-owned",
+  set: "set-quantity",
+};
 
 const views: Array<{ id: View; label: string }> = [
   { id: "dashboard", label: "Dashboard" },
@@ -64,6 +81,35 @@ const normalizeText = (value: string) =>
     .replace(/\p{Diacritic}/gu, "")
     .toLowerCase()
     .trim();
+
+const createRegistrationEventId = () => globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+
+function createRegistrationItems(currentProgress: Progress, updates: Progress): RegistrationEventItem[] {
+  return Object.entries(updates)
+    .map(([code, quantity]) => {
+      const before = getStickerQuantity(code, currentProgress);
+      const after = Math.max(0, Math.floor(quantity));
+      return { code, before, after, delta: after - before };
+    })
+    .filter((item) => item.before !== item.after)
+    .sort((a, b) => a.code.localeCompare(b.code));
+}
+
+function createRegistrationEvent(
+  source: RegistrationEventSource,
+  action: RegistrationEventAction,
+  items: RegistrationEventItem[],
+  note?: string,
+): RegistrationEvent {
+  return {
+    id: createRegistrationEventId(),
+    createdAt: new Date().toISOString(),
+    source,
+    action,
+    items,
+    note,
+  };
+}
 
 const IMPORT_EXAMPLE = `{
   "MEX1": 1,
@@ -109,13 +155,16 @@ function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [pwaUpdateWorker, setPwaUpdateWorker] = useState<ServiceWorker | null>(null);
   const {
+    addRegistrationEvent,
     addTrade,
     cancelMigration,
     combineLocalAndCloudData,
+    deleteRegistrationEvent,
     deleteTrade,
     hasPendingCloudChanges,
     migrationPrompt,
     progress,
+    registrationEvents,
     setProgress,
     syncNow,
     syncStatus,
@@ -194,14 +243,31 @@ function App() {
 
   const filteredStickers = useMemo(() => applyFilters(catalog, progress, filters), [catalog, filters, progress]);
 
-  const setQuantity = (code: string, quantity: number) => {
-    setProgress((current) => {
-      const nextQuantity = Math.max(0, Math.floor(quantity));
-      return { ...current, [code]: nextQuantity };
-    });
+  const setQuantity = (code: string, quantity: number, source: RegistrationEventSource = "manual") => {
+    const nextQuantity = Math.max(0, Math.floor(quantity));
+    const items = createRegistrationItems(progress, { [code]: nextQuantity });
+
+    if (items.length > 0) {
+      const action: RegistrationEventAction =
+        nextQuantity === 0 ? "set-missing" : nextQuantity === 1 ? "set-owned" : nextQuantity > getStickerQuantity(code, progress) ? "increment" : "set-quantity";
+      addRegistrationEvent(createRegistrationEvent(source, action, items));
+    }
+
+    setProgress((current) => ({ ...current, [code]: nextQuantity }));
   };
 
-  const setQuantities = (updates: Progress) => {
+  const setQuantities = (
+    updates: Progress,
+    source: RegistrationEventSource = "bulk",
+    action: RegistrationEventAction = "set-quantity",
+    note?: string,
+  ) => {
+    const items = createRegistrationItems(progress, updates);
+
+    if (items.length > 0) {
+      addRegistrationEvent(createRegistrationEvent(source, action, items, note));
+    }
+
     setProgress((current) => {
       const nextProgress = { ...current };
 
@@ -211,6 +277,21 @@ function App() {
 
       return nextProgress;
     });
+  };
+
+  const replaceProgressWithHistory = (nextProgress: Progress, source: RegistrationEventSource, action: RegistrationEventAction, note?: string) => {
+    const codes = new Set([...Object.keys(progress), ...Object.keys(nextProgress)]);
+    const updates = [...codes].reduce<Progress>((nextUpdates, code) => {
+      nextUpdates[code] = nextProgress[code] ?? 0;
+      return nextUpdates;
+    }, {});
+    const items = createRegistrationItems(progress, updates);
+
+    if (items.length > 0) {
+      addRegistrationEvent(createRegistrationEvent(source, action, items, note));
+    }
+
+    setProgress(nextProgress);
   };
 
   if (catalogError) {
@@ -309,7 +390,9 @@ function App() {
           filters={filters}
           filteredStickers={filteredStickers}
           progress={progress}
+          registrationEvents={registrationEvents}
           onFiltersChange={setFilters}
+          onDeleteRegistrationEvent={deleteRegistrationEvent}
           onSetQuantity={setQuantity}
           onSetQuantities={setQuantities}
         />
@@ -346,10 +429,10 @@ function App() {
           progress={progress}
           selectedCollection={selectedCollection}
           onSelectedCollectionChange={setSelectedCollection}
-          onSetQuantity={setQuantity}
+          onSetQuantity={(code, quantity) => setQuantity(code, quantity, "collection")}
         />
       ) : null}
-      {activeView === "datos" ? <DataView catalog={catalog} progress={progress} setProgress={setProgress} /> : null}
+      {activeView === "datos" ? <DataView catalog={catalog} progress={progress} onReplaceProgress={replaceProgressWithHistory} /> : null}
       <AppFooter />
     </main>
   );
@@ -827,7 +910,9 @@ function RegistroView({
   filters,
   filteredStickers,
   progress,
+  registrationEvents,
   onFiltersChange,
+  onDeleteRegistrationEvent,
   onSetQuantity,
   onSetQuantities,
 }: {
@@ -835,14 +920,17 @@ function RegistroView({
   filters: Filters;
   filteredStickers: Sticker[];
   progress: Progress;
+  registrationEvents: RegistrationEvent[];
   onFiltersChange: (filters: Filters) => void;
+  onDeleteRegistrationEvent: (eventId: string) => void;
   onSetQuantity: (code: string, quantity: number) => void;
-  onSetQuantities: (updates: Progress) => void;
+  onSetQuantities: (updates: Progress, source: RegistrationEventSource, action: RegistrationEventAction, note?: string) => void;
 }) {
   return (
     <section className="view-stack">
       <FilterBar catalog={catalog} filters={filters} onChange={onFiltersChange} />
       <BulkRegisterPanel catalog={catalog} stickers={filteredStickers} progress={progress} onSetQuantities={onSetQuantities} />
+      <RegistrationHistoryPanel events={registrationEvents} onDeleteEvent={onDeleteRegistrationEvent} />
       <div className="section-heading">
         <h2>Registro</h2>
         <span>{filteredStickers.length} estampas</span>
@@ -861,7 +949,7 @@ function BulkRegisterPanel({
   catalog: Sticker[];
   stickers: Sticker[];
   progress: Progress;
-  onSetQuantities: (updates: Progress) => void;
+  onSetQuantities: (updates: Progress, source: RegistrationEventSource, action: RegistrationEventAction, note?: string) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [bulkText, setBulkText] = useState("");
@@ -922,7 +1010,7 @@ function BulkRegisterPanel({
       return nextUpdates;
     }, {});
 
-    onSetQuantities(updates);
+    onSetQuantities(updates, "bulk", bulkActionToRegistrationAction[bulkAction], `Registro rápido: ${selectedTotal} estampas seleccionadas.`);
 
     notifyBulk(`${selectedTotal} ${selectedTotal === 1 ? "estampa actualizada" : "estampas actualizadas"}.`);
   };
@@ -1018,6 +1106,116 @@ function BulkRegisterPanel({
             </button>
           </div>
           {bulkMessage ? <p className={bulkMessage.type === "success" ? "toast-message" : "warning-message"}>{bulkMessage.text}</p> : null}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+const registrationSourceLabels: Record<RegistrationEventSource, string> = {
+  bulk: "Registro rápido",
+  collection: "Colecciones",
+  import: "Importar",
+  manual: "Registro",
+  reset: "Reiniciar",
+};
+
+const registrationActionLabels: Record<RegistrationEventAction, string> = {
+  import: "Importación",
+  increment: "Sumar cantidad",
+  reset: "Reinicio",
+  "set-missing": "Marcar faltante",
+  "set-owned": "Marcar como La tengo",
+  "set-quantity": "Fijar cantidad",
+};
+
+function createRegistrationSummary(event: RegistrationEvent) {
+  const changedCodes = event.items
+    .slice(0, 18)
+    .map((item) => `${item.code} ${item.before}->${item.after}`)
+    .join(", ");
+  const remaining = event.items.length > 18 ? ` y ${event.items.length - 18} más` : "";
+  const note = event.note ? `\nNota: ${event.note}` : "";
+
+  return `${registrationSourceLabels[event.source]} · ${registrationActionLabels[event.action]}\nFecha: ${formatDisplayDate(
+    event.createdAt,
+  )}\nCambios: ${changedCodes}${remaining}${note}`;
+}
+
+function RegistrationHistoryPanel({
+  events,
+  onDeleteEvent,
+}: {
+  events: RegistrationEvent[];
+  onDeleteEvent: (eventId: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [copiedEventId, setCopiedEventId] = useState("");
+  const visibleEvents = events.slice(0, 50);
+
+  const copyEvent = async (event: RegistrationEvent) => {
+    await navigator.clipboard.writeText(createRegistrationSummary(event));
+    setCopiedEventId(event.id);
+    window.setTimeout(() => setCopiedEventId(""), 1800);
+  };
+
+  const deleteEvent = (eventId: string) => {
+    if (window.confirm("¿Eliminar este evento del historial? Esto no revierte cantidades del álbum.")) {
+      onDeleteEvent(eventId);
+    }
+  };
+
+  return (
+    <section className="panel registration-history">
+      <button
+        className="bulk-toggle"
+        type="button"
+        aria-expanded={isOpen}
+        aria-controls="registration-history-panel"
+        onClick={() => setIsOpen((current) => !current)}
+      >
+        <span>
+          <strong>Historial</strong>
+          <small>Últimos cambios de registro</small>
+        </span>
+        <span>{isOpen ? "Ocultar" : "Abrir"}</span>
+      </button>
+
+      {isOpen ? (
+        <div className="registration-history-content" id="registration-history-panel">
+          <p className="history-note">Eliminar del historial no revierte las cantidades del álbum.</p>
+          {events.length === 0 ? <p className="empty-state">Todavía no hay movimientos de registro.</p> : null}
+          {events.length > visibleEvents.length ? <p className="history-note">Mostrando los últimos {visibleEvents.length} eventos.</p> : null}
+          <div className="registration-history-list">
+            {visibleEvents.map((event) => {
+              const previewCodes = event.items
+                .slice(0, 8)
+                .map((item) => `${item.code} ${item.before}->${item.after}`)
+                .join(", ");
+              const remaining = event.items.length > 8 ? ` +${event.items.length - 8}` : "";
+
+              return (
+                <article className="registration-history-card" key={event.id}>
+                  <div>
+                    <strong>
+                      {registrationSourceLabels[event.source]} · {registrationActionLabels[event.action]}
+                    </strong>
+                    <span>{formatDisplayDate(event.createdAt)}</span>
+                  </div>
+                  <p>{previewCodes || "Sin cambios"}{remaining}</p>
+                  {event.note ? <p>{event.note}</p> : null}
+                  <div className="quick-actions">
+                    <button className="ghost-button small" onClick={() => copyEvent(event)}>
+                      {copiedEventId === event.id ? "Resumen copiado" : "Copiar resumen"}
+                    </button>
+                    <button className="danger-button small" onClick={() => deleteEvent(event.id)}>
+                      Eliminar del historial
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         </div>
       ) : null}
     </section>
@@ -1635,12 +1833,12 @@ function CollectionsView({
 
 function DataView({
   catalog,
+  onReplaceProgress,
   progress,
-  setProgress,
 }: {
   catalog: Sticker[];
+  onReplaceProgress: (nextProgress: Progress, source: RegistrationEventSource, action: RegistrationEventAction, note?: string) => void;
   progress: Progress;
-  setProgress: React.Dispatch<React.SetStateAction<Progress>>;
 }) {
   const [importText, setImportText] = useState("");
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string; action?: string } | null>(null);
@@ -1660,7 +1858,7 @@ function DataView({
 
   const importTextProgress = (jsonText: string) => {
     try {
-      setProgress(importProgressFromJson(jsonText, catalog));
+      onReplaceProgress(importProgressFromJson(jsonText, catalog), "import", "import", "Importación JSON");
       notify("Progreso importado correctamente.", "success", "import");
     } catch (error) {
       notify(error instanceof Error ? error.message : "No se pudo importar el progreso.", "error", "import");
@@ -1691,7 +1889,7 @@ function DataView({
 
   const resetProgress = () => {
     if (window.confirm("¿Seguro que quieres reiniciar todo tu progreso?")) {
-      setProgress({});
+      onReplaceProgress({}, "reset", "reset", "Reinicio manual del progreso");
       notify("Progreso reiniciado.", "success", "reset");
     }
   };

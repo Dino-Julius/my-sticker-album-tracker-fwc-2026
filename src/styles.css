@@ -625,6 +625,43 @@ textarea {
   gap: 8px;
 }
 
+.registration-history {
+  display: grid;
+  gap: 12px;
+}
+
+.registration-history-content,
+.registration-history-list {
+  display: grid;
+  gap: 10px;
+}
+
+.registration-history-card {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 10px;
+}
+
+.registration-history-card div:first-child {
+  display: grid;
+  gap: 2px;
+}
+
+.registration-history-card span {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.registration-history-card p {
+  margin-bottom: 0;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
 .sticker-cards {
   display: grid;
   gap: 10px;

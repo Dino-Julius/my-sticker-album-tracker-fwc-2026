@@ -1,12 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Progress, TradeRecord } from "../types";
+import type { Progress, RegistrationEvent, TradeRecord } from "../types";
 import { loadRemoteProgress, saveRemoteProgress } from "../lib/remoteProgress";
+import {
+  deleteRemoteRegistrationEvent,
+  insertRemoteRegistrationEvent,
+  loadRemoteRegistrationEvents,
+} from "../lib/remoteRegistrationEvents";
 import { deleteRemoteTrade, insertRemoteTrade, loadRemoteTrades } from "../lib/remoteTrades";
 import { STORAGE_KEY, TRADE_HISTORY_STORAGE_KEY } from "../lib/album";
 
 const CLOUD_SYNC_DEBOUNCE_MS = 7000;
 const UNSYNCED_CHANGES_MESSAGE = "Tienes cambios guardados en este dispositivo, pero aún no sincronizados en la nube.";
 const LOCAL_META_STORAGE_KEY = "my-sticker-album-tracker-fwc-2026-local-meta";
+export const REGISTRATION_EVENTS_STORAGE_KEY = "my-sticker-album-tracker-fwc-2026-registration-events";
 
 export type SyncStatus = "local" | "loading" | "pending" | "saving" | "cloud" | "error";
 export type LocalMeta = {
@@ -62,6 +68,21 @@ function readLocalTrades(): TradeRecord[] {
   }
 }
 
+function readLocalRegistrationEvents(): RegistrationEvent[] {
+  const stored = localStorage.getItem(REGISTRATION_EVENTS_STORAGE_KEY);
+
+  if (!stored) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(stored) as RegistrationEvent[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 function readLocalMeta(): LocalMeta {
   const stored = localStorage.getItem(LOCAL_META_STORAGE_KEY);
 
@@ -108,6 +129,16 @@ function mergeTrades(localTrades: TradeRecord[], remoteTrades: TradeRecord[]) {
   return [...trades.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
+function mergeRegistrationEvents(localEvents: RegistrationEvent[], remoteEvents: RegistrationEvent[]) {
+  const events = new Map<string, RegistrationEvent>();
+
+  [...remoteEvents, ...localEvents].forEach((event) => {
+    events.set(event.id, event);
+  });
+
+  return [...events.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
 function serializeProgressSnapshot(progress: Progress) {
   return JSON.stringify(
     Object.keys(progress)
@@ -146,6 +177,7 @@ function isSameAlbumData(
 
 export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boolean; userId?: string }) {
   const [progress, setProgress] = useState<Progress>(() => readLocalProgress());
+  const [registrationEvents, setRegistrationEvents] = useState<RegistrationEvent[]>(() => readLocalRegistrationEvents());
   const [tradeHistory, setTradeHistory] = useState<TradeRecord[]>(() => readLocalTrades());
   const [migrationPrompt, setMigrationPrompt] = useState<MigrationPrompt | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("local");
@@ -159,6 +191,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
   const saveAgainAfterCurrent = useRef(false);
   const hasPendingCloudChangesRef = useRef(false);
   const hasInitializedProgressPersistence = useRef(false);
+  const hasInitializedRegistrationEventPersistence = useRef(false);
   const hasInitializedTradePersistence = useRef(false);
   const flushPendingProgressRef = useRef<() => Promise<void>>(async () => {});
 
@@ -272,6 +305,16 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
   }, [tradeHistory]);
 
   useEffect(() => {
+    if (!hasInitializedRegistrationEventPersistence.current) {
+      hasInitializedRegistrationEventPersistence.current = true;
+      return;
+    }
+
+    localStorage.setItem(REGISTRATION_EVENTS_STORAGE_KEY, JSON.stringify(registrationEvents));
+    writeLocalMeta();
+  }, [registrationEvents]);
+
+  useEffect(() => {
     clearSaveTimer();
     hasLoadedRemote.current = false;
     lastSavedProgress.current = "";
@@ -287,19 +330,38 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     setSyncStatus("loading");
 
     const localProgress = readLocalProgress();
+    const localRegistrationEvents = readLocalRegistrationEvents();
     const localTrades = readLocalTrades();
     const localMeta = readLocalMeta();
 
-    Promise.all([loadRemoteProgress(userId), loadRemoteTrades(userId)])
-      .then(([remoteProgressSnapshot, remoteTrades]) => {
+    Promise.all([
+      loadRemoteProgress(userId),
+      loadRemoteTrades(userId),
+      loadRemoteRegistrationEvents(userId).catch(() => []),
+    ])
+      .then(([remoteProgressSnapshot, remoteTrades, remoteRegistrationEvents]) => {
         if (!isActive) {
           return;
         }
 
+        const mergedRegistrationEvents = mergeRegistrationEvents(localRegistrationEvents, remoteRegistrationEvents);
         const normalizedRemoteProgress = remoteProgressSnapshot?.progress ?? {};
         const remoteUpdatedAt = remoteProgressSnapshot?.updatedAt;
         const localHasData = hasLocalData(localProgress, localTrades);
         const remoteHasData = hasLocalData(normalizedRemoteProgress, remoteTrades);
+
+        setRegistrationEvents(mergedRegistrationEvents);
+        localStorage.setItem(REGISTRATION_EVENTS_STORAGE_KEY, JSON.stringify(mergedRegistrationEvents));
+
+        const remoteRegistrationEventIds = new Set(remoteRegistrationEvents.map((event) => event.id));
+        const unsyncedRegistrationEvents = mergedRegistrationEvents.filter((event) => !remoteRegistrationEventIds.has(event.id));
+        if (unsyncedRegistrationEvents.length > 0) {
+          void Promise.all(unsyncedRegistrationEvents.map((event) => insertRemoteRegistrationEvent(userId, event))).catch(() => {
+            if (isActive) {
+              setSyncStatus("error");
+            }
+          });
+        }
 
         if (localHasData && !remoteHasData) {
           setMigrationPrompt({
@@ -518,6 +580,26 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     }
   };
 
+  const addRegistrationEvent = (event: RegistrationEvent) => {
+    setRegistrationEvents((currentEvents) => [event, ...currentEvents.filter((currentEvent) => currentEvent.id !== event.id)]);
+
+    if (isCloudEnabled && userId) {
+      insertRemoteRegistrationEvent(userId, event).catch(() => {
+        setSyncStatus("error");
+      });
+    }
+  };
+
+  const deleteRegistrationEvent = (eventId: string) => {
+    setRegistrationEvents((currentEvents) => currentEvents.filter((event) => event.id !== eventId));
+
+    if (isCloudEnabled && userId) {
+      deleteRemoteRegistrationEvent(userId, eventId).catch(() => {
+        setSyncStatus("error");
+      });
+    }
+  };
+
   const deleteTrade = (tradeId: string) => {
     setTradeHistory((currentHistory) => currentHistory.filter((trade) => trade.id !== tradeId));
 
@@ -529,13 +611,16 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
   };
 
   return {
+    addRegistrationEvent,
     addTrade,
     cancelMigration,
     combineLocalAndCloudData,
+    deleteRegistrationEvent,
     deleteTrade,
     hasPendingCloudChanges,
     migrationPrompt,
     progress,
+    registrationEvents,
     setProgress,
     syncNow: () => flushPendingProgress(undefined, true),
     syncStatus,

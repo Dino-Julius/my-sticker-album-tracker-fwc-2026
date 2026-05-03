@@ -78,6 +78,7 @@ Llaves actuales de `localStorage`:
 
 - `my-sticker-album-tracker-fwc-2026-progress`
 - `my-sticker-album-tracker-fwc-2026-trades`
+- `my-sticker-album-tracker-fwc-2026-registration-events`
 
 La app sigue funcionando 100% local si Supabase no esta configurado o si no hay sesion iniciada. Cuando hay sesion, `localStorage` se conserva como cache/respaldo y no se borra despues de migrar datos a la nube.
 
@@ -149,8 +150,24 @@ create table public.trade_records (
   primary key (user_id, id)
 );
 
+create table if not exists public.registration_events (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  id text not null,
+  created_at text not null,
+  source text not null,
+  action text not null,
+  items jsonb not null default '[]'::jsonb,
+  note text,
+  saved_at timestamptz not null default now(),
+  primary key (user_id, id)
+);
+
+create index if not exists registration_events_user_id_created_at_idx
+on public.registration_events (user_id, created_at desc);
+
 alter table public.album_progress enable row level security;
 alter table public.trade_records enable row level security;
+alter table public.registration_events enable row level security;
 
 create policy "Users can read own progress"
 on public.album_progress
@@ -192,6 +209,31 @@ with check (auth.uid() = user_id);
 
 create policy "Users can delete own trades"
 on public.trade_records
+for delete
+to authenticated
+using (auth.uid() = user_id);
+
+create policy "Users can read own registration events"
+on public.registration_events
+for select
+to authenticated
+using (auth.uid() = user_id);
+
+create policy "Users can insert own registration events"
+on public.registration_events
+for insert
+to authenticated
+with check (auth.uid() = user_id);
+
+create policy "Users can update own registration events"
+on public.registration_events
+for update
+to authenticated
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+create policy "Users can delete own registration events"
+on public.registration_events
 for delete
 to authenticated
 using (auth.uid() = user_id);
