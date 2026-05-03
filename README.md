@@ -224,6 +224,23 @@ base: "/NOMBRE_DEL_REPO/";
 
 El workflow de GitHub Actions instala dependencias con Yarn, construye la app y publica `dist` en GitHub Pages cuando haces push a `main`.
 
+## Wiki
+
+La carpeta `wiki/` contiene paginas listas para publicar en la Wiki de GitHub del repositorio.
+
+- [Como actualizar la app si se quedo en una version vieja](wiki/Actualizar-la-app-si-se-quedo-en-una-version-vieja.md)
+
+Para publicarlas en GitHub Wiki, copia los archivos de `wiki/` al repositorio wiki:
+
+```zsh
+git clone git@github.com:Dino-Julius/my-sticker-album-tracker-fwc-2026.wiki.git
+cp wiki/*.md my-sticker-album-tracker-fwc-2026.wiki/
+cd my-sticker-album-tracker-fwc-2026.wiki
+git add Home.md _Sidebar.md Actualizar-la-app-si-se-quedo-en-una-version-vieja.md
+git commit -m "Add app update guide"
+git push
+```
+
 ## Licencia
 
 Licensed under the MIT License.
