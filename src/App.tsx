@@ -32,7 +32,7 @@ import {
   serializeFullProgress,
   sortStickersByAlbumOrder,
 } from "./lib/album";
-import { downloadTextFile } from "./lib/files";
+import { createTimestampedFilename, downloadTextFile } from "./lib/files";
 import type {
   Filters,
   Progress,
@@ -1969,7 +1969,7 @@ function DataView({
   };
 
   const downloadFile = (filename: string, content: string, type: string, action: string) => {
-    downloadTextFile(filename, content, type);
+    downloadTextFile(createTimestampedFilename(filename), content, type);
     notify("Archivo descargado.", "success", action);
   };
 
@@ -2022,7 +2022,7 @@ function DataView({
           className={actionClass("primary-button", "download-progress")}
           onClick={() =>
             downloadFile(
-              "progreso-my-sticker-album-tracker-fwc-2026.json",
+              "album-progress.json",
               exportProgressToJson(catalog, progress),
               "application/json",
               "download-progress",
@@ -2040,7 +2040,7 @@ function DataView({
         <button
           className={actionClass("ghost-button", "download-missing")}
           onClick={() =>
-            downloadFile("faltantes-my-sticker-album-tracker-fwc-2026.csv", exportMissingToCsv(catalog, progress), "text/csv", "download-missing")
+            downloadFile("faltantes.csv", exportMissingToCsv(catalog, progress), "text/csv", "download-missing")
           }
         >
           {feedback?.action === "download-missing" ? "Archivo descargado" : "Exportar faltantes CSV"}
@@ -2054,7 +2054,7 @@ function DataView({
         <button
           className={actionClass("ghost-button", "download-repeated")}
           onClick={() =>
-            downloadFile("repetidas-my-sticker-album-tracker-fwc-2026.csv", exportRepeatedToCsv(catalog, progress), "text/csv", "download-repeated")
+            downloadFile("repetidas.csv", exportRepeatedToCsv(catalog, progress), "text/csv", "download-repeated")
           }
         >
           {feedback?.action === "download-repeated" ? "Archivo descargado" : "Exportar repetidas CSV"}
