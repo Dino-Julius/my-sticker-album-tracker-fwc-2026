@@ -140,6 +140,22 @@ h3 {
   text-transform: none;
 }
 
+.field-error {
+  color: #b91c1c;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+input[aria-invalid="true"] {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .tab-bar {
   position: sticky;
   top: 0;

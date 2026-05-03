@@ -270,6 +270,9 @@ function AuthPanel({
   onSignOut: () => Promise<void>;
 }) {
   const [email, setEmail] = useState("");
+  const trimmedEmail = email.trim();
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail);
+  const showEmailError = trimmedEmail.length > 0 && !isEmailValid;
   const syncLabel =
     syncStatus === "saving"
       ? "Guardando..."
@@ -318,9 +321,18 @@ function AuthPanel({
       </div>
       <label className="auth-email-field">
         <span>Correo</span>
-        <input type="email" placeholder="tu@correo.com" value={email} onChange={(event) => setEmail(event.target.value)} />
+        <input
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          placeholder="tu@correo.com"
+          value={email}
+          aria-invalid={showEmailError}
+          onChange={(event) => setEmail(event.target.value)}
+        />
+        {showEmailError ? <small className="field-error">Escribe un correo válido.</small> : null}
       </label>
-      <button className="primary-button small" onClick={() => onSendMagicLink(email)} disabled={!email.trim()}>
+      <button className="primary-button small" onClick={() => onSendMagicLink(trimmedEmail)} disabled={!isEmailValid}>
         Enviar enlace mágico
       </button>
       {authMessage ? <p>{authMessage}</p> : null}

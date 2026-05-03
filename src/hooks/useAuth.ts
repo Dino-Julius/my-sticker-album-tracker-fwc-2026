@@ -42,13 +42,20 @@ export function useAuth() {
   }, []);
 
   const sendMagicLink = async (email: string) => {
+    const normalizedEmail = email.trim();
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setAuthMessage("Escribe un correo válido para enviar el enlace mágico.");
+      return;
+    }
+
     if (!supabase) {
       setAuthMessage("Supabase no está configurado. Usando almacenamiento local.");
       return;
     }
 
     const { error } = await supabase.auth.signInWithOtp({
-      email,
+      email: normalizedEmail,
       options: {
         emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}`,
       },
