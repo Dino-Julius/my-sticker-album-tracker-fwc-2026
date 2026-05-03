@@ -3,6 +3,7 @@ import { FilterBar } from "./components/FilterBar";
 import { StickerList } from "./components/StickerList";
 import { useAlbumData, type SyncStatus } from "./hooks/useAlbumData";
 import { useAuth } from "./hooks/useAuth";
+import { parseBulkStickerText } from "./lib/bulk";
 import {
   applyFilters,
   applyTradeToProgress,
@@ -40,6 +41,7 @@ const emptyFilters: Filters = {
 };
 
 type View = "dashboard" | "registro" | "faltantes" | "repetidas" | "paises" | "datos";
+type BulkAction = "increment" | "owned" | "missing" | "set";
 
 const views: Array<{ id: View; label: string }> = [
   { id: "dashboard", label: "Dashboard" },
@@ -606,11 +608,182 @@ function RegistroView({
   return (
     <section className="view-stack">
       <FilterBar catalog={catalog} filters={filters} onChange={onFiltersChange} />
+      <BulkRegisterPanel catalog={catalog} stickers={filteredStickers} progress={progress} onSetQuantity={onSetQuantity} />
       <div className="section-heading">
         <h2>Registro</h2>
         <span>{filteredStickers.length} estampas</span>
       </div>
       <StickerList stickers={filteredStickers} progress={progress} onSetQuantity={onSetQuantity} />
+    </section>
+  );
+}
+
+function BulkRegisterPanel({
+  catalog,
+  stickers,
+  progress,
+  onSetQuantity,
+}: {
+  catalog: Sticker[];
+  stickers: Sticker[];
+  progress: Progress;
+  onSetQuantity: (code: string, quantity: number) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [bulkText, setBulkText] = useState("");
+  const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
+  const [bulkAction, setBulkAction] = useState<BulkAction>("increment");
+  const [fixedQuantity, setFixedQuantity] = useState(1);
+  const [bulkMessage, setBulkMessage] = useState<{ type: "success" | "warning"; text: string } | null>(null);
+  const parsedBulk = useMemo(() => parseBulkStickerText(bulkText, catalog), [bulkText, catalog]);
+  const selectedCodeSet = useMemo(() => new Set(selectedCodes), [selectedCodes]);
+  const selectedQuantities = useMemo(() => {
+    const quantities: Record<string, number> = { ...parsedBulk.quantities };
+
+    selectedCodes.forEach((code) => {
+      quantities[code] = (quantities[code] ?? 0) + 1;
+    });
+
+    return quantities;
+  }, [parsedBulk.quantities, selectedCodes]);
+  const selectedTotal = Object.values(selectedQuantities).reduce((total, quantity) => total + quantity, 0);
+
+  const notifyBulk = (text: string, type: "success" | "warning" = "success") => {
+    setBulkMessage({ type, text });
+    window.setTimeout(() => setBulkMessage((current) => (current?.text === text ? null : current)), 3200);
+  };
+
+  const toggleCode = (code: string) => {
+    setSelectedCodes((currentCodes) =>
+      currentCodes.includes(code) ? currentCodes.filter((currentCode) => currentCode !== code) : [...currentCodes, code],
+    );
+  };
+
+  const clearSelection = () => {
+    setBulkText("");
+    setSelectedCodes([]);
+    setBulkMessage(null);
+  };
+
+  const applyBulkAction = () => {
+    const entries = Object.entries(selectedQuantities);
+
+    if (entries.length === 0) {
+      notifyBulk("Selecciona o pega códigos para aplicar cambios.", "warning");
+      return;
+    }
+
+    entries.forEach(([code, amount]) => {
+      const currentQuantity = getStickerQuantity(code, progress);
+      const explicitQuantity = parsedBulk.quantities[code];
+      const nextQuantity =
+        bulkAction === "increment"
+          ? currentQuantity + amount
+          : bulkAction === "owned"
+            ? 1
+            : bulkAction === "missing"
+              ? 0
+              : Math.max(0, Math.floor(explicitQuantity ?? fixedQuantity));
+
+      onSetQuantity(code, nextQuantity);
+    });
+
+    notifyBulk(`${selectedTotal} ${selectedTotal === 1 ? "estampa actualizada" : "estampas actualizadas"}.`);
+  };
+
+  return (
+    <section className="panel bulk-panel">
+      <button
+        className="bulk-toggle"
+        type="button"
+        aria-expanded={isOpen}
+        aria-controls="bulk-register-panel"
+        onClick={() => setIsOpen((current) => !current)}
+      >
+        <span>
+          <strong>Registro rápido</strong>
+          <small>Pega rangos o selecciona varios códigos</small>
+        </span>
+        <span>{isOpen ? "Ocultar" : "Abrir"}</span>
+      </button>
+
+      {isOpen ? (
+        <div className="bulk-content" id="bulk-register-panel">
+          <div className="bulk-controls">
+            <label>
+              <span>Acción</span>
+              <select value={bulkAction} onChange={(event) => setBulkAction(event.target.value as BulkAction)}>
+                <option value="increment">Sumar +1</option>
+                <option value="owned">Marcar como La tengo</option>
+                <option value="missing">Marcar como Faltante</option>
+                <option value="set">Fijar cantidad</option>
+              </select>
+            </label>
+            {bulkAction === "set" ? (
+              <label>
+                <span>Cantidad</span>
+                <input
+                  min="0"
+                  type="number"
+                  value={fixedQuantity}
+                  onChange={(event) => setFixedQuantity(Math.max(0, Math.floor(Number(event.target.value) || 0)))}
+                />
+              </label>
+            ) : null}
+          </div>
+
+          <label className="text-import">
+            <span>Pegar códigos</span>
+            <textarea
+              value={bulkText}
+              onChange={(event) => setBulkText(event.target.value)}
+              placeholder={"MEX1, MEX2 MEX3\nARG7-ARG12\nFWC5 x2, CC4:3"}
+              rows={5}
+            />
+          </label>
+
+          <div className="bulk-summary">
+            <strong>{selectedTotal} estampas seleccionadas</strong>
+            {parsedBulk.unknownCodes.length > 0 ? <span>No encontrados: {parsedBulk.unknownCodes.join(", ")}</span> : null}
+          </div>
+
+          <div>
+            <div className="section-heading compact-heading">
+              <h3>Seleccionar códigos</h3>
+              <span>{stickers.length} visibles por filtro</span>
+            </div>
+            <div className="bulk-code-grid" aria-label="Seleccionar estampas para registro rápido">
+              {stickers.map((sticker) => {
+                const quantity = getStickerQuantity(sticker.code, progress);
+                const isSelected = selectedCodeSet.has(sticker.code);
+
+                return (
+                  <button
+                    className={`bulk-code ${isSelected ? "selected" : ""}`}
+                    key={sticker.code}
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => toggleCode(sticker.code)}
+                  >
+                    <strong>{sticker.code}</strong>
+                    <span>{quantity}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="bulk-actions">
+            <button className="primary-button" type="button" onClick={applyBulkAction}>
+              Aplicar a seleccionadas
+            </button>
+            <button className="ghost-button" type="button" onClick={clearSelection}>
+              Limpiar selección
+            </button>
+          </div>
+          {bulkMessage ? <p className={bulkMessage.type === "success" ? "toast-message" : "warning-message"}>{bulkMessage.text}</p> : null}
+        </div>
+      ) : null}
     </section>
   );
 }

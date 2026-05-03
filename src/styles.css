@@ -426,6 +426,122 @@ textarea {
   justify-self: start;
 }
 
+.bulk-panel {
+  display: grid;
+  gap: 12px;
+  border-color: #bae6fd;
+  background: #f8fcff;
+}
+
+.bulk-toggle {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  text-align: left;
+}
+
+.bulk-toggle span {
+  display: grid;
+  gap: 2px;
+}
+
+.bulk-toggle strong {
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.bulk-toggle small {
+  color: #64748b;
+  font-weight: 750;
+}
+
+.bulk-content {
+  display: grid;
+  gap: 12px;
+}
+
+.bulk-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+.bulk-panel textarea {
+  min-height: 118px;
+}
+
+.bulk-summary {
+  display: grid;
+  gap: 4px;
+  border-radius: 8px;
+  background: #e0f2fe;
+  color: #075985;
+  padding: 10px 12px;
+}
+
+.bulk-summary span {
+  color: #92400e;
+  font-weight: 800;
+}
+
+.compact-heading {
+  margin-bottom: 8px;
+}
+
+.compact-heading h3 {
+  margin-bottom: 0;
+}
+
+.bulk-code-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 8px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.bulk-code {
+  display: grid;
+  min-height: 58px;
+  align-content: center;
+  gap: 2px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #0f172a;
+  padding: 8px;
+}
+
+.bulk-code strong {
+  font-size: 0.92rem;
+  line-height: 1.1;
+}
+
+.bulk-code span {
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.bulk-code.selected {
+  border-color: #075985;
+  background: #e0f2fe;
+  box-shadow: inset 0 0 0 1px #075985;
+}
+
+.bulk-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
 .sticker-cards {
   display: grid;
   gap: 10px;
@@ -910,6 +1026,11 @@ textarea {
 
   .filter-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .bulk-controls,
+  .bulk-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .trade-action-row,
