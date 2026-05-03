@@ -81,3 +81,13 @@ export type CollectionStats = {
   repeatedExtras: number;
   completionPercentage: number;
 };
+
+export type AlbumGroupStats = {
+  name: string;
+  total: number;
+  owned: number;
+  missing: number;
+  repeatedExtras: number;
+  completionPercentage: number;
+  collections: CollectionStats[];
+};

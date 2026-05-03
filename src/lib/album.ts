@@ -1,4 +1,5 @@
 import type {
+  AlbumGroupStats,
   CollectionStats,
   CollectionType,
   CountryStats,
@@ -28,6 +29,8 @@ const normalize = (value: string) =>
     .replace(/\p{Diacritic}/gu, "")
     .toLowerCase()
     .trim();
+
+const GROUPS_IN_ALBUM_ORDER = Array.from({ length: 12 }, (_, index) => `Grupo ${String.fromCharCode(65 + index)}`);
 
 export function getStickerQuantity(code: string, progress: Progress): number {
   const quantity = progress[code] ?? 0;
@@ -161,6 +164,56 @@ function getCollectionSortWeight(type: CollectionType) {
   return 2;
 }
 
+export function getAlbumGroupOrder(group: string) {
+  const index = GROUPS_IN_ALBUM_ORDER.indexOf(group);
+  return index === -1 ? GROUPS_IN_ALBUM_ORDER.length : index;
+}
+
+function getStickerNumberOrder(sticker: Sticker) {
+  const numericNumber = Number(sticker.number);
+  return Number.isFinite(numericNumber) ? numericNumber : Number.MAX_SAFE_INTEGER;
+}
+
+function getCatalogIndexMap(catalog: Sticker[]) {
+  return new Map(catalog.map((sticker, index) => [sticker.code, index]));
+}
+
+function getCollectionFirstSticker(catalog: Sticker[], collectionName: string) {
+  return catalog.find((sticker) => getCollectionName(sticker) === collectionName);
+}
+
+function getCollectionAlbumSortValues(catalog: Sticker[], collection: Pick<CollectionStats, "name" | "type">) {
+  const firstSticker = getCollectionFirstSticker(catalog, collection.name);
+  const firstIndex = firstSticker ? catalog.indexOf(firstSticker) : Number.MAX_SAFE_INTEGER;
+  const groupOrder = firstSticker && collection.type === "team" ? getAlbumGroupOrder(firstSticker.group) : 0;
+
+  return {
+    firstIndex,
+    groupOrder,
+    typeWeight: getCollectionSortWeight(collection.type),
+  };
+}
+
+export function sortStickersByAlbumOrder(stickers: Sticker[], catalog: Sticker[] = stickers) {
+  const catalogIndex = getCatalogIndexMap(catalog);
+
+  return [...stickers].sort((a, b) => {
+    const groupOrder = getAlbumGroupOrder(a.group) - getAlbumGroupOrder(b.group);
+
+    if (groupOrder !== 0) {
+      return groupOrder;
+    }
+
+    const collectionOrder = (catalogIndex.get(a.code) ?? Number.MAX_SAFE_INTEGER) - (catalogIndex.get(b.code) ?? Number.MAX_SAFE_INTEGER);
+
+    if (getCollectionName(a) !== getCollectionName(b)) {
+      return collectionOrder;
+    }
+
+    return getStickerNumberOrder(a) - getStickerNumberOrder(b) || collectionOrder;
+  });
+}
+
 export function getStatsByCollection(catalog: Sticker[], progress: Progress): CollectionStats[] {
   const collections = new Map<string, Sticker[]>();
 
@@ -191,11 +244,52 @@ export function getStatsByCollection(catalog: Sticker[], progress: Progress): Co
         completionPercentage: stickers.length > 0 ? Math.round((owned / stickers.length) * 100) : 0,
       };
     })
-    .sort(
-      (a, b) =>
-        getCollectionSortWeight(a.type) - getCollectionSortWeight(b.type) ||
-        a.name.localeCompare(b.name, "es"),
-    );
+    .sort((a, b) => {
+      const aSort = getCollectionAlbumSortValues(catalog, a);
+      const bSort = getCollectionAlbumSortValues(catalog, b);
+
+      return (
+        aSort.typeWeight - bSort.typeWeight ||
+        aSort.groupOrder - bSort.groupOrder ||
+        aSort.firstIndex - bSort.firstIndex ||
+        a.name.localeCompare(b.name, "es")
+      );
+    });
+}
+
+export function getStatsByAlbumGroup(catalog: Sticker[], progress: Progress): AlbumGroupStats[] {
+  const collectionStats = getStatsByCollection(catalog, progress);
+  const sections = new Map<string, CollectionStats[]>();
+
+  collectionStats.forEach((collection) => {
+    const firstSticker = getCollectionFirstSticker(catalog, collection.name);
+    const sectionName = collection.type === "team" ? firstSticker?.group || "Sin grupo" : collection.name;
+    sections.set(sectionName, [...(sections.get(sectionName) ?? []), collection]);
+  });
+
+  return [...sections.entries()]
+    .map(([name, collections]) => {
+      const total = collections.reduce((sum, collection) => sum + collection.total, 0);
+      const owned = collections.reduce((sum, collection) => sum + collection.owned, 0);
+      const missing = collections.reduce((sum, collection) => sum + collection.missing, 0);
+      const repeatedExtras = collections.reduce((sum, collection) => sum + collection.repeatedExtras, 0);
+
+      return {
+        name,
+        total,
+        owned,
+        missing,
+        repeatedExtras,
+        completionPercentage: total > 0 ? Math.round((owned / total) * 100) : 0,
+        collections,
+      };
+    })
+    .sort((a, b) => {
+      const aSpecialOrder = a.name === SPECIAL_COLLECTION_NAME ? 0 : a.name === SPONSOR_COLLECTION_NAME ? 1 : 2;
+      const bSpecialOrder = b.name === SPECIAL_COLLECTION_NAME ? 0 : b.name === SPONSOR_COLLECTION_NAME ? 1 : 2;
+
+      return aSpecialOrder - bSpecialOrder || getAlbumGroupOrder(a.name) - getAlbumGroupOrder(b.name);
+    });
 }
 
 export function applyFilters(stickers: Sticker[], progress: Progress, filters: Filters): Sticker[] {
@@ -355,14 +449,18 @@ export function getRealGroups(catalog: Sticker[]) {
 }
 
 export function getTeamCollections(catalog: Sticker[], group = "") {
-  return [
-    ...new Set(
-      catalog
-        .filter((sticker) => getCollectionType(sticker) === "team")
-        .filter((sticker) => !group || sticker.group === group)
-        .map((sticker) => sticker.country),
-    ),
-  ].sort((a, b) => a.localeCompare(b, "es"));
+  const teams: string[] = [];
+
+  catalog
+    .filter((sticker) => getCollectionType(sticker) === "team")
+    .filter((sticker) => !group || sticker.group === group)
+    .forEach((sticker) => {
+      if (!teams.includes(sticker.country)) {
+        teams.push(sticker.country);
+      }
+    });
+
+  return teams;
 }
 
 export function getTeamGroup(catalog: Sticker[], teamName: string) {

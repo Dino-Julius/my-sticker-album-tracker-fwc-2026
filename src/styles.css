@@ -412,6 +412,57 @@ button:disabled {
   gap: 10px;
 }
 
+.album-group-list {
+  display: grid;
+  gap: 14px;
+}
+
+.album-group-section {
+  display: grid;
+  gap: 8px;
+  border-left: 4px solid #0ea5e9;
+  padding-left: 10px;
+}
+
+.album-group-heading {
+  display: grid;
+  gap: 8px;
+}
+
+.album-group-heading h3 {
+  margin-bottom: 2px;
+}
+
+.album-group-heading span {
+  color: #64748b;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.album-group-heading progress {
+  width: 100%;
+}
+
+.group-accent-1 {
+  border-left-color: #22c55e;
+}
+
+.group-accent-2 {
+  border-left-color: #f59e0b;
+}
+
+.group-accent-3 {
+  border-left-color: #ef4444;
+}
+
+.group-accent-4 {
+  border-left-color: #8b5cf6;
+}
+
+.group-accent-5 {
+  border-left-color: #14b8a6;
+}
+
 .country-progress {
   display: grid;
   gap: 8px;

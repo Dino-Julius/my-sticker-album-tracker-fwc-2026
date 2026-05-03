@@ -23,12 +23,14 @@ import {
   getOwnedStickers,
   getRepeatedExtras,
   getRepeatedStickers,
+  getStatsByAlbumGroup,
   getStatsByCollection,
   getStickerQuantity,
   getTradeItemTotal,
   groupByCountry,
   importProgressFromJson,
   serializeFullProgress,
+  sortStickersByAlbumOrder,
 } from "./lib/album";
 import { downloadTextFile } from "./lib/files";
 import type {
@@ -229,6 +231,7 @@ function App() {
     const missing = getMissingStickers(catalog, progress);
     const repeated = getRepeatedStickers(catalog, progress);
     const statsByCollection = getStatsByCollection(catalog, progress);
+    const statsByAlbumGroup = getStatsByAlbumGroup(catalog, progress);
 
     return {
       total: catalog.length,
@@ -237,6 +240,7 @@ function App() {
       repeated: repeated.length,
       repeatedExtras: getRepeatedExtras(catalog, progress),
       completion: getCompletionPercentage(catalog, progress),
+      statsByAlbumGroup,
       statsByCollection,
       mostMissing: [...statsByCollection].sort((a, b) => b.missing - a.missing).slice(0, 5),
       closest: [...statsByCollection]
@@ -881,6 +885,7 @@ function DashboardView({
     repeatedExtras: number;
     completion: number;
     statsByCollection: ReturnType<typeof getStatsByCollection>;
+    statsByAlbumGroup: ReturnType<typeof getStatsByAlbumGroup>;
     mostMissing: ReturnType<typeof getStatsByCollection>;
     closest: ReturnType<typeof getStatsByCollection>;
   };
@@ -902,17 +907,36 @@ function DashboardView({
 
       <section className="panel">
         <h2>Avance por colección</h2>
-        <div className="country-progress-list">
-          {dashboard.statsByCollection.map((collection) => (
-            <button className="country-progress collection-progress-button" key={collection.name} onClick={() => onOpenCollection(collection.name)}>
-              <div>
-                <strong>{collection.name}</strong>
-                <span>
-                  {collection.owned}/{collection.total}
-                </span>
+        <div className="album-group-list">
+          {dashboard.statsByAlbumGroup.map((group, index) => (
+            <section className={`album-group-section group-accent-${index % 6}`} key={group.name}>
+              <div className="album-group-heading">
+                <div>
+                  <h3>{group.name}</h3>
+                  <span>
+                    {group.owned}/{group.total} · {group.completionPercentage}% · {group.repeatedExtras} extras
+                  </span>
+                </div>
+                <progress value={group.completionPercentage} max="100" />
               </div>
-              <progress value={collection.completionPercentage} max="100" />
-            </button>
+              <div className="country-progress-list">
+                {group.collections.map((collection) => (
+                  <button
+                    className="country-progress collection-progress-button"
+                    key={collection.name}
+                    onClick={() => onOpenCollection(collection.name)}
+                  >
+                    <div>
+                      <strong>{collection.name}</strong>
+                      <span>
+                        {collection.owned}/{collection.total}
+                      </span>
+                    </div>
+                    <progress value={collection.completionPercentage} max="100" />
+                  </button>
+                ))}
+              </div>
+            </section>
           ))}
         </div>
       </section>
@@ -1825,7 +1849,10 @@ function CollectionsView({
   const [collectionQuery, setCollectionQuery] = useState("");
   const collection = selectedCollection && stats.some((item) => item.name === selectedCollection) ? selectedCollection : stats[0]?.name || "";
   const selectedStats = stats.find((item) => item.name === collection);
-  const stickers = catalog.filter((sticker) => getCollectionName(sticker) === collection);
+  const stickers = sortStickersByAlbumOrder(
+    catalog.filter((sticker) => getCollectionName(sticker) === collection),
+    catalog,
+  );
   const normalizedCollectionQuery = normalizeText(collectionQuery);
   const visibleCollections = normalizedCollectionQuery
     ? stats.filter((item) => normalizeText(item.name).includes(normalizedCollectionQuery))
