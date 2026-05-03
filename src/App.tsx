@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { FilterBar } from "./components/FilterBar";
 import { StickerList } from "./components/StickerList";
+import { useAlbumData, type SyncStatus } from "./hooks/useAlbumData";
 import { useAuth } from "./hooks/useAuth";
 import {
   applyFilters,
@@ -26,7 +27,6 @@ import {
   groupByCountry,
   importProgressFromJson,
   serializeFullProgress,
-  STORAGE_KEY,
   TRADE_HISTORY_STORAGE_KEY,
 } from "./lib/album";
 import { downloadTextFile } from "./lib/files";
@@ -71,6 +71,10 @@ function App() {
   const [activeView, setActiveView] = useState<View>("dashboard");
   const [selectedCollection, setSelectedCollection] = useState("");
   const [filters, setFilters] = useState<Filters>(emptyFilters);
+  const { progress, setProgress, syncStatus } = useAlbumData({
+    isCloudEnabled: auth.isConfigured,
+    userId: auth.user?.id,
+  });
   const [tradeHistory, setTradeHistory] = useState<TradeRecord[]>(() => {
     const stored = localStorage.getItem(TRADE_HISTORY_STORAGE_KEY);
 
@@ -85,20 +89,6 @@ function App() {
       return [];
     }
   });
-  const [progress, setProgress] = useState<Progress>(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-
-    if (!stored) {
-      return {};
-    }
-
-    try {
-      return JSON.parse(stored) as Progress;
-    } catch {
-      return {};
-    }
-  });
-
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}catalog.json`)
       .then((response) => {
@@ -111,10 +101,6 @@ function App() {
       .then((stickers) => setCatalog(stickers))
       .catch((error: Error) => setCatalogError(error.message));
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-  }, [progress]);
 
   useEffect(() => {
     localStorage.setItem(TRADE_HISTORY_STORAGE_KEY, JSON.stringify(tradeHistory));
@@ -174,6 +160,7 @@ function App() {
         authMessage={auth.authMessage}
         isConfigured={auth.isConfigured}
         isLoading={auth.isLoading}
+        syncStatus={syncStatus}
         userEmail={auth.user?.email}
         onSendMagicLink={auth.sendMagicLink}
         onSignOut={auth.signOut}
@@ -268,6 +255,7 @@ function AuthPanel({
   authMessage,
   isConfigured,
   isLoading,
+  syncStatus,
   userEmail,
   onSendMagicLink,
   onSignOut,
@@ -275,16 +263,25 @@ function AuthPanel({
   authMessage: string;
   isConfigured: boolean;
   isLoading: boolean;
+  syncStatus: SyncStatus;
   userEmail?: string;
   onSendMagicLink: (email: string) => Promise<void>;
   onSignOut: () => Promise<void>;
 }) {
   const [email, setEmail] = useState("");
+  const syncLabel =
+    syncStatus === "saving"
+      ? "Guardando..."
+      : syncStatus === "cloud"
+        ? "Guardado en la nube"
+        : syncStatus === "error"
+          ? "Error al sincronizar"
+          : "Usando almacenamiento local";
 
   if (!isConfigured) {
     return (
       <section className="auth-panel">
-        <span>Usando almacenamiento local</span>
+        <span>{syncLabel}</span>
       </section>
     );
   }
@@ -301,7 +298,7 @@ function AuthPanel({
     return (
       <section className="auth-panel">
         <div>
-          <span>Guardado en la nube</span>
+          <span>{syncLabel}</span>
           <strong>Sesión iniciada como {userEmail}</strong>
         </div>
         <button className="ghost-button small" onClick={onSignOut}>
@@ -315,7 +312,7 @@ function AuthPanel({
   return (
     <section className="auth-panel">
       <div>
-        <span>Usando almacenamiento local</span>
+        <span>{syncLabel}</span>
         <strong>Iniciar sesión</strong>
       </div>
       <label className="auth-email-field">
