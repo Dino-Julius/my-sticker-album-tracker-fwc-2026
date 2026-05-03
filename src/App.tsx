@@ -218,7 +218,7 @@ function App() {
         hasPendingCloudChanges={hasPendingCloudChanges}
         syncStatus={syncStatus}
         userEmail={auth.user?.email}
-        onSendMagicLink={auth.sendMagicLink}
+        onSignInWithGoogle={auth.signInWithGoogle}
         onSignOut={auth.signOut}
         onSyncNow={syncNow}
       />
@@ -380,7 +380,7 @@ function AuthPanel({
   isLoading,
   syncStatus,
   userEmail,
-  onSendMagicLink,
+  onSignInWithGoogle,
   onSignOut,
   onSyncNow,
 }: {
@@ -390,15 +390,11 @@ function AuthPanel({
   isLoading: boolean;
   syncStatus: SyncStatus;
   userEmail?: string;
-  onSendMagicLink: (email: string) => Promise<void>;
+  onSignInWithGoogle: () => Promise<void>;
   onSignOut: () => Promise<void>;
   onSyncNow: () => Promise<void>;
 }) {
-  const [email, setEmail] = useState("");
   const [manualSyncMessage, setManualSyncMessage] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
-  const trimmedEmail = email.trim();
-  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail);
-  const showEmailError = trimmedEmail.length > 0 && !isEmailValid;
   const syncLabels: Record<SyncStatus, string> = {
     cloud: "Guardado en la nube",
     error: "Error al sincronizar",
@@ -473,21 +469,8 @@ function AuthPanel({
         <span>{syncLabel}</span>
         <strong>Iniciar sesión</strong>
       </div>
-      <label className="auth-email-field">
-        <span>Correo</span>
-        <input
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          placeholder="tu@correo.com"
-          value={email}
-          aria-invalid={showEmailError}
-          onChange={(event) => setEmail(event.target.value)}
-        />
-        {showEmailError ? <small className="field-error">Escribe un correo válido.</small> : null}
-      </label>
-      <button className="primary-button small" onClick={() => onSendMagicLink(trimmedEmail)} disabled={!isEmailValid}>
-        Enviar enlace mágico
+      <button className="primary-button small" onClick={onSignInWithGoogle}>
+        Continuar con Google
       </button>
       {authMessage ? <p>{authMessage}</p> : null}
     </section>

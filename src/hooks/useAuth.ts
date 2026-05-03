@@ -41,27 +41,22 @@ export function useAuth() {
     };
   }, []);
 
-  const sendMagicLink = async (email: string) => {
-    const normalizedEmail = email.trim();
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
-      setAuthMessage("Escribe un correo válido para enviar el enlace mágico.");
-      return;
-    }
-
+  const signInWithGoogle = async () => {
     if (!supabase) {
       setAuthMessage("Supabase no está configurado. Usando almacenamiento local.");
       return;
     }
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email: normalizedEmail,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
       options: {
-        emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}`,
+        redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}`,
       },
     });
 
-    setAuthMessage(error ? error.message : "Enlace mágico enviado. Revisa tu correo.");
+    if (error) {
+      setAuthMessage(error.message);
+    }
   };
 
   const signOut = async () => {
@@ -78,7 +73,7 @@ export function useAuth() {
     isConfigured: isSupabaseConfigured,
     isLoading: status === "loading",
     session,
-    sendMagicLink,
+    signInWithGoogle,
     signOut,
     user,
   };

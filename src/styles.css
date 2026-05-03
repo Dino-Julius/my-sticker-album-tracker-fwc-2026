@@ -201,21 +201,6 @@ h3 {
   padding: 10px 12px;
 }
 
-.auth-email-field {
-  text-transform: none;
-}
-
-.field-error {
-  color: #b91c1c;
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-input[aria-invalid="true"] {
-  border-color: #ef4444;
-  background: #fef2f2;
-}
-
 button:disabled {
   cursor: not-allowed;
   opacity: 0.55;

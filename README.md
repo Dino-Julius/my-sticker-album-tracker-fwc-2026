@@ -99,7 +99,32 @@ En GitHub Actions configura estos secrets:
 
 Si ya tienes `VITE_SUPABASE_ANON_KEY`, tambien funciona como fallback.
 
-La autenticacion usa magic links. Si el usuario inicia sesion, la app sincroniza progreso e historial de intercambios en Supabase; si no, usa almacenamiento local.
+La autenticacion usa Google OAuth con Supabase. Si el usuario inicia sesion, la app sincroniza progreso e historial de intercambios en Supabase; si no, usa almacenamiento local.
+
+### Configurar login con Google
+
+En Supabase:
+
+1. Ve a `Authentication` -> `Providers` -> `Google`.
+2. Activa el proveedor de Google.
+3. Pega el `Client ID` y `Client Secret` creados en Google Cloud.
+
+En Google Cloud:
+
+1. Configura el OAuth consent screen.
+2. Crea un OAuth Client ID de tipo `Web application`.
+3. Agrega estos Authorized JavaScript origins:
+   - `https://dino-julius.github.io`
+   - `http://localhost:5173`
+4. Agrega tu Authorized redirect URI
+
+En Supabase URL Configuration:
+
+1. Site URL:
+   - `https://dino-julius.github.io/my-sticker-album-tracker-fwc-2026/`
+2. Redirect URLs:
+   - `https://dino-julius.github.io/my-sticker-album-tracker-fwc-2026/**`
+   - `http://localhost:5173/**`
 
 ## SQL Supabase
 
