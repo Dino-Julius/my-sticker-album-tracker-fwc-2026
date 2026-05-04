@@ -1403,7 +1403,7 @@ function RepeatedView({
   tradeHistory: TradeRecord[];
   onAddPendingTrade: (trade: PendingTradeRecord) => void;
   onAddTrade: (trade: TradeRecord) => void;
-  onDeletePendingTrade: (tradeId: string) => void;
+  onDeletePendingTrade: (tradeId: string, shouldRestoreOnFailure?: boolean) => void;
   onDeleteTrade: (tradeId: string) => void;
   onFiltersChange: (filters: Filters) => void;
   setProgress: React.Dispatch<React.SetStateAction<Progress>>;
@@ -1690,7 +1690,7 @@ function RepeatedView({
 
     setProgress((currentProgress) => applyTradeToProgress(currentProgress, confirmedTrade));
     onAddTrade(confirmedTrade);
-    onDeletePendingTrade(trade.id);
+    onDeletePendingTrade(trade.id, false);
     setTradeMessage("Intercambio confirmado. Ahora sí se actualizaron las cantidades del álbum.");
   };
 

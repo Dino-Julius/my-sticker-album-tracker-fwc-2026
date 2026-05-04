@@ -151,6 +151,18 @@ create table if not exists public.trade_records (
   primary key (user_id, id)
 );
 
+create table if not exists public.pending_trades (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  id text not null,
+  created_at text not null,
+  traded_with text,
+  notes text,
+  gave jsonb not null default '[]'::jsonb,
+  received jsonb not null default '[]'::jsonb,
+  saved_at timestamptz not null default now(),
+  primary key (user_id, id)
+);
+
 create table if not exists public.profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   email text,
@@ -174,8 +186,12 @@ create table if not exists public.registration_events (
 create index if not exists registration_events_user_id_created_at_idx
 on public.registration_events (user_id, created_at desc);
 
+create index if not exists pending_trades_user_id_saved_at_idx
+on public.pending_trades (user_id, saved_at desc);
+
 alter table public.album_progress enable row level security;
 alter table public.trade_records enable row level security;
+alter table public.pending_trades enable row level security;
 alter table public.profiles enable row level security;
 alter table public.registration_events enable row level security;
 
@@ -219,6 +235,31 @@ with check (auth.uid() = user_id);
 
 create policy "Users can delete own trades"
 on public.trade_records
+for delete
+to authenticated
+using (auth.uid() = user_id);
+
+create policy "Users can read own pending trades"
+on public.pending_trades
+for select
+to authenticated
+using (auth.uid() = user_id);
+
+create policy "Users can insert own pending trades"
+on public.pending_trades
+for insert
+to authenticated
+with check (auth.uid() = user_id);
+
+create policy "Users can update own pending trades"
+on public.pending_trades
+for update
+to authenticated
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+create policy "Users can delete own pending trades"
+on public.pending_trades
 for delete
 to authenticated
 using (auth.uid() = user_id);

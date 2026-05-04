@@ -2,6 +2,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { PendingTradeRecord, Progress, RegistrationEvent, TradeRecord } from "../types";
 import { loadRemoteProgress, saveRemoteProgress } from "../lib/remoteProgress";
 import {
+  deleteRemotePendingTrade,
+  loadRemotePendingTrades,
+  upsertRemotePendingTrade,
+} from "../lib/remotePendingTrades";
+import {
   deleteRemoteRegistrationEvent,
   insertRemoteRegistrationEvent,
   loadRemoteRegistrationEvents,
@@ -14,6 +19,7 @@ const UNSYNCED_CHANGES_MESSAGE = "Tienes cambios guardados en este dispositivo, 
 const LOCAL_META_STORAGE_KEY = "my-sticker-album-tracker-fwc-2026-local-meta";
 export const REGISTRATION_EVENTS_STORAGE_KEY = "my-sticker-album-tracker-fwc-2026-registration-events";
 export const PENDING_TRADES_STORAGE_KEY = "my-sticker-album-tracker-fwc-2026-pending-trades";
+const PENDING_TRADES_SYNCED_IDS_STORAGE_KEY = "my-sticker-album-tracker-fwc-2026-pending-trades-synced-ids";
 
 export type SyncStatus = "local" | "loading" | "pending" | "saving" | "cloud" | "error";
 export type LocalMeta = {
@@ -99,6 +105,31 @@ function readLocalPendingTrades(): PendingTradeRecord[] {
   }
 }
 
+function readSyncedPendingTradeIds() {
+  const stored = localStorage.getItem(PENDING_TRADES_SYNCED_IDS_STORAGE_KEY);
+
+  if (!stored) {
+    return new Set<string>();
+  }
+
+  try {
+    const parsed = JSON.parse(stored) as string[];
+    return new Set(Array.isArray(parsed) ? parsed : []);
+  } catch {
+    return new Set<string>();
+  }
+}
+
+function writeSyncedPendingTradeIds(ids: Iterable<string>) {
+  localStorage.setItem(PENDING_TRADES_SYNCED_IDS_STORAGE_KEY, JSON.stringify([...new Set(ids)].sort()));
+}
+
+function addSyncedPendingTradeId(id: string) {
+  const ids = readSyncedPendingTradeIds();
+  ids.add(id);
+  writeSyncedPendingTradeIds(ids);
+}
+
 function readLocalMeta(): LocalMeta {
   const stored = localStorage.getItem(LOCAL_META_STORAGE_KEY);
 
@@ -144,6 +175,23 @@ function mergeTrades(localTrades: TradeRecord[], remoteTrades: TradeRecord[]) {
   });
 
   return [...trades.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+function mergePendingTrades(
+  localPendingTrades: PendingTradeRecord[],
+  remotePendingTrades: PendingTradeRecord[],
+  confirmedTrades: TradeRecord[],
+) {
+  const confirmedTradeIds = new Set(confirmedTrades.map((trade) => trade.id));
+  const pendingTrades = new Map<string, PendingTradeRecord>();
+
+  [...remotePendingTrades, ...localPendingTrades].forEach((trade) => {
+    if (!confirmedTradeIds.has(trade.id)) {
+      pendingTrades.set(trade.id, trade);
+    }
+  });
+
+  return [...pendingTrades.values()].sort((a, b) => b.reservedAt.localeCompare(a.reservedAt));
 }
 
 function mergeRegistrationEvents(localEvents: RegistrationEvent[], remoteEvents: RegistrationEvent[]) {
@@ -362,20 +410,30 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     setSyncStatus("loading");
 
     const localProgress = readLocalProgress();
+    const localPendingTrades = readLocalPendingTrades();
     const localRegistrationEvents = readLocalRegistrationEvents();
     const localTrades = readLocalTrades();
     const localMeta = readLocalMeta();
+    const syncedPendingTradeIds = readSyncedPendingTradeIds();
 
     Promise.all([
       loadRemoteProgress(userId),
+      loadRemotePendingTrades(userId).catch(() => []),
       loadRemoteTrades(userId),
       loadRemoteRegistrationEvents(userId).catch(() => []),
     ])
-      .then(([remoteProgressSnapshot, remoteTrades, remoteRegistrationEvents]) => {
+      .then(([remoteProgressSnapshot, remotePendingTrades, remoteTrades, remoteRegistrationEvents]) => {
         if (!isActive) {
           return;
         }
 
+        const confirmedTrades = mergeTrades(localTrades, remoteTrades);
+        const confirmedTradeIds = new Set(confirmedTrades.map((trade) => trade.id));
+        const remotePendingTradeIds = new Set(remotePendingTrades.map((trade) => trade.id));
+        const localPendingTradesToMerge = localPendingTrades.filter(
+          (trade) => remotePendingTradeIds.has(trade.id) || !syncedPendingTradeIds.has(trade.id),
+        );
+        const mergedPendingTrades = mergePendingTrades(localPendingTradesToMerge, remotePendingTrades, confirmedTrades);
         const mergedRegistrationEvents = mergeRegistrationEvents(localRegistrationEvents, remoteRegistrationEvents);
         const normalizedRemoteProgress = remoteProgressSnapshot?.progress ?? {};
         const remoteUpdatedAt = remoteProgressSnapshot?.updatedAt;
@@ -385,7 +443,38 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
         const remoteHasData = hasLocalData(normalizedRemoteProgress, remoteTrades);
 
         setRegistrationEvents(mergedRegistrationEvents);
+        setPendingTrades(mergedPendingTrades);
         localStorage.setItem(REGISTRATION_EVENTS_STORAGE_KEY, JSON.stringify(mergedRegistrationEvents));
+        localStorage.setItem(PENDING_TRADES_STORAGE_KEY, JSON.stringify(mergedPendingTrades));
+
+        writeSyncedPendingTradeIds([...syncedPendingTradeIds, ...remotePendingTradeIds]);
+
+        const unsyncedPendingTrades = mergedPendingTrades.filter(
+          (trade) => !remotePendingTradeIds.has(trade.id) && !syncedPendingTradeIds.has(trade.id),
+        );
+        const staleRemotePendingTrades = remotePendingTrades.filter((trade) => confirmedTradeIds.has(trade.id));
+
+        if (unsyncedPendingTrades.length > 0) {
+          void Promise.all(unsyncedPendingTrades.map((trade) => upsertRemotePendingTrade(userId, trade)))
+            .then(() => {
+              if (isActive) {
+                writeSyncedPendingTradeIds([...readSyncedPendingTradeIds(), ...unsyncedPendingTrades.map((trade) => trade.id)]);
+              }
+            })
+            .catch(() => {
+              if (isActive) {
+                setSyncStatus("error");
+              }
+            });
+        }
+
+        if (staleRemotePendingTrades.length > 0) {
+          void Promise.all(staleRemotePendingTrades.map((trade) => deleteRemotePendingTrade(userId, trade.id))).catch(() => {
+            if (isActive) {
+              setSyncStatus("error");
+            }
+          });
+        }
 
         const remoteRegistrationEventIds = new Set(remoteRegistrationEvents.map((event) => event.id));
         const unsyncedRegistrationEvents = mergedRegistrationEvents.filter((event) => !remoteRegistrationEventIds.has(event.id));
@@ -618,10 +707,34 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
 
   const addPendingTrade = (trade: PendingTradeRecord) => {
     setPendingTrades((currentTrades) => [trade, ...currentTrades.filter((currentTrade) => currentTrade.id !== trade.id)]);
+
+    if (isCloudEnabled && userId) {
+      upsertRemotePendingTrade(userId, trade)
+        .then(() => addSyncedPendingTradeId(trade.id))
+        .catch(() => {
+          setSyncStatus("error");
+        });
+    }
   };
 
-  const deletePendingTrade = (tradeId: string) => {
-    setPendingTrades((currentTrades) => currentTrades.filter((trade) => trade.id !== tradeId));
+  const deletePendingTrade = (tradeId: string, shouldRestoreOnFailure = true) => {
+    let deletedTrade: PendingTradeRecord | undefined;
+    setPendingTrades((currentTrades) => {
+      deletedTrade = currentTrades.find((trade) => trade.id === tradeId);
+      return currentTrades.filter((trade) => trade.id !== tradeId);
+    });
+
+    if (isCloudEnabled && userId) {
+      deleteRemotePendingTrade(userId, tradeId).catch(() => {
+        const tradeToRestore = deletedTrade;
+
+        if (shouldRestoreOnFailure && tradeToRestore) {
+          setPendingTrades((currentTrades) => [tradeToRestore, ...currentTrades.filter((trade) => trade.id !== tradeId)]);
+        }
+
+        setSyncStatus("error");
+      });
+    }
   };
 
   const addRegistrationEvent = (event: RegistrationEvent) => {
