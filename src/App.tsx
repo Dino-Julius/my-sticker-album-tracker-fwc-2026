@@ -15,6 +15,7 @@ import {
   exportProgressToJson,
   exportRepeatedToCsv,
   exportRepeatedToMarkdown,
+  formatCollectionCodeLabel,
   formatTradeItems,
   getCompletionPercentage,
   getCollectionName,
@@ -380,6 +381,7 @@ function App() {
 
       {activeView === "dashboard" ? (
         <DashboardView
+          catalog={catalog}
           dashboard={dashboard}
           onOpenRegistro={(status) => {
             setFilters({ ...emptyFilters, status });
@@ -871,12 +873,14 @@ function MigrationDataCard({
 }
 
 function DashboardView({
+  catalog,
   dashboard,
   onOpenRegistro,
   onOpenFaltantes,
   onOpenRepetidas,
   onOpenCollection,
 }: {
+  catalog: Sticker[];
   dashboard: {
     total: number;
     owned: number;
@@ -927,7 +931,8 @@ function DashboardView({
                     onClick={() => onOpenCollection(collection.name)}
                   >
                     <div>
-                      <strong>{collection.name}</strong>
+                      <strong>{formatCollectionCodeLabel(catalog, collection.name)}</strong>
+                      <small>{collection.name}</small>
                       <span>
                         {collection.owned}/{collection.total}
                       </span>
@@ -942,8 +947,8 @@ function DashboardView({
       </section>
 
       <div className="split-grid">
-        <MiniRanking title="Colecciones con más faltantes" items={dashboard.mostMissing} valueKey="missing" suffix=" faltan" />
-        <MiniRanking title="Más cerca de completar" items={dashboard.closest} valueKey="completionPercentage" suffix="%" />
+        <MiniRanking catalog={catalog} title="Colecciones con más faltantes" items={dashboard.mostMissing} valueKey="missing" suffix=" faltan" />
+        <MiniRanking catalog={catalog} title="Más cerca de completar" items={dashboard.closest} valueKey="completionPercentage" suffix="%" />
       </div>
     </section>
   );
@@ -968,11 +973,13 @@ function MetricCard({ label, value, onClick }: { label: string; value: string | 
 }
 
 function MiniRanking({
+  catalog,
   title,
   items,
   valueKey,
   suffix,
 }: {
+  catalog: Sticker[];
   title: string;
   items: ReturnType<typeof getStatsByCollection>;
   valueKey: "missing" | "completionPercentage";
@@ -984,7 +991,7 @@ function MiniRanking({
       <div className="ranking-list">
         {items.map((item) => (
           <div key={item.name} className="ranking-row">
-            <span>{item.name}</span>
+            <span>{formatCollectionCodeLabel(catalog, item.name)}</span>
             <strong>
               {item[valueKey]}
               {suffix}
@@ -1352,8 +1359,9 @@ function GroupedCodesView({
           <article className="panel missing-group-card" key={country}>
             <button className="missing-group-main" onClick={() => onOpenCollection(country)}>
               <h3>
-                {country} — faltan {countryStickers.length}
+                {formatCollectionCodeLabel(catalog, country)} — faltan {countryStickers.length}
               </h3>
+              <span>{country}</span>
               <p className="code-list">{countryStickers.map((sticker) => sticker.code).join(", ")}</p>
             </button>
             <button className="ghost-button small" onClick={() => copyCollectionMissing(country, countryStickers)}>
@@ -1713,7 +1721,8 @@ function RepeatedView({
       <div className="grouped-list">
         {[...groups.entries()].map(([country, countryStickers]) => (
           <article className="panel" key={country}>
-            <h3>{country}</h3>
+            <h3>{formatCollectionCodeLabel(catalog, country)}</h3>
+            <p className="history-note">{country}</p>
             <div className="trade-code-list">
               {countryStickers.map((sticker) => {
                 const extras = getStickerQuantity(sticker.code, progress) - 1;
@@ -1938,7 +1947,7 @@ function TradeBuilder({
             <div className="selected-trade-item" key={item.code}>
               <div>
                 <strong>{item.code}</strong>
-                <span>{sticker ? getCollectionName(sticker) : ""}</span>
+                <span>{sticker ? formatCollectionCodeLabel(catalog, getCollectionName(sticker)) : ""}</span>
                 {hasWarning ? <small>Solo tienes {availableExtras} extra(s) disponible(s) de {item.code}</small> : null}
               </div>
               <input
@@ -1968,7 +1977,7 @@ function TradeBuilder({
               disabled={selectedCodes.has(sticker.code) && mode === "gave" && items.find((item) => item.code === sticker.code)?.quantity === extras}
             >
               <strong>{sticker.code}</strong>
-              <span>{getCollectionName(sticker)}</span>
+              <span>{formatCollectionCodeLabel(catalog, getCollectionName(sticker))}</span>
               <small>{mode === "gave" ? `${extras} extra(s) disponible(s)` : quantity === 0 ? "Faltante" : `Cantidad actual: ${quantity}`}</small>
             </button>
           );
@@ -2045,7 +2054,7 @@ function CollectionsView({
           <select value={collection} onChange={(event) => selectCollection(event.target.value)}>
             {selectOptions.map((item) => (
               <option key={item.name} value={item.name}>
-                {item.name}
+                {formatCollectionCodeLabel(catalog, item.name)} — {item.name}
               </option>
             ))}
           </select>
@@ -2054,9 +2063,10 @@ function CollectionsView({
 
       <section className="panel">
         <div className="section-heading flush">
-          <h2>{collection}</h2>
+          <h2>{formatCollectionCodeLabel(catalog, collection)}</h2>
           <span>{stickers.length} estampas</span>
         </div>
+        <p className="history-note">{collection}</p>
         {selectedStats ? (
           <div className="collection-summary">
             <strong>{selectedStats.completionPercentage}% completado</strong>

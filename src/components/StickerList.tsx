@@ -1,4 +1,4 @@
-import { getCollectionName, getStickerQuantity, getStickerStatus, STATUS_LABELS } from "../lib/album";
+import { formatStickerCollectionLabel, getStickerQuantity, getStickerStatus, STATUS_LABELS } from "../lib/album";
 import type { Progress, Sticker } from "../types";
 
 type StickerListProps = {
@@ -50,7 +50,7 @@ export function StickerList({ stickers, progress, onSetQuantity, compact = false
                   <td>
                     <strong>{sticker.code}</strong>
                   </td>
-                  <td>{getCollectionName(sticker)}</td>
+                  <td>{formatStickerCollectionLabel(sticker)}</td>
                   <td>{sticker.group}</td>
                   <td>{sticker.section}</td>
                   <td>
@@ -105,7 +105,7 @@ function StickerCard({
           <span className={`status status-${status}`}>{getStatusLabel(status, quantity)}</span>
         </div>
         <p>
-          {getCollectionName(sticker)} · {sticker.section}
+          {formatStickerCollectionLabel(sticker)} · {sticker.section}
         </p>
         {sticker.displayName ? <small>{sticker.displayName}</small> : null}
       </div>

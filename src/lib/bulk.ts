@@ -8,11 +8,47 @@ export type BulkParseResult = {
 const CODE_PATTERN = /^[A-Z]*\d+$/;
 const CODE_WITH_QUANTITY_PATTERN = /^([A-Z]*\d+)(?:X|:|=)(\d+)$/;
 const RANGE_PATTERN = /^([A-Z]*)(\d+)-([A-Z]*)(\d+)(?:X(\d+))?$/;
+const GROUPED_SECTION_PATTERN = /^([A-Z][A-Z0-9]{1,4})\b[^:]*:\s*(.+)$/u;
 
 export function parseBulkStickerText(text: string, catalog: Sticker[]): BulkParseResult {
   const validCodes = new Set(catalog.map((sticker) => sticker.code.toUpperCase()));
+  const codeByPrefixAndNumber = getCodeByPrefixAndNumber(catalog);
   const quantities: Record<string, number> = {};
   const unknownCodes = new Set<string>();
+
+  text
+    .split(/[\n\r;]+/)
+    .map((segment) => segment.trim())
+    .filter(Boolean)
+    .forEach((segment) => {
+      if (isSectionHeader(segment)) {
+        return;
+      }
+
+      const normalizedSegment = segment.toUpperCase();
+      const groupedMatch = normalizedSegment.match(GROUPED_SECTION_PATTERN);
+      const groupedPrefix = groupedMatch?.[1];
+
+      if (groupedMatch && groupedPrefix && hasPrefix(codeByPrefixAndNumber, groupedPrefix)) {
+        addGroupedCodes(groupedPrefix, groupedMatch[2], codeByPrefixAndNumber, quantities, unknownCodes);
+        return;
+      }
+
+      addCompactCodes(segment, validCodes, quantities, unknownCodes);
+    });
+
+  return {
+    quantities,
+    unknownCodes: [...unknownCodes],
+  };
+}
+
+function addCompactCodes(
+  text: string,
+  validCodes: Set<string>,
+  quantities: Record<string, number>,
+  unknownCodes: Set<string>,
+) {
   const normalizedText = text
     .toUpperCase()
     .replace(/([A-Z]*\d+)\s*-\s*([A-Z]*\d+)/g, "$1-$2")
@@ -59,11 +95,6 @@ export function parseBulkStickerText(text: string, catalog: Sticker[]): BulkPars
         addCode(token, 1, validCodes, quantities, unknownCodes);
       }
     });
-
-  return {
-    quantities,
-    unknownCodes: [...unknownCodes],
-  };
 }
 
 function getPositiveQuantity(value: string | undefined) {
@@ -86,4 +117,70 @@ function addCode(
   }
 
   quantities[normalizedCode] = (quantities[normalizedCode] ?? 0) + quantity;
+}
+
+function getCodeByPrefixAndNumber(catalog: Sticker[]) {
+  const codes = new Map<string, string>();
+
+  catalog.forEach((sticker) => {
+    const prefix = getStickerPrefix(sticker);
+    const number = Number(sticker.number);
+
+    if (Number.isFinite(number)) {
+      codes.set(`${prefix}:${number}`, sticker.code.toUpperCase());
+    }
+  });
+
+  return codes;
+}
+
+function getStickerPrefix(sticker: Sticker) {
+  const alphaPrefix = sticker.code.toUpperCase().match(/^[A-Z]+/)?.[0];
+
+  if (alphaPrefix) {
+    return alphaPrefix;
+  }
+
+  if (sticker.country === "FIFA") {
+    return "FWC";
+  }
+
+  return sticker.code.toUpperCase();
+}
+
+function hasPrefix(codeByPrefixAndNumber: Map<string, string>, prefix: string) {
+  return [...codeByPrefixAndNumber.keys()].some((key) => key.startsWith(`${prefix}:`));
+}
+
+function addGroupedCodes(
+  prefix: string,
+  values: string,
+  codeByPrefixAndNumber: Map<string, string>,
+  quantities: Record<string, number>,
+  unknownCodes: Set<string>,
+) {
+  const normalizedValues = values.toUpperCase().replace(/(\d+)\s*(?:X|:|=)\s*(\d+)/g, "$1X$2");
+  const itemPattern = /(\d+)(?:\s*-\s*(\d+))?(?:X(\d+))?/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = itemPattern.exec(normalizedValues))) {
+    const start = Number(match[1]);
+    const end = match[2] ? Number(match[2]) : start;
+    const quantity = getPositiveQuantity(match[3]);
+    const step = start <= end ? 1 : -1;
+
+    for (let current = start; step > 0 ? current <= end : current >= end; current += step) {
+      const code = codeByPrefixAndNumber.get(`${prefix}:${current}`);
+
+      if (code) {
+        quantities[code] = (quantities[code] ?? 0) + quantity;
+      } else {
+        unknownCodes.add(`${prefix}${current}`);
+      }
+    }
+  }
+}
+
+function isSectionHeader(segment: string) {
+  return /^(I NEED|NEED|ME FALTAN|FALTANTES|SWAPS|REPETIDAS|EXTRAS)\s*:?\s*$/i.test(segment.trim());
 }

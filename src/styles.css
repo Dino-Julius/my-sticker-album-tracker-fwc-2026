@@ -493,6 +493,12 @@ button:disabled {
   font-size: 0.9rem;
 }
 
+.country-progress small {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
 progress {
   width: 100%;
   height: 10px;

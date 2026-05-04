@@ -23,6 +23,63 @@ export const SPECIAL_COLLECTION_NAME = "FIFA / FWC";
 export const SPONSOR_COLLECTION_NAME = "Coca-Cola";
 export const TEAM_COLLECTION_NAME = "Teams / national selections";
 
+type CollectionMetadata = {
+  code: string;
+  displayName: string;
+  emoji?: string;
+};
+
+const COLLECTION_METADATA_BY_PREFIX: Record<string, CollectionMetadata> = {
+  ALG: { code: "ALG", displayName: "Algeria", emoji: "🇩🇿" },
+  ARG: { code: "ARG", displayName: "Argentina", emoji: "🇦🇷" },
+  AUS: { code: "AUS", displayName: "Australia", emoji: "🇦🇺" },
+  AUT: { code: "AUT", displayName: "Austria", emoji: "🇦🇹" },
+  BEL: { code: "BEL", displayName: "Belgium", emoji: "🇧🇪" },
+  BIH: { code: "BIH", displayName: "Bosnia-Herzegovina", emoji: "🇧🇦" },
+  BRA: { code: "BRA", displayName: "Brazil", emoji: "🇧🇷" },
+  CAN: { code: "CAN", displayName: "Canada", emoji: "🇨🇦" },
+  CIV: { code: "CIV", displayName: "Côte d'Ivoire", emoji: "🇨🇮" },
+  COD: { code: "COD", displayName: "Congo DR", emoji: "🇨🇩" },
+  COL: { code: "COL", displayName: "Colombia", emoji: "🇨🇴" },
+  CPV: { code: "CPV", displayName: "Cabo Verde", emoji: "🇨🇻" },
+  CRO: { code: "CRO", displayName: "Croatia", emoji: "🇭🇷" },
+  CUW: { code: "CUW", displayName: "Curaçao", emoji: "🇨🇼" },
+  CZE: { code: "CZE", displayName: "Czechia", emoji: "🇨🇿" },
+  ECU: { code: "ECU", displayName: "Ecuador", emoji: "🇪🇨" },
+  EGY: { code: "EGY", displayName: "Egypt", emoji: "🇪🇬" },
+  ENG: { code: "ENG", displayName: "England", emoji: "🏴" },
+  ESP: { code: "ESP", displayName: "Spain", emoji: "🇪🇸" },
+  FRA: { code: "FRA", displayName: "France", emoji: "🇫🇷" },
+  GER: { code: "GER", displayName: "Germany", emoji: "🇩🇪" },
+  GHA: { code: "GHA", displayName: "Ghana", emoji: "🇬🇭" },
+  HAI: { code: "HAI", displayName: "Haiti", emoji: "🇭🇹" },
+  IRN: { code: "IRN", displayName: "IR Iran", emoji: "🇮🇷" },
+  IRQ: { code: "IRQ", displayName: "Iraq", emoji: "🇮🇶" },
+  JOR: { code: "JOR", displayName: "Jordan", emoji: "🇯🇴" },
+  JPN: { code: "JPN", displayName: "Japan", emoji: "🇯🇵" },
+  KOR: { code: "KOR", displayName: "Korea Republic", emoji: "🇰🇷" },
+  KSA: { code: "KSA", displayName: "Saudi Arabia", emoji: "🇸🇦" },
+  MAR: { code: "MAR", displayName: "Morocco", emoji: "🇲🇦" },
+  MEX: { code: "MEX", displayName: "Mexico", emoji: "🇲🇽" },
+  NED: { code: "NED", displayName: "Netherlands", emoji: "🇳🇱" },
+  NOR: { code: "NOR", displayName: "Norway", emoji: "🇳🇴" },
+  NZL: { code: "NZL", displayName: "New Zealand", emoji: "🇳🇿" },
+  PAN: { code: "PAN", displayName: "Panama", emoji: "🇵🇦" },
+  PAR: { code: "PAR", displayName: "Paraguay", emoji: "🇵🇾" },
+  POR: { code: "POR", displayName: "Portugal", emoji: "🇵🇹" },
+  QAT: { code: "QAT", displayName: "Qatar", emoji: "🇶🇦" },
+  RSA: { code: "RSA", displayName: "South Africa", emoji: "🇿🇦" },
+  SCO: { code: "SCO", displayName: "Scotland", emoji: "🏴" },
+  SEN: { code: "SEN", displayName: "Senegal", emoji: "🇸🇳" },
+  SUI: { code: "SUI", displayName: "Switzerland", emoji: "🇨🇭" },
+  SWE: { code: "SWE", displayName: "Sweden", emoji: "🇸🇪" },
+  TUN: { code: "TUN", displayName: "Tunisia", emoji: "🇹🇳" },
+  TUR: { code: "TUR", displayName: "Türkiye", emoji: "🇹🇷" },
+  URU: { code: "URU", displayName: "Uruguay", emoji: "🇺🇾" },
+  USA: { code: "USA", displayName: "USA", emoji: "🇺🇸" },
+  UZB: { code: "UZB", displayName: "Uzbekistan", emoji: "🇺🇿" },
+};
+
 const normalize = (value: string) =>
   value
     .normalize("NFD")
@@ -128,6 +185,59 @@ export function getCollectionName(sticker: Sticker): string {
   }
 
   return sticker.country;
+}
+
+export function getStickerCodePrefix(sticker: Sticker): string {
+  const alphaPrefix = sticker.code.match(/^[A-Z]+/)?.[0];
+
+  if (alphaPrefix) {
+    return alphaPrefix;
+  }
+
+  return getCollectionType(sticker) === "special" ? "FWC" : sticker.code;
+}
+
+export function getStickerNumberLabel(sticker: Sticker) {
+  return String(sticker.number);
+}
+
+export function getCollectionMetadata(catalog: Sticker[], collectionName: string): CollectionMetadata {
+  if (collectionName === SPECIAL_COLLECTION_NAME) {
+    return { code: "FWC", displayName: SPECIAL_COLLECTION_NAME };
+  }
+
+  if (collectionName === SPONSOR_COLLECTION_NAME) {
+    return { code: "CC", displayName: SPONSOR_COLLECTION_NAME };
+  }
+
+  const sticker = catalog.find((candidate) => getCollectionName(candidate) === collectionName);
+  const prefix = sticker ? getStickerCodePrefix(sticker) : collectionName;
+
+  return COLLECTION_METADATA_BY_PREFIX[prefix] ?? { code: prefix, displayName: collectionName };
+}
+
+export function formatCollectionCodeLabel(catalog: Sticker[], collectionName: string) {
+  const metadata = getCollectionMetadata(catalog, collectionName);
+  return `${metadata.code}${metadata.emoji ? ` ${metadata.emoji}` : ""}`;
+}
+
+export function formatStickerCollectionLabel(sticker: Sticker) {
+  const prefix = getStickerCodePrefix(sticker);
+  const metadata = COLLECTION_METADATA_BY_PREFIX[prefix];
+
+  if (metadata) {
+    return `${metadata.code} ${metadata.emoji}`;
+  }
+
+  if (getCollectionType(sticker) === "special") {
+    return "FWC";
+  }
+
+  if (getCollectionType(sticker) === "sponsor") {
+    return "CC";
+  }
+
+  return getCollectionName(sticker);
 }
 
 export function getCollectionTypeLabel(type: CollectionType): string {
@@ -431,15 +541,42 @@ export function exportRepeatedToMarkdown(catalog: Sticker[], progress: Progress)
 }
 
 export function createTradingText(catalog: Sticker[], progress: Progress): string {
-  const repeated = getRepeatedStickers(catalog, progress)
-    .map((sticker) => `${sticker.code} x${getStickerQuantity(sticker.code, progress) - 1}`)
-    .join(", ");
+  const missing = formatExchangeGroups(catalog, getMissingStickers(catalog, progress), progress, "missing");
+  const repeated = formatExchangeGroups(catalog, getRepeatedStickers(catalog, progress), progress, "swaps");
 
-  const missing = getMissingStickers(catalog, progress)
-    .map((sticker) => sticker.code)
-    .join(", ");
+  return `I need\n${missing || "No me falta ninguna"}\n\nSwaps\n${repeated || "No tengo repetidas"}`;
+}
 
-  return `Mis repetidas:\n${repeated || "No tengo repetidas"}\n\nMe faltan:\n${missing || "No me falta ninguna"}`;
+function formatExchangeGroups(catalog: Sticker[], stickers: Sticker[], progress: Progress, mode: "missing" | "swaps") {
+  const groups = new Map<string, Sticker[]>();
+
+  sortStickersByAlbumOrder(stickers, catalog).forEach((sticker) => {
+    const prefix = getStickerCodePrefix(sticker);
+    groups.set(prefix, [...(groups.get(prefix) ?? []), sticker]);
+  });
+
+  return [...groups.entries()]
+    .map(([prefix, groupStickers]) => {
+      const firstSticker = groupStickers[0];
+      const metadata = getCollectionMetadata(catalog, getCollectionName(firstSticker));
+      const label = `${prefix}${metadata.emoji ? ` ${metadata.emoji}` : ""}`;
+      const items = [...groupStickers]
+        .sort((a, b) => Number(a.number) - Number(b.number))
+        .map((sticker) => {
+          const number = getStickerNumberLabel(sticker);
+
+          if (mode === "missing") {
+            return number;
+          }
+
+          const extras = getStickerQuantity(sticker.code, progress) - 1;
+          return extras > 1 ? `${number} x${extras}` : number;
+        })
+        .join(", ");
+
+      return `${label}: ${items}`;
+    })
+    .join("\n");
 }
 
 export function getRealGroups(catalog: Sticker[]) {
