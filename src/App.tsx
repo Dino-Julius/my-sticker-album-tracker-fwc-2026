@@ -1398,6 +1398,9 @@ function RepeatedView({
   const [received, setReceived] = useState<TradeItem[]>([]);
   const [gaveSearch, setGaveSearch] = useState("");
   const [receivedSearch, setReceivedSearch] = useState("");
+  const [gaveBulkText, setGaveBulkText] = useState("");
+  const [receivedBulkText, setReceivedBulkText] = useState("");
+  const [tradeBulkMessage, setTradeBulkMessage] = useState<{ type: "success" | "warning"; text: string } | null>(null);
   const [tradeMessage, setTradeMessage] = useState("");
   const [copiedTradeId, setCopiedTradeId] = useState("");
 
@@ -1418,6 +1421,83 @@ function RepeatedView({
 
       return [...items, { code, quantity: 1 }];
     });
+  };
+
+  const notifyTradeBulk = (text: string, type: "success" | "warning" = "success") => {
+    setTradeBulkMessage({ type, text });
+    window.setTimeout(() => setTradeBulkMessage((current) => (current?.text === text ? null : current)), 5200);
+  };
+
+  const mergeTradeItems = (items: TradeItem[], additions: TradeItem[]) => {
+    const quantities = new Map(items.map((item) => [item.code, item.quantity]));
+
+    additions.forEach((item) => {
+      quantities.set(item.code, (quantities.get(item.code) ?? 0) + item.quantity);
+    });
+
+    return [...quantities.entries()]
+      .map(([code, quantity]) => ({ code, quantity }))
+      .sort((a, b) => a.code.localeCompare(b.code));
+  };
+
+  const addBulkTradeItems = (side: "gave" | "received") => {
+    const text = side === "gave" ? gaveBulkText : receivedBulkText;
+    const parsed = parseBulkStickerText(text, catalog);
+    const warnings: string[] = parsed.unknownCodes.length > 0 ? [`No encontrados: ${parsed.unknownCodes.join(", ")}`] : [];
+    const currentItems = side === "gave" ? gave : received;
+    const additions: TradeItem[] = [];
+
+    Object.entries(parsed.quantities).forEach(([code, quantity]) => {
+      if (side === "received") {
+        additions.push({ code, quantity });
+        return;
+      }
+
+      const availableExtras = Math.max(0, getStickerQuantity(code, progress) - 1);
+      const alreadySelected = currentItems.find((item) => item.code === code)?.quantity ?? 0;
+      const remainingExtras = Math.max(0, availableExtras - alreadySelected);
+
+      if (availableExtras === 0 || remainingExtras === 0) {
+        warnings.push(availableExtras === 0 ? `No tienes extras disponibles de ${code}` : `Solo tienes ${availableExtras} extra(s) disponible(s) de ${code}`);
+        return;
+      }
+
+      const quantityToAdd = Math.min(quantity, remainingExtras);
+
+      if (quantityToAdd < quantity) {
+        warnings.push(`Solo tienes ${availableExtras} extra(s) disponible(s) de ${code}`);
+      }
+
+      additions.push({ code, quantity: quantityToAdd });
+    });
+
+    const addedTotal = getTradeItemTotal(additions);
+
+    if (additions.length > 0) {
+      if (side === "gave") {
+        setGave((items) => mergeTradeItems(items, additions));
+        setGaveBulkText("");
+      } else {
+        setReceived((items) => mergeTradeItems(items, additions));
+        setReceivedBulkText("");
+      }
+    }
+
+    const targetLabel = side === "gave" ? "Doy" : "Recibo";
+    const successMessage = addedTotal > 0 ? `${addedTotal} ${addedTotal === 1 ? "estampa agregada" : "estampas agregadas"} a ${targetLabel}` : "";
+    const warningText = warnings.join(" · ");
+
+    if (successMessage && warningText) {
+      notifyTradeBulk(`${successMessage}. ${warningText}`, "warning");
+      return;
+    }
+
+    if (successMessage) {
+      notifyTradeBulk(successMessage);
+      return;
+    }
+
+    notifyTradeBulk(warningText || "Pega códigos válidos para agregarlos al intercambio.", "warning");
   };
 
   const updateTradeItem = (side: "gave" | "received", code: string, quantity: number) => {
@@ -1479,6 +1559,9 @@ function RepeatedView({
     setReceived([]);
     setGaveSearch("");
     setReceivedSearch("");
+    setGaveBulkText("");
+    setReceivedBulkText("");
+    setTradeBulkMessage(null);
     setTradeMessage("Intercambio registrado.");
     setIsFormOpen(false);
   };
@@ -1491,6 +1574,9 @@ function RepeatedView({
     setReceived([]);
     setGaveSearch("");
     setReceivedSearch("");
+    setGaveBulkText("");
+    setReceivedBulkText("");
+    setTradeBulkMessage(null);
     setTradeMessage("");
     setIsFormOpen(false);
   };
@@ -1556,6 +1642,32 @@ function RepeatedView({
               onChange={(event) => setNotes(event.target.value)}
             />
           </label>
+
+          <div className="trade-bulk-grid">
+            <TradeBulkInput
+              buttonLabel="Agregar a Doy"
+              label="Pegar códigos que doy"
+              placeholder="Ej. MEX3, MEX4, ARG1-ARG3, BRA7 x2"
+              summary="Doy en bulk"
+              value={gaveBulkText}
+              onAdd={() => addBulkTradeItems("gave")}
+              onChange={setGaveBulkText}
+            />
+            <TradeBulkInput
+              buttonLabel="Agregar a Recibo"
+              label="Pegar códigos que recibo"
+              placeholder="Ej. FWC5, BRA7, CC1, MEX10-MEX12"
+              summary="Recibo en bulk"
+              value={receivedBulkText}
+              onAdd={() => addBulkTradeItems("received")}
+              onChange={setReceivedBulkText}
+            />
+          </div>
+          {tradeBulkMessage ? (
+            <p className={tradeBulkMessage.type === "success" ? "toast-message compact-message" : "warning-message compact-message"}>
+              {tradeBulkMessage.text}
+            </p>
+          ) : null}
 
           <div className="trade-builder-grid">
             <TradeBuilder
@@ -1654,6 +1766,40 @@ function RepeatedView({
         </div>
       </section>
     </section>
+  );
+}
+
+function TradeBulkInput({
+  buttonLabel,
+  label,
+  placeholder,
+  summary,
+  value,
+  onAdd,
+  onChange,
+}: {
+  buttonLabel: string;
+  label: string;
+  placeholder: string;
+  summary: string;
+  value: string;
+  onAdd: () => void;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <details className="trade-bulk-panel">
+      <summary>{summary}</summary>
+      <div className="trade-bulk-content">
+        <p>Puedes pegar códigos separados por comas, espacios o saltos de línea. También puedes usar rangos como MEX1-MEX5.</p>
+        <label className="text-import">
+          <span>{label}</span>
+          <textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={3} />
+        </label>
+        <button className="ghost-button" type="button" onClick={onAdd}>
+          {buttonLabel}
+        </button>
+      </div>
+    </details>
   );
 }
 
