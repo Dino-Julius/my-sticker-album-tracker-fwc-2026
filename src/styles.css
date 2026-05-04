@@ -1216,6 +1216,15 @@ textarea {
   gap: 8px;
 }
 
+.pending-trade-panel {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.pending-trade-card {
+  border-color: #fcd34d;
+}
+
 .trade-history-card p {
   margin-bottom: 0;
 }

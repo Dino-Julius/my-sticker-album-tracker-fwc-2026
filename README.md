@@ -79,6 +79,7 @@ Llaves actuales de `localStorage`:
 - `my-sticker-album-tracker-fwc-2026-progress`
 - `my-sticker-album-tracker-fwc-2026-trades`
 - `my-sticker-album-tracker-fwc-2026-registration-events`
+- `my-sticker-album-tracker-fwc-2026-pending-trades`
 
 La app sigue funcionando 100% local si Supabase no esta configurado o si no hay sesion iniciada. Cuando hay sesion, `localStorage` se conserva como cache/respaldo y no se borra despues de migrar datos a la nube.
 

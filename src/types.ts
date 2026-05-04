@@ -26,6 +26,10 @@ export type TradeRecord = {
   received: TradeItem[];
 };
 
+export type PendingTradeRecord = TradeRecord & {
+  reservedAt: string;
+};
+
 export type RegistrationEventSource = "manual" | "bulk" | "import" | "reset" | "collection";
 export type RegistrationEventAction = "increment" | "set-owned" | "set-missing" | "set-quantity" | "import" | "reset";
 

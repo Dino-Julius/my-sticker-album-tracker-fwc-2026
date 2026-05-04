@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Progress, RegistrationEvent, TradeRecord } from "../types";
+import type { PendingTradeRecord, Progress, RegistrationEvent, TradeRecord } from "../types";
 import { loadRemoteProgress, saveRemoteProgress } from "../lib/remoteProgress";
 import {
   deleteRemoteRegistrationEvent,
@@ -13,6 +13,7 @@ const CLOUD_SYNC_DEBOUNCE_MS = 7000;
 const UNSYNCED_CHANGES_MESSAGE = "Tienes cambios guardados en este dispositivo, pero aún no sincronizados en la nube.";
 const LOCAL_META_STORAGE_KEY = "my-sticker-album-tracker-fwc-2026-local-meta";
 export const REGISTRATION_EVENTS_STORAGE_KEY = "my-sticker-album-tracker-fwc-2026-registration-events";
+export const PENDING_TRADES_STORAGE_KEY = "my-sticker-album-tracker-fwc-2026-pending-trades";
 
 export type SyncStatus = "local" | "loading" | "pending" | "saving" | "cloud" | "error";
 export type LocalMeta = {
@@ -77,6 +78,21 @@ function readLocalRegistrationEvents(): RegistrationEvent[] {
 
   try {
     const parsed = JSON.parse(stored) as RegistrationEvent[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function readLocalPendingTrades(): PendingTradeRecord[] {
+  const stored = localStorage.getItem(PENDING_TRADES_STORAGE_KEY);
+
+  if (!stored) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(stored) as PendingTradeRecord[];
     return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
@@ -179,6 +195,7 @@ function isSameAlbumData(
 export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boolean; userId?: string }) {
   const [progress, setProgress] = useState<Progress>(() => readLocalProgress());
   const [registrationEvents, setRegistrationEvents] = useState<RegistrationEvent[]>(() => readLocalRegistrationEvents());
+  const [pendingTrades, setPendingTrades] = useState<PendingTradeRecord[]>(() => readLocalPendingTrades());
   const [tradeHistory, setTradeHistory] = useState<TradeRecord[]>(() => readLocalTrades());
   const [migrationPrompt, setMigrationPrompt] = useState<MigrationPrompt | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("local");
@@ -194,6 +211,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
   const saveAgainAfterCurrent = useRef(false);
   const hasPendingCloudChangesRef = useRef(false);
   const hasInitializedProgressPersistence = useRef(false);
+  const hasInitializedPendingTradePersistence = useRef(false);
   const hasInitializedRegistrationEventPersistence = useRef(false);
   const hasInitializedTradePersistence = useRef(false);
   const flushPendingProgressRef = useRef<() => Promise<void>>(async () => {});
@@ -317,6 +335,16 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     localStorage.setItem(REGISTRATION_EVENTS_STORAGE_KEY, JSON.stringify(registrationEvents));
     setLastLocalUpdateAt(writeLocalMeta());
   }, [registrationEvents]);
+
+  useEffect(() => {
+    if (!hasInitializedPendingTradePersistence.current) {
+      hasInitializedPendingTradePersistence.current = true;
+      return;
+    }
+
+    localStorage.setItem(PENDING_TRADES_STORAGE_KEY, JSON.stringify(pendingTrades));
+    setLastLocalUpdateAt(writeLocalMeta());
+  }, [pendingTrades]);
 
   useEffect(() => {
     clearSaveTimer();
@@ -588,6 +616,14 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     }
   };
 
+  const addPendingTrade = (trade: PendingTradeRecord) => {
+    setPendingTrades((currentTrades) => [trade, ...currentTrades.filter((currentTrade) => currentTrade.id !== trade.id)]);
+  };
+
+  const deletePendingTrade = (tradeId: string) => {
+    setPendingTrades((currentTrades) => currentTrades.filter((trade) => trade.id !== tradeId));
+  };
+
   const addRegistrationEvent = (event: RegistrationEvent) => {
     setRegistrationEvents((currentEvents) => [event, ...currentEvents.filter((currentEvent) => currentEvent.id !== event.id)]);
 
@@ -620,15 +656,18 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
 
   return {
     addRegistrationEvent,
+    addPendingTrade,
     addTrade,
     cancelMigration,
     combineLocalAndCloudData,
     deleteRegistrationEvent,
+    deletePendingTrade,
     deleteTrade,
     hasPendingCloudChanges,
     lastCloudSyncAt,
     lastLocalUpdateAt,
     migrationPrompt,
+    pendingTrades,
     progress,
     registrationEvents,
     setProgress,
