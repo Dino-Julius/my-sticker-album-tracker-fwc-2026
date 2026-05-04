@@ -95,7 +95,7 @@ export function FilterBar({ catalog, filters, onChange, showStatus = true }: Fil
             <select value={filters.status} onChange={(event) => update({ status: event.target.value as Filters["status"] })}>
               <option value="all">Todos</option>
               <option value="missing">Faltante</option>
-              <option value="owned">La tengo</option>
+              <option value="owned">Tengo</option>
               <option value="repeated">Repetida</option>
             </select>
           </label>

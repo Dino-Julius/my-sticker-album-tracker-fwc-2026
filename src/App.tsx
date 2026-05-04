@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { FilterBar } from "./components/FilterBar";
 import { StickerList } from "./components/StickerList";
 import { useAlbumData, type MigrationPrompt, type SyncStatus } from "./hooks/useAlbumData";
@@ -474,7 +474,7 @@ function HelpPanel() {
           <strong>0 = Faltante.</strong> Todavía no tienes esa estampa.
         </li>
         <li>
-          <strong>1 = La tengo.</strong> Ya cuentas con una copia para tu álbum.
+          <strong>1 = Tengo.</strong> Ya cuentas con una copia para tu álbum.
         </li>
         <li>
           <strong>2+ = Repetida.</strong> Tienes copias extra para cambiar.
@@ -569,6 +569,7 @@ function AuthPanel({
   onSyncNow: () => Promise<void>;
 }) {
   const [manualSyncMessage, setManualSyncMessage] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [nicknameDraft, setNicknameDraft] = useState("");
   const syncLabels: Record<SyncStatus, string> = {
@@ -581,7 +582,9 @@ function AuthPanel({
   };
   const syncLabel = syncLabels[syncStatus];
   const displayName = profile?.fullName || profile?.nickname;
+  const welcomeName = profile?.nickname || profile?.fullName;
   const displayEmail = profile?.email || userEmail;
+  const panelClassName = `auth-panel compact-auth ${syncStatus === "pending" || syncStatus === "error" ? "sync-warning" : ""}`;
   const handleSyncNow = async () => {
     setManualSyncMessage({ type: "info", text: "Sincronizando ahora..." });
 
@@ -622,43 +625,60 @@ function AuthPanel({
 
   if (userEmail) {
     return (
-      <section className="auth-panel">
-        <div>
-          <span>{syncLabel}</span>
-          <strong>Sesión iniciada como {displayName || displayEmail}</strong>
-          {displayEmail ? <p>{displayEmail}</p> : null}
-          {profile?.nickname ? <p>Apodo: {profile.nickname}</p> : null}
-          <div className="sync-details">
-            {lastCloudSyncAt ? <p>Última sincronización: {formatDisplayDate(lastCloudSyncAt)}</p> : null}
-            {lastLocalUpdateAt ? <p>Última edición local: {formatDisplayDate(lastLocalUpdateAt)}</p> : null}
+      <section className={panelClassName}>
+        <div className="auth-summary-row">
+          <div className="auth-summary">
+            <span>{syncLabel}</span>
+            <strong>
+              {syncLabel} · Bienvenido{welcomeName ? `, ${welcomeName}` : ""}
+            </strong>
             {hasPendingCloudChanges ? (
               <p>Tus cambios están guardados en este dispositivo, pero aún no sincronizados en la nube.</p>
             ) : null}
           </div>
+          <button className="ghost-button small" type="button" onClick={() => setIsAccountOpen((current) => !current)}>
+            {isAccountOpen ? "Ocultar cuenta" : "Ver cuenta"}
+          </button>
         </div>
-        <div className="profile-actions">
-          {isEditingNickname ? (
-            <>
-              <label>
-                <span>Apodo</span>
-                <input value={nicknameDraft} placeholder="Tu apodo" onChange={(event) => setNicknameDraft(event.target.value)} />
-              </label>
-              <div className="sync-actions">
-                <button className="primary-button small" disabled={isSavingProfile} onClick={() => void saveNickname()}>
-                  Guardar apodo
-                </button>
-                <button className="ghost-button small" disabled={isSavingProfile} onClick={() => setIsEditingNickname(false)}>
-                  Cancelar
-                </button>
+
+        {isAccountOpen ? (
+          <div className="auth-expanded-content">
+            <div>
+              <strong>Sesión iniciada como {displayName || displayEmail}</strong>
+              {profile?.fullName ? <p>Nombre: {profile.fullName}</p> : null}
+              {displayEmail ? <p>Email: {displayEmail}</p> : null}
+              {profile?.nickname ? <p>Apodo: {profile.nickname}</p> : null}
+              <div className="sync-details">
+                {lastCloudSyncAt ? <p>Última sincronización: {formatDisplayDate(lastCloudSyncAt)}</p> : null}
+                {lastLocalUpdateAt ? <p>Última edición local: {formatDisplayDate(lastLocalUpdateAt)}</p> : null}
               </div>
-            </>
-          ) : (
-            <button className="ghost-button small" onClick={startEditingNickname}>
-              {profile?.nickname ? "Editar apodo" : "Agregar apodo"}
-            </button>
-          )}
-        </div>
-        <div className="sync-actions">
+            </div>
+            <div className="profile-actions">
+              {isEditingNickname ? (
+                <>
+                  <label>
+                    <span>Apodo</span>
+                    <input value={nicknameDraft} placeholder="Tu apodo" onChange={(event) => setNicknameDraft(event.target.value)} />
+                  </label>
+                  <div className="sync-actions">
+                    <button className="primary-button small" disabled={isSavingProfile} onClick={() => void saveNickname()}>
+                      Guardar apodo
+                    </button>
+                    <button className="ghost-button small" disabled={isSavingProfile} onClick={() => setIsEditingNickname(false)}>
+                      Cancelar
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <button className="ghost-button small" onClick={startEditingNickname}>
+                  {profile?.nickname ? "Editar apodo" : "Agregar apodo"}
+                </button>
+              )}
+            </div>
+          </div>
+        ) : null}
+
+        <div className={`sync-actions ${!isAccountOpen && !hasPendingCloudChanges ? "collapsed-secondary-actions" : ""}`}>
           <button
             className="primary-button small"
             onClick={() => void handleSyncNow()}
@@ -666,9 +686,11 @@ function AuthPanel({
           >
             Sincronizar ahora
           </button>
-          <button className="ghost-button small" onClick={onSignOut}>
-            Cerrar sesión
-          </button>
+          {isAccountOpen ? (
+            <button className="ghost-button small" onClick={onSignOut}>
+              Cerrar sesión
+            </button>
+          ) : null}
         </div>
         {manualSyncMessage ? (
           <p className={manualSyncMessage.type === "error" ? "warning-message compact-message" : "toast-message compact-message"}>
@@ -909,7 +931,7 @@ function DashboardView({
     <section className="view-stack">
       <div className="metric-grid">
         <MetricCard label="Total" value={dashboard.total} onClick={() => onOpenRegistro("all")} />
-        <MetricCard label="La tengo" value={dashboard.owned} onClick={() => onOpenRegistro("owned")} />
+        <MetricCard label="Tengo" value={dashboard.owned} onClick={() => onOpenRegistro("owned")} />
         <MetricCard label="Faltantes" value={dashboard.missing} onClick={onOpenFaltantes} />
         <MetricCard label="Repetidas" value={dashboard.repeated} onClick={onOpenRepetidas} />
         <MetricCard label="Extras para cambiar" value={dashboard.repeatedExtras} onClick={onOpenRepetidas} />
@@ -1143,7 +1165,7 @@ function BulkRegisterPanel({
               <span>Acción</span>
               <select value={bulkAction} onChange={(event) => setBulkAction(event.target.value as BulkAction)}>
                 <option value="increment">Sumar +1</option>
-                <option value="owned">Marcar como La tengo</option>
+                <option value="owned">Marcar como Tengo</option>
                 <option value="missing">Marcar como Faltante</option>
                 <option value="set">Fijar cantidad</option>
               </select>
@@ -1230,7 +1252,7 @@ const registrationActionLabels: Record<RegistrationEventAction, string> = {
   increment: "Sumar cantidad",
   reset: "Reinicio",
   "set-missing": "Marcar faltante",
-  "set-owned": "Marcar como La tengo",
+  "set-owned": "Marcar como Tengo",
   "set-quantity": "Fijar cantidad",
 };
 
@@ -1383,6 +1405,35 @@ function GroupedCodesView({
   );
 }
 
+function CollapsibleSection({
+  children,
+  className = "",
+  isOpen,
+  meta,
+  title,
+  onToggle,
+}: {
+  children: ReactNode;
+  className?: string;
+  isOpen: boolean;
+  meta?: string;
+  title: string;
+  onToggle: () => void;
+}) {
+  return (
+    <section className={`panel collapsible-section ${className}`}>
+      <button className="collapsible-heading" type="button" aria-expanded={isOpen} onClick={onToggle}>
+        <span>
+          <strong>{title}</strong>
+          {meta ? <small>{meta}</small> : null}
+        </span>
+        <span>{isOpen ? "Ocultar" : "Mostrar"}</span>
+      </button>
+      {isOpen ? <div className="collapsible-content">{children}</div> : null}
+    </section>
+  );
+}
+
 function RepeatedView({
   catalog,
   filters,
@@ -1406,12 +1457,15 @@ function RepeatedView({
   onDeletePendingTrade: (tradeId: string, shouldRestoreOnFailure?: boolean) => void;
   onDeleteTrade: (tradeId: string) => void;
   onFiltersChange: (filters: Filters) => void;
-  setProgress: React.Dispatch<React.SetStateAction<Progress>>;
+  setProgress: Dispatch<SetStateAction<Progress>>;
 }) {
   const stickers = applyFilters(catalog, progress, { ...filters, status: "repeated" });
   const groups = groupByCountry(stickers);
   const [copyLabel, setCopyLabel] = useState("Copiar lista para intercambio");
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(true);
+  const [isRepeatedListOpen, setIsRepeatedListOpen] = useState(false);
+  const [isPendingTradesOpen, setIsPendingTradesOpen] = useState(() => pendingTrades.length > 0);
+  const [isTradeHistoryOpen, setIsTradeHistoryOpen] = useState(false);
   const [dateTime, setDateTime] = useState(formatDateTimeLocal(new Date()));
   const [tradedWith, setTradedWith] = useState("");
   const [notes, setNotes] = useState("");
@@ -1436,6 +1490,12 @@ function RepeatedView({
     [pendingTrades],
   );
   const getAvailableExtras = (code: string) => Math.max(0, getStickerQuantity(code, progress) - 1 - (reservedExtrasByCode[code] ?? 0));
+
+  useEffect(() => {
+    if (pendingTrades.length > 0) {
+      setIsPendingTradesOpen(true);
+    }
+  }, [pendingTrades.length]);
 
   const copyTradeList = async () => {
     await navigator.clipboard.writeText(createTradingText(catalog, progress));
@@ -1735,27 +1795,24 @@ function RepeatedView({
 
   const gaveTotal = getTradeItemTotal(gave);
   const receivedTotal = getTradeItemTotal(received);
+  const repeatedExtras = getRepeatedExtras(stickers, progress);
 
   return (
     <section className="view-stack">
       <FilterBar catalog={catalog} filters={{ ...filters, status: "repeated" }} onChange={onFiltersChange} showStatus={false} />
       <div className="trade-action-row">
-        <button className="primary-button wide-button" onClick={() => setIsFormOpen((current) => !current)}>
-          Registrar intercambio
-        </button>
         <button className="ghost-button wide-button" onClick={copyTradeList}>
           {copyLabel}
         </button>
       </div>
 
-      {isFormOpen ? (
-        <section className="panel trade-form">
-          <div className="section-heading flush">
-            <h2>Registrar intercambio</h2>
-            <span>
-              Doy: {gaveTotal} estampas · Recibo: {receivedTotal} estampas
-            </span>
-          </div>
+      <CollapsibleSection
+        className="trade-form"
+        title="Registrar intercambio"
+        meta={`Doy: ${gaveTotal} estampas · Recibo: ${receivedTotal} estampas`}
+        isOpen={isFormOpen}
+        onToggle={() => setIsFormOpen((current) => !current)}
+      >
           {gaveTotal !== receivedTotal && gaveTotal > 0 && receivedTotal > 0 ? <p className="trade-note">Intercambio no parejo</p> : null}
 
           <div className="trade-meta-grid">
@@ -1847,37 +1904,44 @@ function RepeatedView({
           <button className="ghost-button wide-button" onClick={cancelTrade}>
             Cancelar intercambio
           </button>
-        </section>
-      ) : null}
+      </CollapsibleSection>
       {tradeMessage ? <p className={tradeMessage === "Intercambio registrado." ? "toast-message" : "warning-message"}>{tradeMessage}</p> : null}
 
-      <div className="section-heading">
-        <h2>Repetidas / Intercambio</h2>
-        <span>{stickers.length} estampas</span>
-      </div>
-      <div className="grouped-list">
-        {[...groups.entries()].map(([country, countryStickers]) => (
-          <article className="panel" key={country}>
-            <h3>{formatCollectionCodeLabel(catalog, country)}</h3>
-            <p className="history-note">{country}</p>
-            <div className="trade-code-list">
-              {countryStickers.map((sticker) => {
-                const extras = getStickerQuantity(sticker.code, progress) - 1;
+      <CollapsibleSection
+        title="Repetidas"
+        meta={`${stickers.length} estampas · Extras: ${repeatedExtras}`}
+        isOpen={isRepeatedListOpen}
+        onToggle={() => setIsRepeatedListOpen((current) => !current)}
+      >
+        <div className="grouped-list">
+          {[...groups.entries()].map(([country, countryStickers]) => (
+            <article className="panel" key={country}>
+              <h3>{formatCollectionCodeLabel(catalog, country)}</h3>
+              <p className="history-note">{country}</p>
+              <div className="trade-code-list">
+                {countryStickers.map((sticker) => {
+                  const extras = getStickerQuantity(sticker.code, progress) - 1;
 
-                return (
-                  <span key={sticker.code}>
-                    {sticker.code} x{extras} {extras === 1 ? "extra" : "extras"}
-                  </span>
-                );
-              })}
-            </div>
-          </article>
-        ))}
-      </div>
-      {stickers.length === 0 ? <p className="empty-state">Todavía no tienes repetidas para intercambio.</p> : null}
+                  return (
+                    <span key={sticker.code}>
+                      {sticker.code} x{extras} {extras === 1 ? "extra" : "extras"}
+                    </span>
+                  );
+                })}
+              </div>
+            </article>
+          ))}
+        </div>
+        {stickers.length === 0 ? <p className="empty-state">Todavía no tienes repetidas para intercambio.</p> : null}
+      </CollapsibleSection>
 
-      <section className="panel trade-history pending-trade-panel">
-        <h2>Futuros intercambios</h2>
+      <CollapsibleSection
+        className="trade-history pending-trade-panel"
+        title="Futuros intercambios / Apartados"
+        meta={`Apartados: ${pendingTrades.length}`}
+        isOpen={isPendingTradesOpen}
+        onToggle={() => setIsPendingTradesOpen((current) => !current)}
+      >
         <p className="history-note">Estas estampas están apartadas. El álbum cambia hasta que confirmes el intercambio.</p>
         {pendingTrades.length === 0 ? <p className="empty-state">No tienes intercambios apartados.</p> : null}
         <div className="trade-history-list">
@@ -1914,10 +1978,15 @@ function RepeatedView({
             );
           })}
         </div>
-      </section>
+      </CollapsibleSection>
 
-      <section className="panel trade-history">
-        <h2>Historial de intercambios</h2>
+      <CollapsibleSection
+        className="trade-history"
+        title="Historial de intercambios"
+        meta={`Historial: ${tradeHistory.length}`}
+        isOpen={isTradeHistoryOpen}
+        onToggle={() => setIsTradeHistoryOpen((current) => !current)}
+      >
         <p className="history-note">Eliminar del historial no revierte las cantidades del álbum.</p>
         {tradeHistory.length === 0 ? <p className="empty-state">Todavía no hay intercambios registrados.</p> : null}
         <div className="trade-history-list">
@@ -1950,7 +2019,7 @@ function RepeatedView({
             );
           })}
         </div>
-      </section>
+      </CollapsibleSection>
     </section>
   );
 }
@@ -2337,7 +2406,7 @@ function DataView({
         <ul className="info-list">
           <li>La llave es el código de la estampa.</li>
           <li>El valor es la cantidad total que tienes.</li>
-          <li>0 = Faltante, 1 = La tengo, 2+ = Repetida.</li>
+          <li>0 = Faltante, 1 = Tengo, 2+ = Repetida.</li>
           <li>Sólo se necesita el código y la cantidad.</li>
         </ul>
         <button

@@ -158,6 +158,49 @@ h3 {
   background: rgba(255, 255, 255, 0.92);
 }
 
+.compact-auth {
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.compact-auth.sync-warning {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.auth-summary-row {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.auth-summary {
+  min-width: 0;
+}
+
+.auth-summary strong {
+  display: block;
+  color: #0f172a;
+  font-size: 0.96rem;
+  line-height: 1.3;
+}
+
+.auth-summary p {
+  font-size: 0.86rem;
+}
+
+.auth-expanded-content {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.28);
+  padding-top: 10px;
+}
+
+.collapsed-secondary-actions {
+  display: none;
+}
+
 .migration-panel {
   display: grid;
   gap: 10px;
@@ -305,6 +348,53 @@ h3 {
 .profile-actions label {
   display: grid;
   gap: 6px;
+}
+
+.collapsible-section {
+  display: grid;
+  gap: 12px;
+}
+
+.collapsible-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+  text-align: left;
+}
+
+.collapsible-heading span:first-child {
+  display: grid;
+  gap: 2px;
+}
+
+.collapsible-heading strong {
+  font-size: 1rem;
+}
+
+.collapsible-heading small {
+  color: #64748b;
+  font-weight: 750;
+}
+
+.collapsible-heading > span:last-child {
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #075985;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.collapsible-content {
+  display: grid;
+  gap: 14px;
 }
 
 .compact-message {

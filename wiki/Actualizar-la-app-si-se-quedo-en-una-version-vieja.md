@@ -2,7 +2,7 @@
 
 Normalmente, la app te va a mostrar un aviso que dice:
 
-**Nueva version disponible**
+**Nueva versión disponible**
 
 Solo toca **Actualizar** y listo.
 
@@ -68,11 +68,11 @@ Si tienes la app como icono en tu pantalla de inicio y sigue vieja:
 
 ## Por que pasa esto
 
-La app funciona como PWA, asi que el navegador puede guardar archivos para que cargue rapido y funcione mejor. Despues de una actualizacion, la app deberia mostrar el aviso **Nueva version disponible**. Si el navegador se queda con una copia anterior, limpiar los datos del sitio fuerza la descarga de la version nueva.
+La app funciona como PWA, asi que el navegador puede guardar archivos para que cargue rapido y funcione mejor. Despues de una actualizacion, la app deberia mostrar el aviso **Nueva versión disponible**. Si el navegador se queda con una copia anterior, limpiar los datos del sitio fuerza la descarga de la version nueva.
 
 ## Resumen
 
-- Primero intenta usar el aviso **Nueva version disponible** y toca **Actualizar**.
+- Primero intenta usar el aviso **Nueva versión disponible** y toca **Actualizar**.
 - Si no aparece, limpia los datos del sitio para `dino-julius.github.io`.
 - Si usas la app localmente sin Google, exporta tu progreso antes de borrar datos.
 - Si usas Google y ya sincronizaste, vuelve a iniciar sesion para recuperar tu progreso.

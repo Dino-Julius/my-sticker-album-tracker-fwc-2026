@@ -182,5 +182,5 @@ function addGroupedCodes(
 }
 
 function isSectionHeader(segment: string) {
-  return /^(I NEED|NEED|ME FALTAN|FALTANTES|SWAPS|REPETIDAS|EXTRAS)\s*:?\s*$/i.test(segment.trim());
+  return /^(I NEED|NEED|ME FALTAN|FALTANTES|SWAPS|MIS REPETIDAS|REPETIDAS|EXTRAS)\s*:?\s*$/i.test(segment.trim());
 }

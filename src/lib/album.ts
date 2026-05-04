@@ -13,7 +13,7 @@ import type {
 
 export const STATUS_LABELS: Record<StickerStatus, string> = {
   missing: "Faltante",
-  owned: "La tengo",
+  owned: "Tengo",
   repeated: "Repetida",
 };
 
@@ -544,7 +544,7 @@ export function createTradingText(catalog: Sticker[], progress: Progress): strin
   const missing = formatExchangeGroups(catalog, getMissingStickers(catalog, progress), progress, "missing");
   const repeated = formatExchangeGroups(catalog, getRepeatedStickers(catalog, progress), progress, "swaps");
 
-  return `I need\n${missing || "No me falta ninguna"}\n\nSwaps\n${repeated || "No tengo repetidas"}`;
+  return `Me faltan\n${missing || "No me falta ninguna"}\n\nMis repetidas\n${repeated || "No tengo repetidas"}`;
 }
 
 function formatExchangeGroups(catalog: Sticker[], stickers: Sticker[], progress: Progress, mode: "missing" | "swaps") {

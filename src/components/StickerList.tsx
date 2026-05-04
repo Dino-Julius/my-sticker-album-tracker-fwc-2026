@@ -66,7 +66,7 @@ export function StickerList({ stickers, progress, onSetQuantity, compact = false
                         +1
                       </button>
                       <button className="ghost-button small" onClick={() => onSetQuantity(sticker.code, 1)}>
-                        La tengo
+                        Tengo
                       </button>
                       <button className="ghost-button small" onClick={() => onSetQuantity(sticker.code, 0)}>
                         Faltante
@@ -122,7 +122,7 @@ function StickerCard({
 
       <div className="quick-actions">
         <button className="ghost-button" onClick={() => onSetQuantity(sticker.code, 1)}>
-          La tengo
+          Tengo
         </button>
         <button className="ghost-button" onClick={() => onSetQuantity(sticker.code, 0)}>
           Faltante
