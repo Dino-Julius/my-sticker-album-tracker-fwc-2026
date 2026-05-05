@@ -190,6 +190,10 @@ h3 {
   font-size: 0.86rem;
 }
 
+.compact-account-actions {
+  justify-content: flex-end;
+}
+
 .auth-expanded-content {
   display: grid;
   gap: 10px;
@@ -338,6 +342,29 @@ h3 {
   color: #64748b;
   font-size: 0.88rem;
   font-weight: 700;
+}
+
+.sync-issue-panel {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #fbbf24;
+  border-radius: 8px;
+  background: #fff7ed;
+  padding: 10px;
+}
+
+.sync-issue-panel ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.sync-issue-panel li,
+.sync-issue-panel p {
+  color: #92400e;
+  font-size: 0.9rem;
+  font-weight: 750;
 }
 
 .profile-actions {

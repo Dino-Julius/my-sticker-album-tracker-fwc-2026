@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { PendingTradeRecord, Progress, RegistrationEvent, TradeRecord } from "../types";
+import type {
+  PendingTradeRecord,
+  Progress,
+  RegistrationEvent,
+  SyncIssue,
+  SyncIssueArea,
+  SyncIssueOperation,
+  TradeRecord,
+} from "../types";
 import { loadRemoteProgress, saveRemoteProgress } from "../lib/remoteProgress";
 import {
   deleteRemotePendingTrade,
@@ -44,6 +52,51 @@ export type MigrationPrompt =
       remoteTrades: TradeRecord[];
       remoteUpdatedAt?: string;
     };
+
+const SYNC_ISSUE_MESSAGES: Record<Exclude<SyncIssueArea, "profile">, Record<SyncIssueOperation, string>> = {
+  progress: {
+    delete: "No se pudo eliminar progreso remoto.",
+    load: "No se pudo cargar el progreso de la nube.",
+    save: "No se pudo guardar el progreso en la nube.",
+  },
+  trades: {
+    delete: "No se pudo eliminar el intercambio remoto.",
+    load: "No se pudo cargar el historial de intercambios.",
+    save: "No se pudo sincronizar historial.",
+  },
+  "registration-events": {
+    delete: "No se pudo eliminar el evento del historial.",
+    load: "No se pudo cargar el historial de registro.",
+    save: "No se pudo sincronizar historial de registro.",
+  },
+  "pending-trades": {
+    delete: "No se pudo eliminar el apartado en la nube.",
+    load: "No se pudo cargar apartados.",
+    save: "No se pudo guardar apartados.",
+  },
+};
+
+function createSyncIssue(area: Exclude<SyncIssueArea, "profile">, operation: SyncIssueOperation): SyncIssue {
+  return {
+    area,
+    createdAt: new Date().toISOString(),
+    id: `${area}-${operation}`,
+    message: SYNC_ISSUE_MESSAGES[area][operation],
+    operation,
+  };
+}
+
+async function loadRemoteWithIssue<T>(
+  loader: () => Promise<T>,
+  area: Exclude<SyncIssueArea, "profile">,
+  fallback: T,
+): Promise<{ issue?: SyncIssue; value: T }> {
+  try {
+    return { value: await loader() };
+  } catch {
+    return { issue: createSyncIssue(area, "load"), value: fallback };
+  }
+}
 
 function readLocalProgress(): Progress {
   const stored = localStorage.getItem(STORAGE_KEY);
@@ -247,6 +300,8 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
   const [tradeHistory, setTradeHistory] = useState<TradeRecord[]>(() => readLocalTrades());
   const [migrationPrompt, setMigrationPrompt] = useState<MigrationPrompt | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("local");
+  const [syncIssues, setSyncIssues] = useState<SyncIssue[]>([]);
+  const [syncRetryToken, setSyncRetryToken] = useState(0);
   const [hasPendingCloudChanges, setHasPendingCloudChanges] = useState(false);
   const [lastCloudSyncAt, setLastCloudSyncAt] = useState<string | undefined>(undefined);
   const [lastLocalUpdateAt, setLastLocalUpdateAt] = useState<string | undefined>(() => readLocalMeta().updatedAt);
@@ -277,6 +332,19 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
   const updatePendingCloudChanges = useCallback((isPending: boolean) => {
     hasPendingCloudChangesRef.current = isPending;
     setHasPendingCloudChanges(isPending);
+  }, []);
+
+  const addSyncIssue = useCallback((issue: SyncIssue) => {
+    setSyncIssues((currentIssues) => [
+      issue,
+      ...currentIssues.filter((currentIssue) => currentIssue.id !== issue.id),
+    ]);
+  }, []);
+
+  const clearSyncIssue = useCallback((area: SyncIssueArea, operation?: SyncIssueOperation) => {
+    setSyncIssues((currentIssues) =>
+      currentIssues.filter((issue) => issue.area !== area || (operation ? issue.operation !== operation : false)),
+    );
   }, []);
 
   const schedulePendingSave = useCallback(
@@ -316,6 +384,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
 
       try {
         const updatedAt = await saveRemoteProgress(userId, progressToSave);
+        clearSyncIssue("progress", "save");
         lastSavedProgress.current = serializedProgress;
         setLastCloudSyncAt(updatedAt);
 
@@ -331,6 +400,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
       } catch (error) {
         saveAgainAfterCurrent.current = false;
         updatePendingCloudChanges(true);
+        addSyncIssue(createSyncIssue("progress", "save"));
         setSyncStatus("error");
 
         if (shouldThrow) {
@@ -345,7 +415,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
         }
       }
     },
-    [clearSaveTimer, isCloudEnabled, schedulePendingSave, updatePendingCloudChanges, userId],
+    [addSyncIssue, clearSaveTimer, clearSyncIssue, isCloudEnabled, schedulePendingSave, updatePendingCloudChanges, userId],
   );
 
   useEffect(() => {
@@ -417,16 +487,31 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     const syncedPendingTradeIds = readSyncedPendingTradeIds();
 
     Promise.all([
-      loadRemoteProgress(userId),
-      loadRemotePendingTrades(userId).catch(() => []),
-      loadRemoteTrades(userId),
-      loadRemoteRegistrationEvents(userId).catch(() => []),
+      loadRemoteWithIssue(() => loadRemoteProgress(userId), "progress", null),
+      loadRemoteWithIssue(() => loadRemotePendingTrades(userId), "pending-trades", []),
+      loadRemoteWithIssue(() => loadRemoteTrades(userId), "trades", []),
+      loadRemoteWithIssue(() => loadRemoteRegistrationEvents(userId), "registration-events", []),
     ])
-      .then(([remoteProgressSnapshot, remotePendingTrades, remoteTrades, remoteRegistrationEvents]) => {
+      .then(([remoteProgressResult, remotePendingTradesResult, remoteTradesResult, remoteRegistrationEventsResult]) => {
         if (!isActive) {
           return;
         }
 
+        const loadIssues = [
+          remoteProgressResult.issue,
+          remotePendingTradesResult.issue,
+          remoteTradesResult.issue,
+          remoteRegistrationEventsResult.issue,
+        ].filter(Boolean) as SyncIssue[];
+        setSyncIssues((currentIssues) => [
+          ...loadIssues,
+          ...currentIssues.filter((issue) => issue.operation !== "load" && !loadIssues.some((loadIssue) => loadIssue.id === issue.id)),
+        ]);
+
+        const remoteProgressSnapshot = remoteProgressResult.value;
+        const remotePendingTrades = remotePendingTradesResult.value;
+        const remoteTrades = remoteTradesResult.value;
+        const remoteRegistrationEvents = remoteRegistrationEventsResult.value;
         const confirmedTrades = mergeTrades(localTrades, remoteTrades);
         const confirmedTradeIds = new Set(confirmedTrades.map((trade) => trade.id));
         const remotePendingTradeIds = new Set(remotePendingTrades.map((trade) => trade.id));
@@ -463,6 +548,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
             })
             .catch(() => {
               if (isActive) {
+                addSyncIssue(createSyncIssue("pending-trades", "save"));
                 setSyncStatus("error");
               }
             });
@@ -471,6 +557,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
         if (staleRemotePendingTrades.length > 0) {
           void Promise.all(staleRemotePendingTrades.map((trade) => deleteRemotePendingTrade(userId, trade.id))).catch(() => {
             if (isActive) {
+              addSyncIssue(createSyncIssue("pending-trades", "delete"));
               setSyncStatus("error");
             }
           });
@@ -481,6 +568,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
         if (unsyncedRegistrationEvents.length > 0) {
           void Promise.all(unsyncedRegistrationEvents.map((event) => insertRemoteRegistrationEvent(userId, event))).catch(() => {
             if (isActive) {
+              addSyncIssue(createSyncIssue("registration-events", "save"));
               setSyncStatus("error");
             }
           });
@@ -527,7 +615,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
         }
 
         hasLoadedRemote.current = true;
-        setSyncStatus("cloud");
+        setSyncStatus(loadIssues.length > 0 ? "error" : "cloud");
       })
       .catch(() => {
         if (!isActive) {
@@ -535,13 +623,14 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
         }
 
         hasLoadedRemote.current = true;
+        addSyncIssue(createSyncIssue("progress", "load"));
         setSyncStatus("error");
       });
 
     return () => {
       isActive = false;
     };
-  }, [clearSaveTimer, isCloudEnabled, updatePendingCloudChanges, userId]);
+  }, [addSyncIssue, clearSaveTimer, isCloudEnabled, syncRetryToken, updatePendingCloudChanges, userId]);
 
   useEffect(() => {
     if (!isCloudEnabled || !userId || !hasLoadedRemote.current || migrationPrompt) {
@@ -621,15 +710,20 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     clearSaveTimer();
     updatePendingCloudChanges(true);
     setSyncStatus("saving");
+    let progressSaved = false;
     try {
       const updatedAt = await saveRemoteProgress(userId, nextProgress);
+      progressSaved = true;
+      clearSyncIssue("progress", "save");
       await Promise.all(nextTrades.map((trade) => insertRemoteTrade(userId, trade)));
+      clearSyncIssue("trades", "save");
       lastSavedProgress.current = serializeProgressSnapshot(nextProgress);
       setLastCloudSyncAt(updatedAt);
       setLastLocalUpdateAt(writeLocalMeta(updatedAt));
       updatePendingCloudChanges(false);
       setSyncStatus("cloud");
     } catch (error) {
+      addSyncIssue(createSyncIssue(progressSaved ? "trades" : "progress", "save"));
       updatePendingCloudChanges(serializeProgressSnapshot(nextProgress) !== lastSavedProgress.current);
       setSyncStatus("error");
       throw error;
@@ -699,9 +793,12 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     setTradeHistory((currentHistory) => [trade, ...currentHistory]);
 
     if (isCloudEnabled && userId) {
-      insertRemoteTrade(userId, trade).catch(() => {
-        setSyncStatus("error");
-      });
+      insertRemoteTrade(userId, trade)
+        .then(() => clearSyncIssue("trades", "save"))
+        .catch(() => {
+          addSyncIssue(createSyncIssue("trades", "save"));
+          setSyncStatus("error");
+        });
     }
   };
 
@@ -710,8 +807,12 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
 
     if (isCloudEnabled && userId) {
       upsertRemotePendingTrade(userId, trade)
-        .then(() => addSyncedPendingTradeId(trade.id))
+        .then(() => {
+          addSyncedPendingTradeId(trade.id);
+          clearSyncIssue("pending-trades", "save");
+        })
         .catch(() => {
+          addSyncIssue(createSyncIssue("pending-trades", "save"));
           setSyncStatus("error");
         });
     }
@@ -725,15 +826,18 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     });
 
     if (isCloudEnabled && userId) {
-      deleteRemotePendingTrade(userId, tradeId).catch(() => {
-        const tradeToRestore = deletedTrade;
+      deleteRemotePendingTrade(userId, tradeId)
+        .then(() => clearSyncIssue("pending-trades", "delete"))
+        .catch(() => {
+          const tradeToRestore = deletedTrade;
 
-        if (shouldRestoreOnFailure && tradeToRestore) {
-          setPendingTrades((currentTrades) => [tradeToRestore, ...currentTrades.filter((trade) => trade.id !== tradeId)]);
-        }
+          if (shouldRestoreOnFailure && tradeToRestore) {
+            setPendingTrades((currentTrades) => [tradeToRestore, ...currentTrades.filter((trade) => trade.id !== tradeId)]);
+          }
 
-        setSyncStatus("error");
-      });
+          addSyncIssue(createSyncIssue("pending-trades", "delete"));
+          setSyncStatus("error");
+        });
     }
   };
 
@@ -741,9 +845,12 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     setRegistrationEvents((currentEvents) => [event, ...currentEvents.filter((currentEvent) => currentEvent.id !== event.id)]);
 
     if (isCloudEnabled && userId) {
-      insertRemoteRegistrationEvent(userId, event).catch(() => {
-        setSyncStatus("error");
-      });
+      insertRemoteRegistrationEvent(userId, event)
+        .then(() => clearSyncIssue("registration-events", "save"))
+        .catch(() => {
+          addSyncIssue(createSyncIssue("registration-events", "save"));
+          setSyncStatus("error");
+        });
     }
   };
 
@@ -751,9 +858,12 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     setRegistrationEvents((currentEvents) => currentEvents.filter((event) => event.id !== eventId));
 
     if (isCloudEnabled && userId) {
-      deleteRemoteRegistrationEvent(userId, eventId).catch(() => {
-        setSyncStatus("error");
-      });
+      deleteRemoteRegistrationEvent(userId, eventId)
+        .then(() => clearSyncIssue("registration-events", "delete"))
+        .catch(() => {
+          addSyncIssue(createSyncIssue("registration-events", "delete"));
+          setSyncStatus("error");
+        });
     }
   };
 
@@ -761,9 +871,25 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     setTradeHistory((currentHistory) => currentHistory.filter((trade) => trade.id !== tradeId));
 
     if (isCloudEnabled && userId) {
-      deleteRemoteTrade(userId, tradeId).catch(() => {
-        setSyncStatus("error");
-      });
+      deleteRemoteTrade(userId, tradeId)
+        .then(() => clearSyncIssue("trades", "delete"))
+        .catch(() => {
+          addSyncIssue(createSyncIssue("trades", "delete"));
+          setSyncStatus("error");
+        });
+    }
+  };
+
+  const retryCloudSync = async () => {
+    if (!isCloudEnabled || !userId) {
+      return;
+    }
+
+    setSyncStatus("loading");
+    setSyncRetryToken((currentToken) => currentToken + 1);
+
+    if (hasPendingCloudChangesRef.current) {
+      await flushPendingProgress(undefined, true);
     }
   };
 
@@ -783,7 +909,9 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     pendingTrades,
     progress,
     registrationEvents,
+    retryCloudSync,
     setProgress,
+    syncIssues,
     syncNow: () => flushPendingProgress(undefined, true),
     syncStatus,
     tradeHistory,

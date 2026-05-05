@@ -57,6 +57,17 @@ export type UserProfile = {
   updatedAt?: string;
 };
 
+export type SyncIssueArea = "progress" | "trades" | "registration-events" | "pending-trades" | "profile";
+export type SyncIssueOperation = "load" | "save" | "delete";
+
+export type SyncIssue = {
+  id: string;
+  area: SyncIssueArea;
+  operation: SyncIssueOperation;
+  message: string;
+  createdAt: string;
+};
+
 export type Filters = {
   query: string;
   country: string;

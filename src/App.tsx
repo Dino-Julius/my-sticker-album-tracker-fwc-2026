@@ -42,6 +42,7 @@ import type {
   RegistrationEventAction,
   RegistrationEventItem,
   RegistrationEventSource,
+  SyncIssue,
   Sticker,
   TradeItem,
   TradeRecord,
@@ -177,7 +178,9 @@ function App() {
     pendingTrades,
     progress,
     registrationEvents,
+    retryCloudSync,
     setProgress,
+    syncIssues,
     syncNow,
     syncStatus,
     tradeHistory,
@@ -187,6 +190,10 @@ function App() {
     isCloudEnabled: auth.isConfigured,
     userId: auth.user?.id,
   });
+  const combinedSyncIssues = [...syncIssues, ...profileState.syncIssues];
+  const retryAllSync = async () => {
+    await Promise.all([retryCloudSync(), profileState.retryProfileSync()]);
+  };
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}catalog.json`)
       .then((response) => {
@@ -350,11 +357,13 @@ function App() {
         lastLocalUpdateAt={lastLocalUpdateAt}
         profile={profileState.profile}
         profileMessage={profileState.profileMessage}
+        syncIssues={combinedSyncIssues}
         syncStatus={syncStatus}
         userEmail={auth.user?.email}
         onSaveNickname={profileState.saveNickname}
         onSignInWithGoogle={auth.signInWithGoogle}
         onSignOut={auth.signOut}
+        onRetrySync={retryAllSync}
         onSyncNow={syncNow}
       />
       {migrationPrompt ? (
@@ -545,11 +554,13 @@ function AuthPanel({
   lastLocalUpdateAt,
   profile,
   profileMessage,
+  syncIssues,
   syncStatus,
   userEmail,
   onSaveNickname,
   onSignInWithGoogle,
   onSignOut,
+  onRetrySync,
   onSyncNow,
 }: {
   authMessage: string;
@@ -561,15 +572,18 @@ function AuthPanel({
   lastLocalUpdateAt?: string;
   profile: UserProfile | null;
   profileMessage: string;
+  syncIssues: SyncIssue[];
   syncStatus: SyncStatus;
   userEmail?: string;
   onSaveNickname: (nickname: string) => Promise<void>;
   onSignInWithGoogle: () => Promise<void>;
   onSignOut: () => Promise<void>;
+  onRetrySync: () => Promise<void>;
   onSyncNow: () => Promise<void>;
 }) {
   const [manualSyncMessage, setManualSyncMessage] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [showSyncDetails, setShowSyncDetails] = useState(false);
   const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [nicknameDraft, setNicknameDraft] = useState("");
   const syncLabels: Record<SyncStatus, string> = {
@@ -584,18 +598,39 @@ function AuthPanel({
   const displayName = profile?.fullName || profile?.nickname;
   const welcomeName = profile?.nickname || profile?.fullName;
   const displayEmail = profile?.email || userEmail;
+  const hasSyncError = syncStatus === "error" || syncIssues.length > 0;
   const panelClassName = `auth-panel compact-auth ${syncStatus === "pending" || syncStatus === "error" ? "sync-warning" : ""}`;
   const handleSyncNow = async () => {
     setManualSyncMessage({ type: "info", text: "Sincronizando ahora..." });
 
     try {
-      await onSyncNow();
+      if (hasPendingCloudChanges) {
+        await onSyncNow();
+      }
+
+      if (hasSyncError) {
+        await onRetrySync();
+      }
+
       setManualSyncMessage({ type: "success", text: "Progreso sincronizado en la nube." });
       window.setTimeout(() => {
         setManualSyncMessage((current) => (current?.text === "Progreso sincronizado en la nube." ? null : current));
       }, 4200);
     } catch {
       setManualSyncMessage({ type: "error", text: "No se pudo sincronizar. Tus cambios siguen guardados en este dispositivo." });
+    }
+  };
+  const handleRetrySync = async () => {
+    setManualSyncMessage({ type: "info", text: "Reintentando sincronización..." });
+
+    try {
+      await onRetrySync();
+      setManualSyncMessage({ type: "success", text: "Reintento iniciado." });
+      window.setTimeout(() => {
+        setManualSyncMessage((current) => (current?.text === "Reintento iniciado." ? null : current));
+      }, 4200);
+    } catch {
+      setManualSyncMessage({ type: "error", text: "No se pudo reintentar. Puedes seguir usando la app localmente." });
     }
   };
   const startEditingNickname = () => {
@@ -636,10 +671,34 @@ function AuthPanel({
               <p>Tus cambios están guardados en este dispositivo, pero aún no sincronizados en la nube.</p>
             ) : null}
           </div>
-          <button className="ghost-button small" type="button" onClick={() => setIsAccountOpen((current) => !current)}>
-            {isAccountOpen ? "Ocultar cuenta" : "Ver cuenta"}
-          </button>
+          <div className="sync-actions compact-account-actions">
+            {hasSyncError ? (
+              <button className="ghost-button small" type="button" onClick={() => setShowSyncDetails((current) => !current)}>
+                {showSyncDetails ? "Ocultar detalle" : "Ver detalle"}
+              </button>
+            ) : null}
+            <button className="ghost-button small" type="button" onClick={() => setIsAccountOpen((current) => !current)}>
+              {isAccountOpen ? "Ocultar cuenta" : "Ver cuenta"}
+            </button>
+          </div>
         </div>
+
+        {hasSyncError && showSyncDetails ? (
+          <div className="sync-issue-panel">
+            {syncIssues.length > 0 ? (
+              <ul>
+                {syncIssues.map((issue) => (
+                  <li key={`${issue.id}-${issue.createdAt}`}>{issue.message}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>No se pudo completar la sincronización.</p>
+            )}
+            <button className="ghost-button small" type="button" onClick={() => void handleRetrySync()}>
+              Reintentar
+            </button>
+          </div>
+        ) : null}
 
         {isAccountOpen ? (
           <div className="auth-expanded-content">
@@ -678,11 +737,11 @@ function AuthPanel({
           </div>
         ) : null}
 
-        <div className={`sync-actions ${!isAccountOpen && !hasPendingCloudChanges ? "collapsed-secondary-actions" : ""}`}>
+        <div className={`sync-actions ${!isAccountOpen && !hasPendingCloudChanges && !hasSyncError ? "collapsed-secondary-actions" : ""}`}>
           <button
             className="primary-button small"
             onClick={() => void handleSyncNow()}
-            disabled={!hasPendingCloudChanges || syncStatus === "saving" || syncStatus === "loading"}
+            disabled={(!hasPendingCloudChanges && !hasSyncError) || syncStatus === "saving" || syncStatus === "loading"}
           >
             Sincronizar ahora
           </button>
