@@ -4,7 +4,7 @@ import { StickerList } from "./components/StickerList";
 import { useAlbumData, type MigrationPrompt, type SyncStatus } from "./hooks/useAlbumData";
 import { useAuth } from "./hooks/useAuth";
 import { useProfile } from "./hooks/useProfile";
-import { parseBulkStickerText } from "./lib/bulk";
+import { parseBulkStickerText, parseExchangeSections } from "./lib/bulk";
 import {
   applyFilters,
   applyTradeToProgress,
@@ -19,6 +19,7 @@ import {
   formatTradeItems,
   getCompletionPercentage,
   getCollectionName,
+  getCollectionType,
   getRealGroups,
   getMissingStickers,
   getOwnedStickers,
@@ -1493,6 +1494,296 @@ function CollapsibleSection({
   );
 }
 
+type ExchangeCandidate = {
+  code: string;
+  available?: number;
+  category: string;
+  friendQuantity?: number;
+  label: string;
+};
+
+function getExchangeCategory(sticker: Sticker) {
+  const collectionType = getCollectionType(sticker);
+  const stickerNumber = Number(sticker.number);
+
+  if (collectionType === "special") {
+    return "FWC / Especiales";
+  }
+
+  if (collectionType === "sponsor") {
+    return "Coca-Cola";
+  }
+
+  if (stickerNumber === 1) {
+    return "Escudos";
+  }
+
+  if (stickerNumber === 13) {
+    return "Equipos";
+  }
+
+  return "Jugadores";
+}
+
+function groupExchangeCandidates(candidates: ExchangeCandidate[]) {
+  return candidates.reduce<Map<string, ExchangeCandidate[]>>((groups, candidate) => {
+    groups.set(candidate.category, [...(groups.get(candidate.category) ?? []), candidate]);
+    return groups;
+  }, new Map<string, ExchangeCandidate[]>());
+}
+
+function formatExchangeCandidate(candidate: ExchangeCandidate, mode: "friend" | "mine") {
+  if (mode === "friend") {
+    return `${candidate.code}${candidate.friendQuantity && candidate.friendQuantity > 1 ? ` x${candidate.friendQuantity}` : ""}`;
+  }
+
+  return `${candidate.code}${candidate.available ? ` (${candidate.available} extra${candidate.available === 1 ? "" : "s"})` : ""}`;
+}
+
+function formatExchangeCandidateLines(candidates: ExchangeCandidate[], mode: "friend" | "mine") {
+  return candidates.length > 0 ? candidates.map((candidate) => formatExchangeCandidate(candidate, mode)).join(", ") : "Sin coincidencias.";
+}
+
+function formatPossibleExchangeGroups(friendCanGive: ExchangeCandidate[], iCanGive: ExchangeCandidate[]) {
+  const groups = groupExchangeCandidates([...friendCanGive, ...iCanGive]);
+
+  if (groups.size === 0) {
+    return "Sin candidatos.";
+  }
+
+  return [...groups.entries()]
+    .map(([category, candidates]) => {
+      const friendCandidates = candidates.filter((candidate) => candidate.friendQuantity);
+      const myCandidates = candidates.filter((candidate) => candidate.available);
+      return [
+        category,
+        friendCandidates.length > 0 ? `  Me puede dar: ${formatExchangeCandidateLines(friendCandidates, "friend")}` : "",
+        myCandidates.length > 0 ? `  Le puedo dar: ${formatExchangeCandidateLines(myCandidates, "mine")}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+    })
+    .join("\n\n");
+}
+
+function formatExchangeSummary(friendCanGive: ExchangeCandidate[], iCanGive: ExchangeCandidate[]) {
+  return [
+    "Comparación de intercambio",
+    "",
+    "Me puede dar",
+    formatExchangeCandidateLines(friendCanGive, "friend"),
+    "",
+    "Le puedo dar",
+    formatExchangeCandidateLines(iCanGive, "mine"),
+    "",
+    "Posibles intercambios",
+    formatPossibleExchangeGroups(friendCanGive, iCanGive),
+  ].join("\n");
+}
+
+function ExchangeComparisonPanel({
+  catalog,
+  getAvailableExtras,
+  progress,
+}: {
+  catalog: Sticker[];
+  getAvailableExtras: (code: string) => number;
+  progress: Progress;
+}) {
+  const [combinedText, setCombinedText] = useState("");
+  const [friendSwapsText, setFriendSwapsText] = useState("");
+  const [friendMissingText, setFriendMissingText] = useState("");
+  const [copiedComparison, setCopiedComparison] = useState<"all" | "friend" | "mine" | "possible" | "">("");
+  const [showPreferences, setShowPreferences] = useState(false);
+  const combined = useMemo(() => parseExchangeSections(combinedText, catalog), [catalog, combinedText]);
+  const friendSwaps = useMemo(() => parseBulkStickerText(friendSwapsText, catalog), [catalog, friendSwapsText]);
+  const friendMissing = useMemo(() => parseBulkStickerText(friendMissingText, catalog), [catalog, friendMissingText]);
+  const swapsQuantities = combined.detectedSections ? combined.swaps : friendSwaps.quantities;
+  const missingQuantities = combined.detectedSections ? combined.missing : friendMissing.quantities;
+  const unknownCodes = combined.detectedSections
+    ? combined.unknownCodes
+    : [...new Set([...friendSwaps.unknownCodes, ...friendMissing.unknownCodes])];
+  const catalogByCode = useMemo(() => new Map(catalog.map((sticker) => [sticker.code, sticker])), [catalog]);
+  const catalogIndex = useMemo(() => new Map(catalog.map((sticker, index) => [sticker.code, index])), [catalog]);
+  const sortCandidates = (candidates: ExchangeCandidate[]) =>
+    [...candidates].sort((a, b) => (catalogIndex.get(a.code) ?? Number.MAX_SAFE_INTEGER) - (catalogIndex.get(b.code) ?? Number.MAX_SAFE_INTEGER));
+  const friendCanGive = Object.entries(swapsQuantities)
+    .filter(([code]) => getStickerQuantity(code, progress) === 0)
+    .map<ExchangeCandidate>(([code, quantity]) => {
+      const sticker = catalogByCode.get(code);
+      return {
+        category: sticker ? getExchangeCategory(sticker) : "Otros",
+        code,
+        friendQuantity: quantity,
+        label: sticker ? formatCollectionCodeLabel(catalog, getCollectionName(sticker)) : code,
+      };
+    });
+  const iCanGive = Object.keys(missingQuantities)
+    .map((code) => ({ code, available: getAvailableExtras(code) }))
+    .filter((item) => item.available > 0)
+    .map<ExchangeCandidate>(({ code, available }) => {
+      const sticker = catalogByCode.get(code);
+      return {
+        available,
+        category: sticker ? getExchangeCategory(sticker) : "Otros",
+        code,
+        label: sticker ? formatCollectionCodeLabel(catalog, getCollectionName(sticker)) : code,
+      };
+    });
+  const sortedFriendCanGive = sortCandidates(friendCanGive);
+  const sortedICanGive = sortCandidates(iCanGive);
+  const possibleGroups = groupExchangeCandidates([...sortedFriendCanGive, ...sortedICanGive]);
+  const hasInput = combinedText.trim() || friendSwapsText.trim() || friendMissingText.trim();
+  const copyComparison = async (target: "all" | "friend" | "mine" | "possible", text: string) => {
+    await navigator.clipboard.writeText(text);
+    setCopiedComparison(target);
+    window.setTimeout(() => setCopiedComparison(""), 1800);
+  };
+
+  return (
+    <div className="exchange-comparison">
+      <label className="text-import">
+        <span>Lista completa de mi amigo</span>
+        <textarea
+          value={combinedText}
+          onChange={(event) => setCombinedText(event.target.value)}
+          placeholder={"Me faltan\nMEX: 1, 2, 3\n\nMis repetidas\nSUI: 1 x2"}
+          rows={5}
+        />
+      </label>
+      <div className="trade-bulk-grid">
+        <label className="text-import">
+          <span>Lista de repetidas de mi amigo</span>
+          <textarea
+            value={friendSwapsText}
+            onChange={(event) => setFriendSwapsText(event.target.value)}
+            placeholder="MEX12, ARG1 o MEX: 1, 2, 3"
+            rows={3}
+            disabled={combined.detectedSections}
+          />
+        </label>
+        <label className="text-import">
+          <span>Lista de faltantes de mi amigo</span>
+          <textarea
+            value={friendMissingText}
+            onChange={(event) => setFriendMissingText(event.target.value)}
+            placeholder="FWC5, CC1 o USA: 6, 20"
+            rows={3}
+            disabled={combined.detectedSections}
+          />
+        </label>
+      </div>
+      {combined.detectedSections ? <p className="history-note">Se detectaron secciones en la lista completa.</p> : null}
+      {unknownCodes.length > 0 ? <p className="warning-message compact-message">No encontrados: {unknownCodes.join(", ")}</p> : null}
+      <button className="ghost-button small" type="button" onClick={() => setShowPreferences((current) => !current)}>
+        {showPreferences ? "Ocultar preferencias" : "Preferencias de intercambio"}
+      </button>
+      {showPreferences ? (
+        <div className="exchange-preferences">
+          <p>Escudos/cromos número 1 se recomiendan por número 1.</p>
+          <p>Especiales FWC se recomiendan por FWC.</p>
+          <p>Fotos de equipo número 13 se recomiendan por número 13.</p>
+          <p>Jugadores se pueden comparar principalmente con jugadores. Son sugerencias, no reglas.</p>
+        </div>
+      ) : null}
+      {hasInput ? (
+        <div className="exchange-results">
+          <div className="exchange-copy-actions">
+            <button
+              className="ghost-button small"
+              type="button"
+              onClick={() => void copyComparison("all", formatExchangeSummary(sortedFriendCanGive, sortedICanGive))}
+            >
+              {copiedComparison === "all" ? "Resumen copiado" : "Copiar resumen"}
+            </button>
+          </div>
+          <ExchangeCandidateList
+            title="Me puede dar"
+            emptyText="No hay coincidencias con tus faltantes."
+            candidates={sortedFriendCanGive}
+            copyLabel={copiedComparison === "friend" ? "Copiado" : "Copiar"}
+            mode="friend"
+            onCopy={() => void copyComparison("friend", `Me puede dar\n${formatExchangeCandidateLines(sortedFriendCanGive, "friend")}`)}
+          />
+          <ExchangeCandidateList
+            title="Le puedo dar"
+            emptyText="No hay coincidencias con tus extras disponibles."
+            candidates={sortedICanGive}
+            copyLabel={copiedComparison === "mine" ? "Copiado" : "Copiar"}
+            mode="mine"
+            onCopy={() => void copyComparison("mine", `Le puedo dar\n${formatExchangeCandidateLines(sortedICanGive, "mine")}`)}
+          />
+          <section className="exchange-result-card">
+            <div className="section-heading flush">
+              <h3>Posibles intercambios</h3>
+              <button
+                className="ghost-button small"
+                type="button"
+                onClick={() => void copyComparison("possible", `Posibles intercambios\n${formatPossibleExchangeGroups(sortedFriendCanGive, sortedICanGive)}`)}
+              >
+                {copiedComparison === "possible" ? "Copiado" : "Copiar"}
+              </button>
+            </div>
+            {[...possibleGroups.entries()].length === 0 ? <p className="empty-state">No hay candidatos todavía.</p> : null}
+            {[...possibleGroups.entries()].map(([category, candidates]) => (
+              <div className="exchange-category" key={category}>
+                <strong>{category}</strong>
+                <div className="trade-code-list">
+                  {candidates.map((candidate) => (
+                    <span key={`${category}-${candidate.code}`}>
+                      {candidate.code}
+                      {candidate.friendQuantity && candidate.friendQuantity > 1 ? ` x${candidate.friendQuantity}` : ""}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </section>
+        </div>
+      ) : (
+        <p className="empty-state">Pega una lista para comparar posibles intercambios.</p>
+      )}
+    </div>
+  );
+}
+
+function ExchangeCandidateList({
+  candidates,
+  copyLabel,
+  emptyText,
+  mode,
+  onCopy,
+  title,
+}: {
+  candidates: ExchangeCandidate[];
+  copyLabel: string;
+  emptyText: string;
+  mode: "friend" | "mine";
+  onCopy: () => void;
+  title: string;
+}) {
+  return (
+    <section className="exchange-result-card">
+      <div className="section-heading flush">
+        <h3>{title}</h3>
+        <button className="ghost-button small" type="button" onClick={onCopy}>
+          {copyLabel}
+        </button>
+      </div>
+      {candidates.length === 0 ? <p className="empty-state">{emptyText}</p> : null}
+      <div className="trade-code-list">
+        {candidates.map((candidate) => (
+          <span key={candidate.code}>
+            {candidate.code}
+            {mode === "friend" && candidate.friendQuantity && candidate.friendQuantity > 1 ? ` x${candidate.friendQuantity}` : ""}
+            {mode === "mine" && candidate.available ? ` · ${candidate.available} extra(s)` : ""}
+          </span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function RepeatedView({
   catalog,
   filters,
@@ -1521,6 +1812,7 @@ function RepeatedView({
   const stickers = applyFilters(catalog, progress, { ...filters, status: "repeated" });
   const groups = groupByCountry(stickers);
   const [copyLabel, setCopyLabel] = useState("Copiar lista para intercambio");
+  const [isComparisonOpen, setIsComparisonOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(true);
   const [isRepeatedListOpen, setIsRepeatedListOpen] = useState(false);
   const [isPendingTradesOpen, setIsPendingTradesOpen] = useState(() => pendingTrades.length > 0);
@@ -1864,6 +2156,15 @@ function RepeatedView({
           {copyLabel}
         </button>
       </div>
+
+      <CollapsibleSection
+        title="Comparar intercambio"
+        meta="Cruza listas con un amigo"
+        isOpen={isComparisonOpen}
+        onToggle={() => setIsComparisonOpen((current) => !current)}
+      >
+        <ExchangeComparisonPanel catalog={catalog} progress={progress} getAvailableExtras={getAvailableExtras} />
+      </CollapsibleSection>
 
       <CollapsibleSection
         className="trade-form"

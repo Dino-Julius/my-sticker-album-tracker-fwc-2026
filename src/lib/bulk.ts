@@ -5,6 +5,13 @@ export type BulkParseResult = {
   unknownCodes: string[];
 };
 
+export type ExchangeSectionParseResult = {
+  detectedSections: boolean;
+  missing: Record<string, number>;
+  swaps: Record<string, number>;
+  unknownCodes: string[];
+};
+
 const CODE_PATTERN = /^[A-Z]*\d+$/;
 const CODE_WITH_QUANTITY_PATTERN = /^([A-Z]*\d+)(?:X|:|=)(\d+)$/;
 const RANGE_PATTERN = /^([A-Z]*)(\d+)-([A-Z]*)(\d+)(?:X(\d+))?$/;
@@ -25,22 +32,80 @@ export function parseBulkStickerText(text: string, catalog: Sticker[]): BulkPars
         return;
       }
 
-      const normalizedSegment = segment.toUpperCase();
-      const groupedMatch = normalizedSegment.match(GROUPED_SECTION_PATTERN);
-      const groupedPrefix = groupedMatch?.[1];
-
-      if (groupedMatch && groupedPrefix && hasPrefix(codeByPrefixAndNumber, groupedPrefix)) {
-        addGroupedCodes(groupedPrefix, groupedMatch[2], codeByPrefixAndNumber, quantities, unknownCodes);
-        return;
-      }
-
-      addCompactCodes(segment, validCodes, quantities, unknownCodes);
+      addSegmentCodes(segment, validCodes, codeByPrefixAndNumber, quantities, unknownCodes);
     });
 
   return {
     quantities,
     unknownCodes: [...unknownCodes],
   };
+}
+
+export function parseExchangeSections(text: string, catalog: Sticker[]): ExchangeSectionParseResult {
+  const missing: Record<string, number> = {};
+  const swaps: Record<string, number> = {};
+  const unknownCodes = new Set<string>();
+  let currentSection: "missing" | "swaps" | null = null;
+  let detectedSections = false;
+
+  text
+    .split(/[\n\r]+/)
+    .map((segment) => segment.trim())
+    .filter(Boolean)
+    .forEach((segment) => {
+      const heading = getSectionType(segment);
+
+      if (heading) {
+        currentSection = heading;
+        detectedSections = true;
+        return;
+      }
+
+      if (!currentSection) {
+        return;
+      }
+
+      const parsed = parseBulkStickerText(segment, catalog);
+      const target = currentSection === "missing" ? missing : swaps;
+
+      Object.entries(parsed.quantities).forEach(([code, quantity]) => {
+        target[code] = (target[code] ?? 0) + quantity;
+      });
+      parsed.unknownCodes.forEach((code) => unknownCodes.add(code));
+    });
+
+  return {
+    detectedSections,
+    missing,
+    swaps,
+    unknownCodes: [...unknownCodes],
+  };
+}
+
+function addSegmentCodes(
+  segment: string,
+  validCodes: Set<string>,
+  codeByPrefixAndNumber: Map<string, string>,
+  quantities: Record<string, number>,
+  unknownCodes: Set<string>,
+) {
+  const groupedParts = getGroupedParts(segment, codeByPrefixAndNumber);
+
+  if (groupedParts.length > 0) {
+    groupedParts.forEach(({ prefix, values }) => addGroupedCodes(prefix, values, codeByPrefixAndNumber, quantities, unknownCodes));
+    return;
+  }
+
+  const normalizedSegment = segment.toUpperCase();
+  const groupedMatch = normalizedSegment.match(GROUPED_SECTION_PATTERN);
+  const groupedPrefix = groupedMatch?.[1];
+
+  if (groupedMatch && groupedPrefix && hasPrefix(codeByPrefixAndNumber, groupedPrefix)) {
+    addGroupedCodes(groupedPrefix, groupedMatch[2], codeByPrefixAndNumber, quantities, unknownCodes);
+    return;
+  }
+
+  addCompactCodes(segment, validCodes, quantities, unknownCodes);
 }
 
 function addCompactCodes(
@@ -152,6 +217,27 @@ function hasPrefix(codeByPrefixAndNumber: Map<string, string>, prefix: string) {
   return [...codeByPrefixAndNumber.keys()].some((key) => key.startsWith(`${prefix}:`));
 }
 
+function getGroupedParts(segment: string, codeByPrefixAndNumber: Map<string, string>) {
+  const normalizedSegment = segment.toUpperCase();
+  const headingPattern = /([A-Z][A-Z0-9]{1,4})\b[^:;]*:/gu;
+  const matches = [...normalizedSegment.matchAll(headingPattern)]
+    .map((match) => ({
+      index: match.index ?? 0,
+      prefix: match[1],
+      end: (match.index ?? 0) + match[0].length,
+    }))
+    .filter((match) => hasPrefix(codeByPrefixAndNumber, match.prefix));
+
+  if (matches.length === 0) {
+    return [];
+  }
+
+  return matches.map((match, index) => ({
+    prefix: match.prefix,
+    values: normalizedSegment.slice(match.end, matches[index + 1]?.index ?? normalizedSegment.length),
+  }));
+}
+
 function addGroupedCodes(
   prefix: string,
   values: string,
@@ -182,5 +268,24 @@ function addGroupedCodes(
 }
 
 function isSectionHeader(segment: string) {
-  return /^(I NEED|NEED|ME FALTAN|FALTANTES|SWAPS|MIS REPETIDAS|REPETIDAS|EXTRAS)\s*:?\s*$/i.test(segment.trim());
+  return Boolean(getSectionType(segment));
+}
+
+function getSectionType(segment: string): "missing" | "swaps" | null {
+  const normalizedSegment = segment
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .trim()
+    .toUpperCase()
+    .replace(/:$/, "");
+
+  if (/^(I NEED|NEED|ME FALTAN|FALTANTES)$/.test(normalizedSegment)) {
+    return "missing";
+  }
+
+  if (/^(SWAPS|MIS REPETIDAS|REPETIDAS|EXTRAS)$/.test(normalizedSegment)) {
+    return "swaps";
+  }
+
+  return null;
 }
