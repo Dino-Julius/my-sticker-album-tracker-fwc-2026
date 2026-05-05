@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import type { SyncIssue, UserProfile } from "../types";
-import { loadRemoteProfile, saveRemoteProfile } from "../lib/remoteProfiles";
+import { ensureRemoteProfileBase, saveRemoteProfile } from "../lib/remoteProfiles";
 
 const profileIssueMessages = {
   load: "No se pudo cargar el perfil.",
@@ -45,7 +45,7 @@ export function useProfile({ isCloudEnabled, user }: { isCloudEnabled: boolean; 
 
     let isActive = true;
 
-    loadRemoteProfile(userId)
+    ensureRemoteProfileBase({ email, fullName, userId })
       .then((profile) => {
         if (isActive) {
           setRemoteProfile(profile);
@@ -65,7 +65,7 @@ export function useProfile({ isCloudEnabled, user }: { isCloudEnabled: boolean; 
     return () => {
       isActive = false;
     };
-  }, [isCloudEnabled, retryToken, userId]);
+  }, [email, fullName, isCloudEnabled, retryToken, userId]);
 
   const profile = useMemo<UserProfile | null>(() => {
     if (!userId) {

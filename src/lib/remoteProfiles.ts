@@ -37,6 +37,51 @@ export async function loadRemoteProfile(userId: string): Promise<UserProfile | n
   return data ? toUserProfile(data) : null;
 }
 
+export async function ensureRemoteProfileBase(profile: Pick<UserProfile, "email" | "fullName" | "userId">): Promise<UserProfile> {
+  const currentProfile = await loadRemoteProfile(profile.userId);
+
+  if (!supabase) {
+    return {
+      ...profile,
+      nickname: currentProfile?.nickname,
+      updatedAt: currentProfile?.updatedAt,
+    };
+  }
+
+  const nextEmail = profile.email ?? undefined;
+  const nextFullName = profile.fullName ?? undefined;
+  const shouldWrite =
+    !currentProfile ||
+    (currentProfile.email ?? undefined) !== nextEmail ||
+    (currentProfile.fullName ?? undefined) !== nextFullName;
+
+  if (!shouldWrite) {
+    return currentProfile;
+  }
+
+  const updatedAt = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("profiles")
+    .upsert(
+      {
+        user_id: profile.userId,
+        email: nextEmail ?? null,
+        full_name: nextFullName ?? null,
+        nickname: currentProfile?.nickname ?? null,
+        updated_at: updatedAt,
+      },
+      { onConflict: "user_id" },
+    )
+    .select("user_id,email,full_name,nickname,updated_at")
+    .single<ProfileRow>();
+
+  if (error) {
+    throw error;
+  }
+
+  return toUserProfile(data);
+}
+
 export async function saveRemoteProfile(profile: UserProfile): Promise<UserProfile> {
   if (!supabase) {
     return profile;
