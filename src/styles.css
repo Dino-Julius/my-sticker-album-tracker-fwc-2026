@@ -1131,6 +1131,12 @@ textarea {
   margin-bottom: 0;
 }
 
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+}
+
 .import-guidance p {
   margin-bottom: 0;
 }
@@ -1188,12 +1194,14 @@ textarea {
 
 .app-footer {
   display: grid;
+  justify-items: center;
   gap: 8px;
   margin-top: 28px;
   padding: 18px 2px 4px;
   border-top: 1px solid rgba(148, 163, 184, 0.36);
   color: #64748b;
   font-size: 0.88rem;
+  text-align: center;
 }
 
 .app-footer strong {
@@ -1203,6 +1211,7 @@ textarea {
 .app-footer nav {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 8px 14px;
 }
 
@@ -1321,14 +1330,14 @@ textarea {
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   background: #fff;
-  padding: 10px;
+  padding: 9px;
 }
 
 .selected-trade-item {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 76px auto;
+  grid-template-columns: minmax(0, 1fr) 60px auto;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .selected-trade-item span,

@@ -518,6 +518,9 @@ function AppFooter() {
         <a href="https://github.com/Dino-Julius/my-sticker-album-tracker-fwc-2026" target="_blank" rel="noreferrer">
           Código fuente disponible en GitHub
         </a>
+        <a href="https://github.com/Dino-Julius/my-sticker-album-tracker-fwc-2026/wiki" target="_blank" rel="noreferrer">
+          Wiki de ayuda
+        </a>
         <a href="https://dino-julius.github.io/my-sticker-album-tracker-fwc-2026/" target="_blank" rel="noreferrer">
           App en GitHub Pages
         </a>
@@ -2249,7 +2252,7 @@ function RepeatedView({
               buttonLabel="Agregar a Doy"
               label="Pegar códigos que doy"
               placeholder="Ej. MEX3, MEX4, ARG1-ARG3, BRA7 x2"
-              summary="Doy en bulk"
+              summary="Carga rápida: Doy"
               value={gaveBulkText}
               onAdd={() => addBulkTradeItems("gave")}
               onChange={setGaveBulkText}
@@ -2258,7 +2261,7 @@ function RepeatedView({
               buttonLabel="Agregar a Recibo"
               label="Pegar códigos que recibo"
               placeholder="Ej. FWC5, BRA7, CC1, MEX10-MEX12"
-              summary="Recibo en bulk"
+              summary="Carga rápida: Recibo"
               value={receivedBulkText}
               onAdd={() => addBulkTradeItems("received")}
               onChange={setReceivedBulkText}
@@ -2775,6 +2778,7 @@ function DataView({
   progress: Progress;
 }) {
   const [importText, setImportText] = useState("");
+  const [isImportGuidanceOpen, setIsImportGuidanceOpen] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string; action?: string } | null>(null);
 
   const notify = (text: string, type: "success" | "error" = "success", action?: string) => {
@@ -2835,8 +2839,13 @@ function DataView({
 
   return (
     <section className="view-stack">
-      <section className="panel action-panel import-guidance">
-        <h2>¿Tienes tus stickers en otra app?</h2>
+      <CollapsibleSection
+        className="action-panel import-guidance"
+        title="¿Tienes tus stickers en otra app?"
+        meta="Formato y prompt de conversión"
+        isOpen={isImportGuidanceOpen}
+        onToggle={() => setIsImportGuidanceOpen((current) => !current)}
+      >
         <p>Puedes exportar tu lista desde otra app y convertirla al formato de este tracker.</p>
         <pre className="code-example">{IMPORT_EXAMPLE}</pre>
         <ul className="info-list">
@@ -2854,57 +2863,59 @@ function DataView({
         {conversionFeedback ? (
           <p className={conversionFeedback.type === "success" ? "toast-message" : "warning-message"}>{conversionFeedback.text}</p>
         ) : null}
-      </section>
+      </CollapsibleSection>
 
       <section className="panel action-panel">
         <h2>Exportar</h2>
-        <button
-          className={actionClass("primary-button", "download-progress")}
-          onClick={() =>
-            downloadFile(
-              "album-progress.json",
-              exportProgressToJson(catalog, progress),
-              "application/json",
-              "download-progress",
-            )
-          }
-        >
-          {feedback?.action === "download-progress" ? "Archivo descargado" : "Exportar progreso JSON"}
-        </button>
-        <button
-          className={actionClass("ghost-button", "copy-progress")}
-          onClick={() => copyText(exportProgressToJson(catalog, progress), "JSON copiado al portapapeles.", "copy-progress")}
-        >
-          {feedback?.action === "copy-progress" ? "Copiado" : "Copiar progreso JSON"}
-        </button>
-        <button
-          className={actionClass("ghost-button", "download-missing")}
-          onClick={() =>
-            downloadFile("faltantes.csv", exportMissingToCsv(catalog, progress), "text/csv", "download-missing")
-          }
-        >
-          {feedback?.action === "download-missing" ? "Archivo descargado" : "Exportar faltantes CSV"}
-        </button>
-        <button
-          className={actionClass("ghost-button", "copy-missing")}
-          onClick={() => copyText(exportMissingToMarkdown(catalog, progress), "Tabla de faltantes copiada.", "copy-missing")}
-        >
-          {feedback?.action === "copy-missing" ? "Copiado" : "Copiar faltantes como tabla"}
-        </button>
-        <button
-          className={actionClass("ghost-button", "download-repeated")}
-          onClick={() =>
-            downloadFile("repetidas.csv", exportRepeatedToCsv(catalog, progress), "text/csv", "download-repeated")
-          }
-        >
-          {feedback?.action === "download-repeated" ? "Archivo descargado" : "Exportar repetidas CSV"}
-        </button>
-        <button
-          className={actionClass("ghost-button", "copy-repeated")}
-          onClick={() => copyText(exportRepeatedToMarkdown(catalog, progress), "Tabla de repetidas copiada.", "copy-repeated")}
-        >
-          {feedback?.action === "copy-repeated" ? "Copiado" : "Copiar repetidas como tabla"}
-        </button>
+        <div className="action-grid">
+          <button
+            className={actionClass("primary-button", "download-progress")}
+            onClick={() =>
+              downloadFile(
+                "album-progress.json",
+                exportProgressToJson(catalog, progress),
+                "application/json",
+                "download-progress",
+              )
+            }
+          >
+            {feedback?.action === "download-progress" ? "Archivo descargado" : "Exportar progreso JSON"}
+          </button>
+          <button
+            className={actionClass("ghost-button", "copy-progress")}
+            onClick={() => copyText(exportProgressToJson(catalog, progress), "JSON copiado al portapapeles.", "copy-progress")}
+          >
+            {feedback?.action === "copy-progress" ? "Copiado" : "Copiar progreso JSON"}
+          </button>
+          <button
+            className={actionClass("ghost-button", "download-missing")}
+            onClick={() =>
+              downloadFile("faltantes.csv", exportMissingToCsv(catalog, progress), "text/csv", "download-missing")
+            }
+          >
+            {feedback?.action === "download-missing" ? "Archivo descargado" : "Exportar faltantes CSV"}
+          </button>
+          <button
+            className={actionClass("ghost-button", "copy-missing")}
+            onClick={() => copyText(exportMissingToMarkdown(catalog, progress), "Tabla de faltantes copiada.", "copy-missing")}
+          >
+            {feedback?.action === "copy-missing" ? "Copiado" : "Copiar faltantes como tabla"}
+          </button>
+          <button
+            className={actionClass("ghost-button", "download-repeated")}
+            onClick={() =>
+              downloadFile("repetidas.csv", exportRepeatedToCsv(catalog, progress), "text/csv", "download-repeated")
+            }
+          >
+            {feedback?.action === "download-repeated" ? "Archivo descargado" : "Exportar repetidas CSV"}
+          </button>
+          <button
+            className={actionClass("ghost-button", "copy-repeated")}
+            onClick={() => copyText(exportRepeatedToMarkdown(catalog, progress), "Tabla de repetidas copiada.", "copy-repeated")}
+          >
+            {feedback?.action === "copy-repeated" ? "Copiado" : "Copiar repetidas como tabla"}
+          </button>
+        </div>
         {exportFeedback ? <p className={exportFeedback.type === "success" ? "toast-message" : "warning-message"}>{exportFeedback.text}</p> : null}
       </section>
 
@@ -2918,9 +2929,11 @@ function DataView({
           <span>Pegar JSON</span>
           <textarea value={importText} onChange={(event) => setImportText(event.target.value)} rows={8} />
         </label>
-        <button className={actionClass("primary-button", "import")} onClick={() => importTextProgress(importText)}>
-          {feedback?.action === "import" && feedback.type === "success" ? "Importado correctamente" : "Importar JSON pegado"}
-        </button>
+        <div className="action-grid">
+          <button className={actionClass("primary-button", "import")} onClick={() => importTextProgress(importText)}>
+            {feedback?.action === "import" && feedback.type === "success" ? "Importado correctamente" : "Importar JSON pegado"}
+          </button>
+        </div>
         {importFeedback ? <p className={importFeedback.type === "success" ? "toast-message" : "warning-message"}>{importFeedback.text}</p> : null}
       </section>
 
@@ -2942,9 +2955,11 @@ function DataView({
 
       <section className="panel action-panel">
         <h2>Reiniciar</h2>
-        <button className={actionClass("danger-button", "reset")} onClick={resetProgress}>
-          Reiniciar progreso
-        </button>
+        <div className="action-grid">
+          <button className={actionClass("danger-button", "reset")} onClick={resetProgress}>
+            Reiniciar progreso
+          </button>
+        </div>
         <p>
           El catálogo maestro no se modifica. Se guardan {Object.keys(serializeFullProgress(catalog, progress)).length} códigos en el
           respaldo exportado.
