@@ -111,6 +111,12 @@ h3 {
   font-weight: 850;
 }
 
+.help-button.has-unread {
+  border-color: #fbbf24;
+  background: #fffbeb;
+  color: #92400e;
+}
+
 .help-panel {
   display: grid;
   gap: 14px;
@@ -121,6 +127,43 @@ h3 {
 
 .help-panel h2 {
   margin-bottom: 0;
+}
+
+.release-notes-panel {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 14px;
+  border-color: #fde68a;
+  background: #fffdf5;
+}
+
+.release-note-list {
+  display: grid;
+  gap: 10px;
+}
+
+.release-note-card {
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  border-radius: 8px;
+  background: #fff;
+  padding: 12px;
+}
+
+.release-note-card.unread {
+  border-color: #fbbf24;
+  background: #fffbeb;
+}
+
+.release-note-card h3,
+.release-note-card p {
+  margin-bottom: 0;
+}
+
+.release-note-link {
+  color: #075985;
+  font-weight: 850;
 }
 
 .info-list {

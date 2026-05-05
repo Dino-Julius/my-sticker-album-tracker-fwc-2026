@@ -60,6 +60,14 @@ const emptyFilters: Filters = {
 
 type View = "dashboard" | "registro" | "faltantes" | "repetidas" | "paises" | "datos";
 type BulkAction = "increment" | "owned" | "missing" | "set";
+type ReleaseNote = {
+  id: string;
+  date: string;
+  title: string;
+  summary: string;
+  items: string[];
+  wikiUrl?: string;
+};
 
 const bulkActionToRegistrationAction: Record<BulkAction, RegistrationEventAction> = {
   increment: "increment",
@@ -153,6 +161,23 @@ Reglas:
 Aquí está la información exportada desde otra app:
 [PEGA AQUÍ TU EXPORTACIÓN]`;
 
+const READ_RELEASE_NOTES_STORAGE_KEY = "my-sticker-album-tracker-fwc-2026-read-release-notes";
+
+function readStoredReleaseNoteIds(): string[] {
+  const stored = localStorage.getItem(READ_RELEASE_NOTES_STORAGE_KEY);
+
+  if (!stored) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(stored) as string[];
+    return Array.isArray(parsed) ? parsed.filter((id) => typeof id === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
 function App() {
   const auth = useAuth();
   const profileState = useProfile({ isCloudEnabled: auth.isConfigured, user: auth.user });
@@ -161,7 +186,10 @@ function App() {
   const [activeView, setActiveView] = useState<View>("dashboard");
   const [selectedCollection, setSelectedCollection] = useState("");
   const [filters, setFilters] = useState<Filters>(emptyFilters);
+  const [releaseNotes, setReleaseNotes] = useState<ReleaseNote[]>([]);
+  const [readReleaseNoteIds, setReadReleaseNoteIds] = useState<string[]>(() => readStoredReleaseNoteIds());
   const [showHelp, setShowHelp] = useState(false);
+  const [showReleaseNotes, setShowReleaseNotes] = useState(false);
   const [pwaUpdateWorker, setPwaUpdateWorker] = useState<ServiceWorker | null>(null);
   const {
     addPendingTrade,
@@ -210,6 +238,21 @@ function App() {
   }, []);
 
   useEffect(() => {
+    fetch(`${import.meta.env.BASE_URL}release-notes.json`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("No se pudieron cargar las novedades.");
+        }
+
+        return response.json() as Promise<ReleaseNote[]>;
+      })
+      .then((notes) => {
+        setReleaseNotes(Array.isArray(notes) ? notes : []);
+      })
+      .catch(() => setReleaseNotes([]));
+  }, []);
+
+  useEffect(() => {
     const handlePwaUpdate = (event: WindowEventMap["pwa-update-available"]) => {
       setPwaUpdateWorker(event.detail.worker);
     };
@@ -238,6 +281,13 @@ function App() {
 
     navigator.serviceWorker.addEventListener("controllerchange", reloadWhenControlled, { once: true });
     pwaUpdateWorker.postMessage({ type: "SKIP_WAITING" });
+  };
+
+  const unreadReleaseCount = releaseNotes.filter((note) => !readReleaseNoteIds.includes(note.id)).length;
+  const markReleaseNotesAsRead = () => {
+    const nextReadIds = [...new Set([...readReleaseNoteIds, ...releaseNotes.map((note) => note.id)])];
+    localStorage.setItem(READ_RELEASE_NOTES_STORAGE_KEY, JSON.stringify(nextReadIds));
+    setReadReleaseNoteIds(nextReadIds);
   };
 
   const dashboard = useMemo(() => {
@@ -345,9 +395,23 @@ function App() {
           >
             Ayuda
           </button>
+          {releaseNotes.length > 0 ? (
+            <button
+              className={`help-button ${unreadReleaseCount > 0 ? "has-unread" : ""}`}
+              type="button"
+              aria-controls="release-notes-panel"
+              aria-expanded={showReleaseNotes}
+              onClick={() => setShowReleaseNotes((current) => !current)}
+            >
+              Novedades{unreadReleaseCount > 0 ? ` · ${unreadReleaseCount}` : ""}
+            </button>
+          ) : null}
         </div>
       </header>
       {showHelp ? <HelpPanel /> : null}
+      {showReleaseNotes && releaseNotes.length > 0 ? (
+        <ReleaseNotesPanel notes={releaseNotes} readIds={readReleaseNoteIds} onMarkRead={markReleaseNotesAsRead} />
+      ) : null}
       {pwaUpdateWorker ? <PwaUpdateBanner onDismiss={() => setPwaUpdateWorker(null)} onUpdate={applyPwaUpdate} /> : null}
       <AuthPanel
         authMessage={auth.authMessage}
@@ -509,6 +573,60 @@ function HelpPanel() {
   );
 }
 
+function ReleaseNotesPanel({
+  notes,
+  readIds,
+  onMarkRead,
+}: {
+  notes: ReleaseNote[];
+  readIds: string[];
+  onMarkRead: () => void;
+}) {
+  const unreadCount = notes.filter((note) => !readIds.includes(note.id)).length;
+
+  return (
+    <section className="panel release-notes-panel" id="release-notes-panel" aria-label="Novedades">
+      <div className="section-heading flush">
+        <div>
+          <p className="eyebrow">Novedades</p>
+          <h2>Qué cambió en la app</h2>
+        </div>
+        <button className="ghost-button small" type="button" onClick={onMarkRead} disabled={unreadCount === 0}>
+          {unreadCount > 0 ? "Marcar como leído" : "Todo leído"}
+        </button>
+      </div>
+      <div className="release-note-list">
+        {notes.map((note) => {
+          const isUnread = !readIds.includes(note.id);
+
+          return (
+            <article className={`release-note-card ${isUnread ? "unread" : ""}`} key={note.id}>
+              <div className="section-heading flush">
+                <div>
+                  <h3>{note.title}</h3>
+                  <span>{formatDisplayDate(note.date)}</span>
+                </div>
+                {isUnread ? <span className="status status-owned">Nuevo</span> : null}
+              </div>
+              <p>{note.summary}</p>
+              <ul className="info-list">
+                {note.items.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+              {note.wikiUrl ? (
+                <a className="release-note-link" href={note.wikiUrl} target="_blank" rel="noreferrer">
+                  Ver guía en la Wiki
+                </a>
+              ) : null}
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function AppFooter() {
   return (
     <footer className="app-footer">
@@ -536,7 +654,7 @@ function PwaUpdateBanner({ onDismiss, onUpdate }: { onDismiss: () => void; onUpd
     <section className="pwa-update-banner" aria-live="polite">
       <div>
         <strong>Nueva versión disponible</strong>
-        <span>Actualiza para usar la última versión de la app.</span>
+        <span>Actualiza para usar la última versión de la app. Revisa Novedades para ver qué cambió.</span>
       </div>
       <div className="pwa-update-actions">
         <button className="primary-button small" onClick={onUpdate}>

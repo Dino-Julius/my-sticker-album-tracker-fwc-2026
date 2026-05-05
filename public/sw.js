@@ -45,7 +45,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (shouldUseNetworkFirst(request)) {
+  if (shouldUseNetworkFirst(request, url)) {
     event.respondWith(networkFirst(request));
     return;
   }
@@ -53,8 +53,8 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(cacheFirst(request));
 });
 
-function shouldUseNetworkFirst(request) {
-  return ["script", "style", "worker", "image", "font"].includes(request.destination);
+function shouldUseNetworkFirst(request, url) {
+  return url.pathname.endsWith("/release-notes.json") || ["script", "style", "worker", "image", "font"].includes(request.destination);
 }
 
 async function networkFirst(request) {
