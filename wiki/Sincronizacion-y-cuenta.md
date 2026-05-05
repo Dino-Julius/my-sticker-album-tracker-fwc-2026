@@ -2,22 +2,34 @@
 
 ## Sin cuenta
 
-Puedes usar la app sin iniciar sesion. En ese caso, tu progreso se guarda localmente en ese navegador o dispositivo.
-
-Es rapido y privado, pero si borras datos del sitio puedes perder ese progreso local.
+Puedes usar la app sin iniciar sesion. Tu progreso se guarda localmente en ese navegador o dispositivo.
 
 ## Con Google
 
-Si inicias sesion con Google, tu progreso se sincroniza en la nube y tambien queda una copia local como respaldo.
+Si inicias sesion con Google, tu progreso se sincroniza en la nube y tambien queda una copia local.
 
-El panel de cuenta aparece compacto por defecto. Puede mostrar estados como:
+El panel de cuenta puede mostrar:
 
 - **Guardado en la nube**
 - **Cambios pendientes**
 - **Error al sincronizar**
 - **Usando almacenamiento local**
 
-Si abres el panel con **Ver cuenta**, puedes:
+## Errores de sincronizacion
+
+Si aparece **Error al sincronizar**, abre **Ver detalle**. La app puede decirte si fallo:
+
+- progreso,
+- historial de intercambios,
+- historial de registro,
+- apartados,
+- perfil.
+
+Puedes tocar **Reintentar**. Si falla otra vez, la app sigue funcionando con la copia local del dispositivo.
+
+## Cuenta
+
+Con **Ver cuenta** puedes:
 
 - ver nombre y email,
 - editar tu **Apodo**,
@@ -26,8 +38,6 @@ Si abres el panel con **Ver cuenta**, puedes:
 - tocar **Sincronizar ahora**,
 - cerrar sesion.
 
-Si ves cambios pendientes, significa que tus cambios ya estan guardados en este dispositivo, pero aun no se sincronizan en la nube.
-
 ## Nueva version
 
-Cuando haya una actualizacion, puede aparecer **Nueva versión disponible**. Toca **Actualizar** para cargar la version nueva.
+Cuando haya una actualizacion, puede aparecer **Nueva versión disponible**. Toca **Actualizar**.

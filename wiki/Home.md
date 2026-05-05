@@ -2,13 +2,13 @@
 
 Bienvenido a la wiki del tracker.
 
-Esta app te ayuda a registrar tu album, revisar faltantes, ver repetidas, preparar intercambios y guardar tu progreso localmente o con tu cuenta de Google.
+Esta app te ayuda a registrar tu album, revisar faltantes, ver repetidas, comparar listas con amigos, preparar intercambios y guardar tu progreso localmente o con tu cuenta de Google.
 
 ## Enlaces rapidos
 
 - [Guia de uso](Guia-de-uso)
 - [Funciones principales](Funciones-principales)
-- [Registro y bulk](Registro-y-bulk)
+- [Registro y carga rapida](Registro-y-bulk)
 - [Intercambios y apartados](Intercambios-y-apartados)
 - [Sincronizacion y cuenta](Sincronizacion-y-cuenta)
 - [Importar y exportar](Importar-y-exportar)
@@ -19,6 +19,7 @@ Esta app te ayuda a registrar tu album, revisar faltantes, ver repetidas, prepar
 
 - App web: https://dino-julius.github.io/my-sticker-album-tracker-fwc-2026/
 - Codigo fuente: https://github.com/Dino-Julius/my-sticker-album-tracker-fwc-2026
+- Wiki: https://github.com/Dino-Julius/my-sticker-album-tracker-fwc-2026/wiki
 
 ## Conceptos basicos
 
@@ -26,6 +27,7 @@ Esta app te ayuda a registrar tu album, revisar faltantes, ver repetidas, prepar
 - **Faltantes**: estampas con cantidad 0.
 - **Repetidas**: estampas con cantidad 2 o mas.
 - **Extras para cambiar**: cantidad menos 1.
+- **Apartado**: extra reservado para un intercambio futuro.
 
 ## Nota importante
 

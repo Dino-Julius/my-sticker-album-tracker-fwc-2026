@@ -22,17 +22,17 @@ La llave es el codigo de la estampa. El valor es la cantidad total que tienes.
 
 ## Convertir desde otra app
 
-Si tienes una lista exportada desde otra app, usa **Copiar prompt de conversion** y pegalo en ChatGPT junto con tu archivo o lista.
+La seccion **¿Tienes tus stickers en otra app?** se puede abrir cuando la necesites. Ahi puedes copiar un prompt para convertir listas de otra app al formato del tracker.
 
 ## Exportar
 
-Puedes exportar:
+Puedes exportar o copiar:
 
 - progreso completo en JSON,
 - faltantes en CSV o tabla,
 - repetidas en CSV o tabla.
 
-Los archivos descargados usan nombre con fecha y hora para que sea mas facil identificar respaldos.
+Los archivos descargados usan nombre con fecha y hora.
 
 ## Lista para intercambio
 

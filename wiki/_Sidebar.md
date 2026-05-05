@@ -3,7 +3,7 @@
 - [Inicio](Home)
 - [Guia de uso](Guia-de-uso)
 - [Funciones principales](Funciones-principales)
-- [Registro y bulk](Registro-y-bulk)
+- [Registro y carga rapida](Registro-y-bulk)
 - [Intercambios y apartados](Intercambios-y-apartados)
 - [Sincronizacion y cuenta](Sincronizacion-y-cuenta)
 - [Importar y exportar](Importar-y-exportar)
@@ -14,3 +14,4 @@
 
 - [App web](https://dino-julius.github.io/my-sticker-album-tracker-fwc-2026/)
 - [Repositorio](https://github.com/Dino-Julius/my-sticker-album-tracker-fwc-2026)
+- [Wiki](https://github.com/Dino-Julius/my-sticker-album-tracker-fwc-2026/wiki)

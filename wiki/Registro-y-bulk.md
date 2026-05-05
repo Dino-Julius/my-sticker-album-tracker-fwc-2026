@@ -1,4 +1,4 @@
-# Registro y bulk
+# Registro y carga rapida
 
 ## Registro manual
 
@@ -16,7 +16,7 @@ ARG7-ARG12
 FWC5 x2, CC4:3
 ```
 
-Tambien puedes tocar varios codigos en la galeria compacta y aplicar una accion:
+Tambien puedes tocar varios codigos en la galeria compacta y aplicar:
 
 - **Sumar +1**
 - **Marcar como Tengo**
@@ -27,4 +27,4 @@ Si pegas un codigo que no existe, la app lo muestra como no encontrado y sigue c
 
 ## Historial
 
-El historial de registro muestra cambios manuales, bulk, importaciones y reinicios. Borrar una entrada del historial no cambia las cantidades del album.
+El historial de registro muestra cambios manuales, registro rapido, importaciones y reinicios. Borrar una entrada del historial no cambia las cantidades del album.

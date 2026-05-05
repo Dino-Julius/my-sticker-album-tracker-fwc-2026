@@ -8,13 +8,21 @@ Significa que tienes al menos una copia de esa estampa.
 
 Significa que tienes dos o mas copias. La primera es para tu album y las demas son extras para cambiar.
 
-## Puedo usar la app sin cuenta?
+## Que significa Apartado?
 
-Si. Tu progreso se guarda localmente en ese dispositivo o navegador.
+Significa que un extra esta reservado para un intercambio futuro. No cambia el album hasta confirmar.
 
-## Para que sirve Google?
+## Puedo editar un apartado?
 
-Google sirve para iniciar sesion y sincronizar tu progreso en la nube. Asi puedes usar la app en celular y computadora.
+Si. Puedes editar con quien intercambias, notas, lo que das y lo que recibes.
+
+## Para que sirve Comparar intercambio?
+
+Sirve para pegar la lista de un amigo y ver que te puede dar y que le puedes dar. No crea intercambios automaticamente.
+
+## Que formatos acepta?
+
+Acepta codigos simples como `MEX12`, formato agrupado como `MEX: 1, 2, 3`, y listas con encabezados `Me faltan`, `Mis repetidas`, `I need` o `Swaps`.
 
 ## Que pasa si dice Cambios pendientes?
 
@@ -22,15 +30,11 @@ Tus cambios ya estan guardados en este dispositivo, pero aun no se sincronizan e
 
 ## Que pasa si dice Error al sincronizar?
 
-Tu copia local sigue guardada en este dispositivo. Revisa tu conexion y vuelve a intentar con **Sincronizar ahora**.
-
-## Puedo apartar un intercambio?
-
-Si. Los apartados reservan las estampas que vas a dar, pero el album cambia hasta que confirmes el intercambio.
+Abre **Ver detalle** para saber que parte fallo y toca **Reintentar**. Tu copia local sigue disponible.
 
 ## Como actualizo si la app se quedo vieja?
 
-Primero toca **Actualizar** si aparece el aviso **Nueva versión disponible**. Si no aparece, revisa la guia [Actualizar la app](Actualizar-la-app-si-se-quedo-en-una-version-vieja).
+Primero toca **Actualizar** si aparece **Nueva versión disponible**. Si no aparece, revisa la guia [Actualizar la app](Actualizar-la-app-si-se-quedo-en-una-version-vieja).
 
 ## Es una app oficial?
 
