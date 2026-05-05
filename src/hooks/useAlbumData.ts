@@ -818,6 +818,24 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     }
   };
 
+  const updatePendingTrade = (trade: PendingTradeRecord) => {
+    setPendingTrades((currentTrades) =>
+      [trade, ...currentTrades.filter((currentTrade) => currentTrade.id !== trade.id)].sort((a, b) => b.reservedAt.localeCompare(a.reservedAt)),
+    );
+
+    if (isCloudEnabled && userId) {
+      upsertRemotePendingTrade(userId, trade)
+        .then(() => {
+          addSyncedPendingTradeId(trade.id);
+          clearSyncIssue("pending-trades", "save");
+        })
+        .catch(() => {
+          addSyncIssue(createSyncIssue("pending-trades", "save"));
+          setSyncStatus("error");
+        });
+    }
+  };
+
   const deletePendingTrade = (tradeId: string, shouldRestoreOnFailure = true) => {
     let deletedTrade: PendingTradeRecord | undefined;
     setPendingTrades((currentTrades) => {
@@ -915,6 +933,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     syncNow: () => flushPendingProgress(undefined, true),
     syncStatus,
     tradeHistory,
+    updatePendingTrade,
     uploadLocalData,
     useCloudData,
   };

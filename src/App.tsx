@@ -185,6 +185,7 @@ function App() {
     syncNow,
     syncStatus,
     tradeHistory,
+    updatePendingTrade,
     uploadLocalData,
     useCloudData,
   } = useAlbumData({
@@ -454,6 +455,7 @@ function App() {
           onAddTrade={addTrade}
           onDeletePendingTrade={deletePendingTrade}
           onDeleteTrade={deleteTrade}
+          onUpdatePendingTrade={updatePendingTrade}
           setProgress={setProgress}
         />
       ) : null}
@@ -1795,6 +1797,7 @@ function RepeatedView({
   onDeletePendingTrade,
   onDeleteTrade,
   onFiltersChange,
+  onUpdatePendingTrade,
   setProgress,
 }: {
   catalog: Sticker[];
@@ -1807,6 +1810,7 @@ function RepeatedView({
   onDeletePendingTrade: (tradeId: string, shouldRestoreOnFailure?: boolean) => void;
   onDeleteTrade: (tradeId: string) => void;
   onFiltersChange: (filters: Filters) => void;
+  onUpdatePendingTrade: (trade: PendingTradeRecord) => void;
   setProgress: Dispatch<SetStateAction<Progress>>;
 }) {
   const stickers = applyFilters(catalog, progress, { ...filters, status: "repeated" });
@@ -1828,8 +1832,10 @@ function RepeatedView({
   const [receivedBulkText, setReceivedBulkText] = useState("");
   const [tradeBulkMessage, setTradeBulkMessage] = useState<{ type: "success" | "warning"; text: string } | null>(null);
   const [tradeMessage, setTradeMessage] = useState("");
+  const [editingPendingTradeId, setEditingPendingTradeId] = useState("");
   const [copiedTradeId, setCopiedTradeId] = useState("");
   const [copiedPendingTradeId, setCopiedPendingTradeId] = useState("");
+  const editingPendingTrade = pendingTrades.find((trade) => trade.id === editingPendingTradeId);
   const reservedExtrasByCode = useMemo(
     () =>
       pendingTrades.reduce<Record<string, number>>((reserved, trade) => {
@@ -1840,7 +1846,17 @@ function RepeatedView({
       }, {}),
     [pendingTrades],
   );
-  const getAvailableExtras = (code: string) => Math.max(0, getStickerQuantity(code, progress) - 1 - (reservedExtrasByCode[code] ?? 0));
+  const editingReservedExtrasByCode = useMemo(
+    () =>
+      editingPendingTrade?.gave.reduce<Record<string, number>>((reserved, item) => {
+        reserved[item.code] = (reserved[item.code] ?? 0) + item.quantity;
+        return reserved;
+      }, {}) ?? {},
+    [editingPendingTrade],
+  );
+  const getReservedExtras = (code: string) => reservedExtrasByCode[code] ?? 0;
+  const getAvailableExtras = (code: string) =>
+    Math.max(0, getStickerQuantity(code, progress) - 1 - getReservedExtras(code) + (editingReservedExtrasByCode[code] ?? 0));
 
   useEffect(() => {
     if (pendingTrades.length > 0) {
@@ -1852,6 +1868,20 @@ function RepeatedView({
     await navigator.clipboard.writeText(createTradingText(catalog, progress));
     setCopyLabel("Lista copiada");
     window.setTimeout(() => setCopyLabel("Copiar lista para intercambio"), 1800);
+  };
+
+  const resetTradeForm = () => {
+    setDateTime(formatDateTimeLocal(new Date()));
+    setTradedWith("");
+    setNotes("");
+    setGave([]);
+    setReceived([]);
+    setGaveSearch("");
+    setReceivedSearch("");
+    setGaveBulkText("");
+    setReceivedBulkText("");
+    setTradeBulkMessage(null);
+    setEditingPendingTradeId("");
   };
 
   const addTradeItem = (side: "gave" | "received", code: string) => {
@@ -2024,16 +2054,7 @@ function RepeatedView({
 
     setProgress((currentProgress) => applyTradeToProgress(currentProgress, trade));
     onAddTrade(trade);
-    setDateTime(formatDateTimeLocal(new Date()));
-    setTradedWith("");
-    setNotes("");
-    setGave([]);
-    setReceived([]);
-    setGaveSearch("");
-    setReceivedSearch("");
-    setGaveBulkText("");
-    setReceivedBulkText("");
-    setTradeBulkMessage(null);
+    resetTradeForm();
     setTradeMessage("Intercambio registrado.");
     setIsFormOpen(false);
   };
@@ -2057,17 +2078,49 @@ function RepeatedView({
     };
 
     onAddPendingTrade(pendingTrade);
-    setDateTime(formatDateTimeLocal(new Date()));
-    setTradedWith("");
-    setNotes("");
-    setGave([]);
-    setReceived([]);
+    resetTradeForm();
+    setTradeMessage("Intercambio apartado. Las cantidades se actualizarán cuando lo confirmes.");
+    setIsFormOpen(false);
+  };
+
+  const startEditingPendingTrade = (trade: PendingTradeRecord) => {
+    setEditingPendingTradeId(trade.id);
+    setDateTime(trade.createdAt);
+    setTradedWith(trade.tradedWith ?? "");
+    setNotes(trade.notes ?? "");
+    setGave(trade.gave);
+    setReceived(trade.received);
     setGaveSearch("");
     setReceivedSearch("");
     setGaveBulkText("");
     setReceivedBulkText("");
     setTradeBulkMessage(null);
-    setTradeMessage("Intercambio apartado. Las cantidades se actualizarán cuando lo confirmes.");
+    setTradeMessage("");
+    setIsFormOpen(true);
+  };
+
+  const saveEditedPendingTrade = () => {
+    if (!editingPendingTrade) {
+      return;
+    }
+
+    const validationMessage = validateTrade();
+
+    if (validationMessage) {
+      setTradeMessage(validationMessage);
+      return;
+    }
+
+    onUpdatePendingTrade({
+      ...editingPendingTrade,
+      createdAt: dateTime || editingPendingTrade.createdAt,
+      gave,
+      notes: notes.trim() || undefined,
+      received,
+      tradedWith: tradedWith.trim() || undefined,
+    });
+    resetTradeForm();
+    setTradeMessage("Apartado actualizado.");
     setIsFormOpen(false);
   };
 
@@ -2118,16 +2171,7 @@ function RepeatedView({
   };
 
   const cancelTrade = () => {
-    setDateTime(formatDateTimeLocal(new Date()));
-    setTradedWith("");
-    setNotes("");
-    setGave([]);
-    setReceived([]);
-    setGaveSearch("");
-    setReceivedSearch("");
-    setGaveBulkText("");
-    setReceivedBulkText("");
-    setTradeBulkMessage(null);
+    resetTradeForm();
     setTradeMessage("");
     setIsFormOpen(false);
   };
@@ -2168,7 +2212,7 @@ function RepeatedView({
 
       <CollapsibleSection
         className="trade-form"
-        title="Registrar intercambio"
+        title={editingPendingTrade ? "Editar apartado" : "Registrar intercambio"}
         meta={`Doy: ${gaveTotal} estampas · Recibo: ${receivedTotal} estampas`}
         isOpen={isFormOpen}
         onToggle={() => setIsFormOpen((current) => !current)}
@@ -2232,6 +2276,7 @@ function RepeatedView({
               mode="gave"
               catalog={catalog}
               getAvailableExtras={getAvailableExtras}
+              getReservedExtras={getReservedExtras}
               progress={progress}
               items={gave}
               search={gaveSearch}
@@ -2245,6 +2290,7 @@ function RepeatedView({
               mode="received"
               catalog={catalog}
               getAvailableExtras={getAvailableExtras}
+              getReservedExtras={getReservedExtras}
               progress={progress}
               items={received}
               search={receivedSearch}
@@ -2255,15 +2301,28 @@ function RepeatedView({
             />
           </div>
 
-          <button className="primary-button wide-button" onClick={confirmTrade}>
-            Confirmar intercambio
-          </button>
-          <button className="ghost-button wide-button" onClick={reserveTrade}>
-            Apartar intercambio
-          </button>
-          <button className="ghost-button wide-button" onClick={cancelTrade}>
-            Cancelar intercambio
-          </button>
+          {editingPendingTrade ? (
+            <>
+              <button className="primary-button wide-button" onClick={saveEditedPendingTrade}>
+                Guardar apartado
+              </button>
+              <button className="ghost-button wide-button" onClick={cancelTrade}>
+                Cancelar edición
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="primary-button wide-button" onClick={confirmTrade}>
+                Confirmar intercambio
+              </button>
+              <button className="ghost-button wide-button" onClick={reserveTrade}>
+                Apartar intercambio
+              </button>
+              <button className="ghost-button wide-button" onClick={cancelTrade}>
+                Cancelar intercambio
+              </button>
+            </>
+          )}
       </CollapsibleSection>
       {tradeMessage ? <p className={tradeMessage === "Intercambio registrado." ? "toast-message" : "warning-message"}>{tradeMessage}</p> : null}
 
@@ -2281,10 +2340,13 @@ function RepeatedView({
               <div className="trade-code-list">
                 {countryStickers.map((sticker) => {
                   const extras = getStickerQuantity(sticker.code, progress) - 1;
+                  const reserved = getReservedExtras(sticker.code);
+                  const available = Math.max(0, extras - reserved);
 
                   return (
                     <span key={sticker.code}>
-                      {sticker.code} x{extras} {extras === 1 ? "extra" : "extras"}
+                      {sticker.code} · Extra disponible: {available}
+                      {reserved > 0 ? ` · Apartado: ${reserved}` : ""}
                     </span>
                   );
                 })}
@@ -2326,6 +2388,9 @@ function RepeatedView({
                 <div className="quick-actions">
                   <button className="primary-button small" onClick={() => confirmPendingTrade(trade)}>
                     Confirmar intercambio
+                  </button>
+                  <button className="ghost-button small" onClick={() => startEditingPendingTrade(trade)}>
+                    Editar apartado
                   </button>
                   <button className="ghost-button small" onClick={() => copyPendingTradeRecord(trade)}>
                     {copiedPendingTradeId === trade.id ? "Resumen copiado" : "Copiar resumen"}
@@ -2423,6 +2488,7 @@ function TradeBuilder({
   mode,
   catalog,
   getAvailableExtras,
+  getReservedExtras,
   progress,
   items,
   search,
@@ -2435,6 +2501,7 @@ function TradeBuilder({
   mode: "gave" | "received";
   catalog: Sticker[];
   getAvailableExtras: (code: string) => number;
+  getReservedExtras: (code: string) => number;
   progress: Progress;
   items: TradeItem[];
   search: string;
@@ -2576,6 +2643,7 @@ function TradeBuilder({
         {candidates.map((sticker) => {
           const quantity = getStickerQuantity(sticker.code, progress);
           const extras = getAvailableExtras(sticker.code);
+          const reserved = getReservedExtras(sticker.code);
 
           return (
             <button
@@ -2586,7 +2654,15 @@ function TradeBuilder({
             >
               <strong>{sticker.code}</strong>
               <span>{formatCollectionCodeLabel(catalog, getCollectionName(sticker))}</span>
-              <small>{mode === "gave" ? `${extras} extra(s) disponible(s)` : quantity === 0 ? "Faltante" : `Cantidad actual: ${quantity}`}</small>
+              <small>
+                {mode === "gave"
+                  ? reserved > 0
+                    ? `Extra disponible: ${extras} · Apartado: ${reserved}`
+                    : `${extras} extra(s) disponible(s)`
+                  : quantity === 0
+                    ? "Faltante"
+                    : `Cantidad actual: ${quantity}`}
+              </small>
             </button>
           );
         })}
