@@ -1,4 +1,13 @@
-import { useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type Dispatch,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
+  type ReactNode,
+  type SetStateAction,
+} from "react";
 import { FilterBar } from "./components/FilterBar";
 import { StickerList } from "./components/StickerList";
 import { useAlbumData, type MigrationPrompt, type SyncStatus } from "./hooks/useAlbumData";
@@ -9,7 +18,6 @@ import {
   applyFilters,
   applyTradeToProgress,
   createTradeSummary,
-  createTradingText,
   exportMissingToCsv,
   exportMissingToMarkdown,
   exportProgressToJson,
@@ -84,6 +92,14 @@ const views: Array<{ id: View; label: string }> = [
   { id: "paises", label: "Colecciones" },
   { id: "datos", label: "Importar/Exportar" },
 ];
+
+const DASHBOARD_METRIC_HELP = {
+  total: "Todas las estampas del catálogo del álbum, incluyendo FWC, Coca-Cola y selecciones.",
+  owned: "Estampas que ya tienes al menos una vez. Equivale a cantidad 1 o más.",
+  missing: "Estampas que todavía no tienes registradas. Equivale a cantidad 0.",
+  repeated: "Copias extra disponibles para cambiar. Se calcula como cantidad total menos una copia para tu álbum.",
+  completion: "Porcentaje del álbum que ya tienes registrado, contando una copia por estampa.",
+} satisfies Record<string, string>;
 
 const formatDateTimeLocal = (date: Date) => {
   const offset = date.getTimezoneOffset();
@@ -510,11 +526,9 @@ function App() {
       {activeView === "repetidas" ? (
         <RepeatedView
           catalog={catalog}
-          filters={filters}
           pendingTrades={pendingTrades}
           progress={progress}
           tradeHistory={tradeHistory}
-          onFiltersChange={setFilters}
           onAddPendingTrade={addPendingTrade}
           onAddTrade={addTrade}
           onDeletePendingTrade={deletePendingTrade}
@@ -1110,15 +1124,70 @@ function DashboardView({
   onOpenRepetidas: () => void;
   onOpenCollection: (collectionName: string) => void;
 }) {
+  const [activeMetricHelp, setActiveMetricHelp] = useState("");
+
+  useEffect(() => {
+    const closeMetricHelp = (event: PointerEvent) => {
+      const target = event.target instanceof Element ? event.target : null;
+
+      if (target?.closest("[data-metric-card]")) {
+        return;
+      }
+
+      setActiveMetricHelp("");
+    };
+
+    document.addEventListener("pointerdown", closeMetricHelp);
+    return () => document.removeEventListener("pointerdown", closeMetricHelp);
+  }, []);
+
   return (
     <section className="view-stack">
       <div className="metric-grid">
-        <MetricCard label="Total" value={dashboard.total} onClick={() => onOpenRegistro("all")} />
-        <MetricCard label="Tengo" value={dashboard.owned} onClick={() => onOpenRegistro("owned")} />
-        <MetricCard label="Faltantes" value={dashboard.missing} onClick={onOpenFaltantes} />
-        <MetricCard label="Repetidas" value={dashboard.repeated} onClick={onOpenRepetidas} />
-        <MetricCard label="Extras para cambiar" value={dashboard.repeatedExtras} onClick={onOpenRepetidas} />
-        <MetricCard label="Completado" value={`${dashboard.completion}%`} />
+        <MetricCard
+          description={DASHBOARD_METRIC_HELP.total}
+          id="total"
+          isHelpOpen={activeMetricHelp === "total"}
+          label="Total"
+          value={dashboard.total}
+          onClick={() => onOpenRegistro("all")}
+          onHelpChange={setActiveMetricHelp}
+        />
+        <MetricCard
+          description={DASHBOARD_METRIC_HELP.owned}
+          id="owned"
+          isHelpOpen={activeMetricHelp === "owned"}
+          label="Tengo"
+          value={dashboard.owned}
+          onClick={() => onOpenRegistro("owned")}
+          onHelpChange={setActiveMetricHelp}
+        />
+        <MetricCard
+          description={DASHBOARD_METRIC_HELP.missing}
+          id="missing"
+          isHelpOpen={activeMetricHelp === "missing"}
+          label="Faltantes"
+          value={dashboard.missing}
+          onClick={onOpenFaltantes}
+          onHelpChange={setActiveMetricHelp}
+        />
+        <MetricCard
+          description={DASHBOARD_METRIC_HELP.repeated}
+          id="repeated"
+          isHelpOpen={activeMetricHelp === "repeated"}
+          label="Repetidas"
+          value={dashboard.repeatedExtras}
+          onClick={onOpenRepetidas}
+          onHelpChange={setActiveMetricHelp}
+        />
+        <MetricCard
+          description={DASHBOARD_METRIC_HELP.completion}
+          id="completion"
+          isHelpOpen={activeMetricHelp === "completion"}
+          label="Completado"
+          value={`${dashboard.completion}%`}
+          onHelpChange={setActiveMetricHelp}
+        />
       </div>
 
       <section className="panel">
@@ -1166,20 +1235,62 @@ function DashboardView({
   );
 }
 
-function MetricCard({ label, value, onClick }: { label: string; value: string | number; onClick?: () => void }) {
-  if (onClick) {
-    return (
-      <button className="metric-card metric-button" onClick={onClick}>
-        <span>{label}</span>
-        <strong>{value}</strong>
+function MetricCard({
+  description,
+  id,
+  isHelpOpen,
+  label,
+  value,
+  onClick,
+  onHelpChange,
+}: {
+  description: string;
+  id: string;
+  isHelpOpen: boolean;
+  label: string;
+  value: string | number;
+  onClick?: () => void;
+  onHelpChange: (id: string) => void;
+}) {
+  const content = (
+    <>
+      <span className="metric-card-label">{label}</span>
+      <strong>{value}</strong>
+      <button
+        className="metric-info-button"
+        type="button"
+        aria-expanded={isHelpOpen}
+        aria-label={`Ver explicación de ${label}`}
+        onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
+          event.stopPropagation();
+          onHelpChange(isHelpOpen ? "" : id);
+        }}
+      >
+        Info
       </button>
-    );
-  }
+      <span className="metric-help-bubble" id={`metric-help-${id}`} role="tooltip">
+        {description}
+      </span>
+    </>
+  );
+  const className = `metric-card ${onClick ? "metric-button" : ""} ${isHelpOpen ? "metric-help-open" : ""}`;
+  const sharedProps = {
+    "aria-describedby": `metric-help-${id}`,
+    "data-metric-card": true,
+    onBlur: () => onHelpChange(""),
+  };
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLElement>) => {
+    if (!onClick || (event.key !== "Enter" && event.key !== " ")) {
+      return;
+    }
+
+    event.preventDefault();
+    onClick();
+  };
 
   return (
-    <article className="metric-card">
-      <span>{label}</span>
-      <strong>{value}</strong>
+    <article className={className} role={onClick ? "button" : undefined} tabIndex={0} onClick={onClick} onKeyDown={handleKeyDown} {...sharedProps}>
+      {content}
     </article>
   );
 }
@@ -1655,19 +1766,23 @@ function groupExchangeCandidates(candidates: ExchangeCandidate[]) {
   }, new Map<string, ExchangeCandidate[]>());
 }
 
-function formatExchangeCandidate(candidate: ExchangeCandidate, mode: "friend" | "mine") {
+function formatExchangeCandidate(candidate: ExchangeCandidate, mode: "friend" | "mine", style: "readable" | "trade" = "readable") {
+  if (style === "trade") {
+    return candidate.code;
+  }
+
   if (mode === "friend") {
     return `${candidate.code}${candidate.friendQuantity && candidate.friendQuantity > 1 ? ` x${candidate.friendQuantity}` : ""}`;
   }
 
-  return `${candidate.code}${candidate.available ? ` (${candidate.available} extra${candidate.available === 1 ? "" : "s"})` : ""}`;
+  return `${candidate.code}${candidate.available && candidate.available > 1 ? ` x${candidate.available}` : ""}`;
 }
 
-function formatExchangeCandidateLines(candidates: ExchangeCandidate[], mode: "friend" | "mine") {
-  return candidates.length > 0 ? candidates.map((candidate) => formatExchangeCandidate(candidate, mode)).join(", ") : "Sin coincidencias.";
+function formatExchangeCandidateLines(candidates: ExchangeCandidate[], mode: "friend" | "mine", style: "readable" | "trade" = "readable") {
+  return candidates.length > 0 ? candidates.map((candidate) => formatExchangeCandidate(candidate, mode, style)).join(", ") : "Sin coincidencias.";
 }
 
-function formatPossibleExchangeGroups(friendCanGive: ExchangeCandidate[], iCanGive: ExchangeCandidate[]) {
+function formatPossibleExchangeGroups(friendCanGive: ExchangeCandidate[], iCanGive: ExchangeCandidate[], style: "readable" | "trade" = "readable") {
   const groups = groupExchangeCandidates([...friendCanGive, ...iCanGive]);
 
   if (groups.size === 0) {
@@ -1680,8 +1795,8 @@ function formatPossibleExchangeGroups(friendCanGive: ExchangeCandidate[], iCanGi
       const myCandidates = candidates.filter((candidate) => candidate.available);
       return [
         category,
-        friendCandidates.length > 0 ? `  Me puede dar: ${formatExchangeCandidateLines(friendCandidates, "friend")}` : "",
-        myCandidates.length > 0 ? `  Le puedo dar: ${formatExchangeCandidateLines(myCandidates, "mine")}` : "",
+        friendCandidates.length > 0 ? `  Me puede dar: ${formatExchangeCandidateLines(friendCandidates, "friend", style)}` : "",
+        myCandidates.length > 0 ? `  Le puedo dar: ${formatExchangeCandidateLines(myCandidates, "mine", style)}` : "",
       ]
         .filter(Boolean)
         .join("\n");
@@ -1704,6 +1819,30 @@ function formatExchangeSummary(friendCanGive: ExchangeCandidate[], iCanGive: Exc
   ].join("\n");
 }
 
+function formatTradeReadyExchangeSummary(friendCanGive: ExchangeCandidate[], iCanGive: ExchangeCandidate[]) {
+  return [
+    "Comparación de intercambio",
+    "",
+    "Me puede dar",
+    formatExchangeCandidateLines(friendCanGive, "friend", "trade"),
+    "",
+    "Le puedo dar",
+    formatExchangeCandidateLines(iCanGive, "mine", "trade"),
+  ].join("\n");
+}
+
+function formatReservedStatus(available: number, reserved: number) {
+  if (reserved > 0 && available > 0) {
+    return `Extra disponible: ${available} · Apartado: ${reserved}`;
+  }
+
+  if (reserved > 0) {
+    return `Apartado x${reserved}`;
+  }
+
+  return `Extra disponible: ${available}`;
+}
+
 function ExchangeComparisonPanel({
   catalog,
   getAvailableExtras,
@@ -1716,7 +1855,7 @@ function ExchangeComparisonPanel({
   const [combinedText, setCombinedText] = useState("");
   const [friendSwapsText, setFriendSwapsText] = useState("");
   const [friendMissingText, setFriendMissingText] = useState("");
-  const [copiedComparison, setCopiedComparison] = useState<"all" | "friend" | "mine" | "possible" | "">("");
+  const [copiedComparison, setCopiedComparison] = useState<"summary" | "trade" | "friend" | "mine" | "possible" | "">("");
   const [showPreferences, setShowPreferences] = useState(false);
   const combined = useMemo(() => parseExchangeSections(combinedText, catalog), [catalog, combinedText]);
   const friendSwaps = useMemo(() => parseBulkStickerText(friendSwapsText, catalog), [catalog, friendSwapsText]);
@@ -1757,7 +1896,7 @@ function ExchangeComparisonPanel({
   const sortedICanGive = sortCandidates(iCanGive);
   const possibleGroups = groupExchangeCandidates([...sortedFriendCanGive, ...sortedICanGive]);
   const hasInput = combinedText.trim() || friendSwapsText.trim() || friendMissingText.trim();
-  const copyComparison = async (target: "all" | "friend" | "mine" | "possible", text: string) => {
+  const copyComparison = async (target: "summary" | "trade" | "friend" | "mine" | "possible", text: string) => {
     await navigator.clipboard.writeText(text);
     setCopiedComparison(target);
     window.setTimeout(() => setCopiedComparison(""), 1800);
@@ -1815,26 +1954,33 @@ function ExchangeComparisonPanel({
             <button
               className="ghost-button small"
               type="button"
-              onClick={() => void copyComparison("all", formatExchangeSummary(sortedFriendCanGive, sortedICanGive))}
+              onClick={() => void copyComparison("summary", formatExchangeSummary(sortedFriendCanGive, sortedICanGive))}
             >
-              {copiedComparison === "all" ? "Resumen copiado" : "Copiar resumen"}
+              {copiedComparison === "summary" ? "Resumen copiado" : "Copiar resumen"}
+            </button>
+            <button
+              className="primary-button small"
+              type="button"
+              onClick={() => void copyComparison("trade", formatTradeReadyExchangeSummary(sortedFriendCanGive, sortedICanGive))}
+            >
+              {copiedComparison === "trade" ? "Lista copiada" : "Copiar para intercambio"}
             </button>
           </div>
           <ExchangeCandidateList
             title="Me puede dar"
             emptyText="No hay coincidencias con tus faltantes."
             candidates={sortedFriendCanGive}
-            copyLabel={copiedComparison === "friend" ? "Copiado" : "Copiar"}
+            copyLabel={copiedComparison === "friend" ? "Copiado" : "Copiar Me puede dar"}
             mode="friend"
-            onCopy={() => void copyComparison("friend", `Me puede dar\n${formatExchangeCandidateLines(sortedFriendCanGive, "friend")}`)}
+            onCopy={() => void copyComparison("friend", `Me puede dar\n${formatExchangeCandidateLines(sortedFriendCanGive, "friend", "trade")}`)}
           />
           <ExchangeCandidateList
             title="Le puedo dar"
             emptyText="No hay coincidencias con tus extras disponibles."
             candidates={sortedICanGive}
-            copyLabel={copiedComparison === "mine" ? "Copiado" : "Copiar"}
+            copyLabel={copiedComparison === "mine" ? "Copiado" : "Copiar Le puedo dar"}
             mode="mine"
-            onCopy={() => void copyComparison("mine", `Le puedo dar\n${formatExchangeCandidateLines(sortedICanGive, "mine")}`)}
+            onCopy={() => void copyComparison("mine", `Le puedo dar\n${formatExchangeCandidateLines(sortedICanGive, "mine", "trade")}`)}
           />
           <section className="exchange-result-card">
             <div className="section-heading flush">
@@ -1842,7 +1988,7 @@ function ExchangeComparisonPanel({
               <button
                 className="ghost-button small"
                 type="button"
-                onClick={() => void copyComparison("possible", `Posibles intercambios\n${formatPossibleExchangeGroups(sortedFriendCanGive, sortedICanGive)}`)}
+                onClick={() => void copyComparison("possible", `Posibles intercambios\n${formatPossibleExchangeGroups(sortedFriendCanGive, sortedICanGive, "trade")}`)}
               >
                 {copiedComparison === "possible" ? "Copiado" : "Copiar"}
               </button>
@@ -1854,8 +2000,7 @@ function ExchangeComparisonPanel({
                 <div className="trade-code-list">
                   {candidates.map((candidate) => (
                     <span key={`${category}-${candidate.code}`}>
-                      {candidate.code}
-                      {candidate.friendQuantity && candidate.friendQuantity > 1 ? ` x${candidate.friendQuantity}` : ""}
+                      {formatExchangeCandidate(candidate, candidate.friendQuantity ? "friend" : "mine")}
                     </span>
                   ))}
                 </div>
@@ -1897,9 +2042,7 @@ function ExchangeCandidateList({
       <div className="trade-code-list">
         {candidates.map((candidate) => (
           <span key={candidate.code}>
-            {candidate.code}
-            {mode === "friend" && candidate.friendQuantity && candidate.friendQuantity > 1 ? ` x${candidate.friendQuantity}` : ""}
-            {mode === "mine" && candidate.available ? ` · ${candidate.available} extra(s)` : ""}
+            {formatExchangeCandidate(candidate, mode)}
           </span>
         ))}
       </div>
@@ -1909,7 +2052,6 @@ function ExchangeCandidateList({
 
 function RepeatedView({
   catalog,
-  filters,
   pendingTrades,
   progress,
   tradeHistory,
@@ -1917,12 +2059,10 @@ function RepeatedView({
   onAddTrade,
   onDeletePendingTrade,
   onDeleteTrade,
-  onFiltersChange,
   onUpdatePendingTrade,
   setProgress,
 }: {
   catalog: Sticker[];
-  filters: Filters;
   pendingTrades: PendingTradeRecord[];
   progress: Progress;
   tradeHistory: TradeRecord[];
@@ -1930,13 +2070,11 @@ function RepeatedView({
   onAddTrade: (trade: TradeRecord) => void;
   onDeletePendingTrade: (tradeId: string, shouldRestoreOnFailure?: boolean) => void;
   onDeleteTrade: (tradeId: string) => void;
-  onFiltersChange: (filters: Filters) => void;
   onUpdatePendingTrade: (trade: PendingTradeRecord) => void;
   setProgress: Dispatch<SetStateAction<Progress>>;
 }) {
-  const stickers = applyFilters(catalog, progress, { ...filters, status: "repeated" });
+  const stickers = getRepeatedStickers(catalog, progress);
   const groups = groupByCountry(stickers);
-  const [copyLabel, setCopyLabel] = useState("Copiar lista para intercambio");
   const [isComparisonOpen, setIsComparisonOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(true);
   const [isRepeatedListOpen, setIsRepeatedListOpen] = useState(false);
@@ -1947,8 +2085,6 @@ function RepeatedView({
   const [notes, setNotes] = useState("");
   const [gave, setGave] = useState<TradeItem[]>([]);
   const [received, setReceived] = useState<TradeItem[]>([]);
-  const [gaveSearch, setGaveSearch] = useState("");
-  const [receivedSearch, setReceivedSearch] = useState("");
   const [gaveBulkText, setGaveBulkText] = useState("");
   const [receivedBulkText, setReceivedBulkText] = useState("");
   const [tradeBulkMessage, setTradeBulkMessage] = useState<{ type: "success" | "warning"; text: string } | null>(null);
@@ -1985,20 +2121,12 @@ function RepeatedView({
     }
   }, [pendingTrades.length]);
 
-  const copyTradeList = async () => {
-    await navigator.clipboard.writeText(createTradingText(catalog, progress));
-    setCopyLabel("Lista copiada");
-    window.setTimeout(() => setCopyLabel("Copiar lista para intercambio"), 1800);
-  };
-
   const resetTradeForm = () => {
     setDateTime(formatDateTimeLocal(new Date()));
     setTradedWith("");
     setNotes("");
     setGave([]);
     setReceived([]);
-    setGaveSearch("");
-    setReceivedSearch("");
     setGaveBulkText("");
     setReceivedBulkText("");
     setTradeBulkMessage(null);
@@ -2211,8 +2339,6 @@ function RepeatedView({
     setNotes(trade.notes ?? "");
     setGave(trade.gave);
     setReceived(trade.received);
-    setGaveSearch("");
-    setReceivedSearch("");
     setGaveBulkText("");
     setReceivedBulkText("");
     setTradeBulkMessage(null);
@@ -2315,13 +2441,6 @@ function RepeatedView({
 
   return (
     <section className="view-stack">
-      <FilterBar catalog={catalog} filters={{ ...filters, status: "repeated" }} onChange={onFiltersChange} showStatus={false} />
-      <div className="trade-action-row">
-        <button className="ghost-button wide-button" onClick={copyTradeList}>
-          {copyLabel}
-        </button>
-      </div>
-
       <CollapsibleSection
         title="Comparar intercambio"
         meta="Cruza listas con un amigo"
@@ -2391,6 +2510,29 @@ function RepeatedView({
             </p>
           ) : null}
 
+          <div className="selected-trade-gallery-grid">
+            <SelectedTradeGallery
+              title="Doy"
+              mode="gave"
+              catalog={catalog}
+              getAvailableExtras={getAvailableExtras}
+              progress={progress}
+              items={gave}
+              onUpdateQuantity={(code, quantity) => updateTradeItem("gave", code, quantity)}
+              onRemove={(code) => removeTradeItem("gave", code)}
+            />
+            <SelectedTradeGallery
+              title="Recibo"
+              mode="received"
+              catalog={catalog}
+              getAvailableExtras={getAvailableExtras}
+              progress={progress}
+              items={received}
+              onUpdateQuantity={(code, quantity) => updateTradeItem("received", code, quantity)}
+              onRemove={(code) => removeTradeItem("received", code)}
+            />
+          </div>
+
           <div className="trade-builder-grid">
             <TradeBuilder
               title="Doy"
@@ -2400,11 +2542,7 @@ function RepeatedView({
               getReservedExtras={getReservedExtras}
               progress={progress}
               items={gave}
-              search={gaveSearch}
-              onSearchChange={setGaveSearch}
               onAdd={(code) => addTradeItem("gave", code)}
-              onUpdateQuantity={(code, quantity) => updateTradeItem("gave", code, quantity)}
-              onRemove={(code) => removeTradeItem("gave", code)}
             />
             <TradeBuilder
               title="Recibo"
@@ -2414,11 +2552,7 @@ function RepeatedView({
               getReservedExtras={getReservedExtras}
               progress={progress}
               items={received}
-              search={receivedSearch}
-              onSearchChange={setReceivedSearch}
               onAdd={(code) => addTradeItem("received", code)}
-              onUpdateQuantity={(code, quantity) => updateTradeItem("received", code, quantity)}
-              onRemove={(code) => removeTradeItem("received", code)}
             />
           </div>
 
@@ -2466,8 +2600,7 @@ function RepeatedView({
 
                   return (
                     <span key={sticker.code}>
-                      {sticker.code} · Extra disponible: {available}
-                      {reserved > 0 ? ` · Apartado: ${reserved}` : ""}
+                      {sticker.code} · {formatReservedStatus(available, reserved)}
                     </span>
                   );
                 })}
@@ -2604,6 +2737,86 @@ function TradeBulkInput({
   );
 }
 
+function SelectedTradeGallery({
+  title,
+  mode,
+  catalog,
+  getAvailableExtras,
+  progress,
+  items,
+  onUpdateQuantity,
+  onRemove,
+}: {
+  title: string;
+  mode: "gave" | "received";
+  catalog: Sticker[];
+  getAvailableExtras: (code: string) => number;
+  progress: Progress;
+  items: TradeItem[];
+  onUpdateQuantity: (code: string, quantity: number) => void;
+  onRemove: (code: string) => void;
+}) {
+  const total = getTradeItemTotal(items);
+
+  return (
+    <section className="selected-trade-gallery-panel">
+      <div className="section-heading flush">
+        <h3>
+          {title} · {total}
+        </h3>
+        <span>
+          {items.length} estampa{items.length === 1 ? "" : "s"}
+        </span>
+      </div>
+      {items.length === 0 ? <p className="empty-state compact-message">Sin estampas seleccionadas.</p> : null}
+      <div className="selected-trade-gallery">
+        {items.map((item) => {
+          const sticker = catalog.find((candidate) => candidate.code === item.code);
+          const availableExtras = mode === "gave" ? getAvailableExtras(item.code) : Math.max(0, getStickerQuantity(item.code, progress) - 1);
+          const hasWarning = mode === "gave" && item.quantity > availableExtras;
+          const repeatedNotice = item.quantity > 1 ? `${mode === "gave" ? "Dando" : "Recibiendo"} varias: x${item.quantity}` : "";
+
+          return (
+            <article className="selected-trade-card" key={item.code}>
+              <div className="selected-trade-card-main">
+                <strong>{item.code}</strong>
+                <span>x{item.quantity}</span>
+                <small>{sticker ? formatCollectionCodeLabel(catalog, getCollectionName(sticker)) : ""}</small>
+              </div>
+              <div className="selected-trade-card-notes">
+                {repeatedNotice ? <small>{repeatedNotice}</small> : null}
+                {hasWarning ? <small>Máx. {availableExtras} extra(s).</small> : null}
+              </div>
+              <div className="selected-trade-controls">
+                <button
+                  className="ghost-button small"
+                  type="button"
+                  disabled={item.quantity <= 1}
+                  aria-label={`Bajar cantidad de ${item.code}`}
+                  onClick={() => onUpdateQuantity(item.code, item.quantity - 1)}
+                >
+                  -
+                </button>
+                <button
+                  className="ghost-button small"
+                  type="button"
+                  aria-label={`Subir cantidad de ${item.code}`}
+                  onClick={() => onUpdateQuantity(item.code, item.quantity + 1)}
+                >
+                  +
+                </button>
+                <button className="ghost-button small" type="button" onClick={() => onRemove(item.code)}>
+                  Quitar
+                </button>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function TradeBuilder({
   title,
   mode,
@@ -2612,11 +2825,7 @@ function TradeBuilder({
   getReservedExtras,
   progress,
   items,
-  search,
-  onSearchChange,
   onAdd,
-  onUpdateQuantity,
-  onRemove,
 }: {
   title: string;
   mode: "gave" | "received";
@@ -2625,21 +2834,13 @@ function TradeBuilder({
   getReservedExtras: (code: string) => number;
   progress: Progress;
   items: TradeItem[];
-  search: string;
-  onSearchChange: (query: string) => void;
   onAdd: (code: string) => void;
-  onUpdateQuantity: (code: string, quantity: number) => void;
-  onRemove: (code: string) => void;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
   const [quickFilter, setQuickFilter] = useState<"all" | "collection" | "group">("all");
   const [collectionFilter, setCollectionFilter] = useState("");
   const [groupFilter, setGroupFilter] = useState("");
   const selectedCodes = new Set(items.map((item) => item.code));
-  const normalizedSearch = search
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLowerCase()
-    .trim();
   const candidates = catalog
     .filter((sticker) => {
       if (mode === "gave" && getAvailableExtras(sticker.code) <= 0) {
@@ -2654,14 +2855,7 @@ function TradeBuilder({
         return false;
       }
 
-      const searchable = [sticker.code, getCollectionName(sticker), sticker.country, sticker.group, sticker.section, sticker.number, sticker.displayName]
-        .filter(Boolean)
-        .join(" ")
-        .normalize("NFD")
-        .replace(/\p{Diacritic}/gu, "")
-        .toLowerCase();
-
-      return !normalizedSearch || searchable.includes(normalizedSearch);
+      return true;
     })
     .sort((a, b) => {
       if (mode === "gave") {
@@ -2677,19 +2871,23 @@ function TradeBuilder({
     .slice(0, 12);
   const collectionOptions = getStatsByCollection(catalog, progress).map((collection) => collection.name);
   const groupOptions = getRealGroups(catalog);
+  const selectedTotal = getTradeItemTotal(items);
 
   return (
     <section className="trade-builder">
-      <h3>{title}</h3>
-      <label>
-        <span>Agregar estampa</span>
-        <input
-          type="search"
-          value={search}
-          placeholder="Código, colección o equipo"
-          onChange={(event) => onSearchChange(event.target.value)}
-        />
-      </label>
+      <button className="trade-builder-heading" type="button" aria-expanded={isOpen} onClick={() => setIsOpen((current) => !current)}>
+        <span>
+          <strong>
+            {title} · {selectedTotal}
+          </strong>
+          <small>
+            {items.length} seleccionada{items.length === 1 ? "" : "s"}
+          </small>
+        </span>
+        <span>{isOpen ? "Ocultar" : "Mostrar"}</span>
+      </button>
+      {isOpen ? (
+        <div className="trade-builder-content">
       <div className="quick-filter-row" aria-label={`Filtros rápidos de ${title}`}>
         <button className={quickFilter === "all" ? "primary-button small" : "ghost-button small"} onClick={() => setQuickFilter("all")}>
           Todas
@@ -2732,34 +2930,6 @@ function TradeBuilder({
           </select>
         </label>
       </div>
-      <div className="selected-trade-list">
-        {items.length === 0 ? <p className="empty-state">Sin estampas seleccionadas.</p> : null}
-        {items.map((item) => {
-          const sticker = catalog.find((candidate) => candidate.code === item.code);
-          const availableExtras = Math.max(0, getStickerQuantity(item.code, progress) - 1);
-          const hasWarning = mode === "gave" && item.quantity > availableExtras;
-
-          return (
-            <div className="selected-trade-item" key={item.code}>
-              <div>
-                <strong>{item.code}</strong>
-                <span>{sticker ? formatCollectionCodeLabel(catalog, getCollectionName(sticker)) : ""}</span>
-                {hasWarning ? <small>Solo tienes {availableExtras} extra(s) disponible(s) de {item.code}</small> : null}
-              </div>
-              <input
-                type="number"
-                min="1"
-                value={item.quantity}
-                aria-label={`Cantidad de ${item.code}`}
-                onChange={(event) => onUpdateQuantity(item.code, Number(event.target.value))}
-              />
-              <button className="ghost-button small" onClick={() => onRemove(item.code)}>
-                Quitar
-              </button>
-            </div>
-          );
-        })}
-      </div>
       <div className="trade-candidates">
         {candidates.map((sticker) => {
           const quantity = getStickerQuantity(sticker.code, progress);
@@ -2776,18 +2946,14 @@ function TradeBuilder({
               <strong>{sticker.code}</strong>
               <span>{formatCollectionCodeLabel(catalog, getCollectionName(sticker))}</span>
               <small>
-                {mode === "gave"
-                  ? reserved > 0
-                    ? `Extra disponible: ${extras} · Apartado: ${reserved}`
-                    : `${extras} extra(s) disponible(s)`
-                  : quantity === 0
-                    ? "Faltante"
-                    : `Cantidad actual: ${quantity}`}
+                {mode === "gave" ? formatReservedStatus(extras, reserved) : quantity === 0 ? "Faltante" : `Cantidad actual: ${quantity}`}
               </small>
             </button>
           );
         })}
       </div>
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -3064,10 +3230,6 @@ function DataView({
         <p>
           Con sesión, tu progreso se sincroniza en la nube para usarlo desde tu celular, computadora u otro navegador. También se guarda una copia
           local como respaldo.
-        </p>
-        <p>
-          El código fuente es público en GitHub. La publishable key de Supabase es pública y apta para frontend; los datos se protegen con inicio de
-          sesión y reglas de acceso RLS. La service_role key nunca se debe exponer.
         </p>
       </section>
 

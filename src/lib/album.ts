@@ -27,6 +27,7 @@ type CollectionMetadata = {
   code: string;
   displayName: string;
   emoji?: string;
+  label?: string;
 };
 
 const COLLECTION_METADATA_BY_PREFIX: Record<string, CollectionMetadata> = {
@@ -47,7 +48,7 @@ const COLLECTION_METADATA_BY_PREFIX: Record<string, CollectionMetadata> = {
   CZE: { code: "CZE", displayName: "Czechia", emoji: "🇨🇿" },
   ECU: { code: "ECU", displayName: "Ecuador", emoji: "🇪🇨" },
   EGY: { code: "EGY", displayName: "Egypt", emoji: "🇪🇬" },
-  ENG: { code: "ENG", displayName: "England", emoji: "🏴" },
+  ENG: { code: "ENG", displayName: "Inglaterra", label: "ENG · Inglaterra" },
   ESP: { code: "ESP", displayName: "Spain", emoji: "🇪🇸" },
   FRA: { code: "FRA", displayName: "France", emoji: "🇫🇷" },
   GER: { code: "GER", displayName: "Germany", emoji: "🇩🇪" },
@@ -69,7 +70,7 @@ const COLLECTION_METADATA_BY_PREFIX: Record<string, CollectionMetadata> = {
   POR: { code: "POR", displayName: "Portugal", emoji: "🇵🇹" },
   QAT: { code: "QAT", displayName: "Qatar", emoji: "🇶🇦" },
   RSA: { code: "RSA", displayName: "South Africa", emoji: "🇿🇦" },
-  SCO: { code: "SCO", displayName: "Scotland", emoji: "🏴" },
+  SCO: { code: "SCO", displayName: "Escocia", label: "SCO · Escocia" },
   SEN: { code: "SEN", displayName: "Senegal", emoji: "🇸🇳" },
   SUI: { code: "SUI", displayName: "Switzerland", emoji: "🇨🇭" },
   SWE: { code: "SWE", displayName: "Sweden", emoji: "🇸🇪" },
@@ -218,6 +219,10 @@ export function getCollectionMetadata(catalog: Sticker[], collectionName: string
 
 export function formatCollectionCodeLabel(catalog: Sticker[], collectionName: string) {
   const metadata = getCollectionMetadata(catalog, collectionName);
+  if (metadata.label) {
+    return metadata.label;
+  }
+
   return `${metadata.code}${metadata.emoji ? ` ${metadata.emoji}` : ""}`;
 }
 
@@ -226,7 +231,7 @@ export function formatStickerCollectionLabel(sticker: Sticker) {
   const metadata = COLLECTION_METADATA_BY_PREFIX[prefix];
 
   if (metadata) {
-    return `${metadata.code} ${metadata.emoji}`;
+    return metadata.label ?? `${metadata.code}${metadata.emoji ? ` ${metadata.emoji}` : ""}`;
   }
 
   if (getCollectionType(sticker) === "special") {
@@ -559,7 +564,7 @@ function formatExchangeGroups(catalog: Sticker[], stickers: Sticker[], progress:
     .map(([prefix, groupStickers]) => {
       const firstSticker = groupStickers[0];
       const metadata = getCollectionMetadata(catalog, getCollectionName(firstSticker));
-      const label = `${prefix}${metadata.emoji ? ` ${metadata.emoji}` : ""}`;
+      const label = metadata.label ?? `${prefix}${metadata.emoji ? ` ${metadata.emoji}` : ""}`;
       const items = [...groupStickers]
         .sort((a, b) => Number(a.number) - Number(b.number))
         .map((sticker) => {
