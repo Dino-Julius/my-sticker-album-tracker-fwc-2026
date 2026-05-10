@@ -12,6 +12,7 @@ import { FilterBar } from "./components/FilterBar";
 import { StickerList } from "./components/StickerList";
 import { useAlbumData, type MigrationPrompt, type SyncStatus } from "./hooks/useAlbumData";
 import { useAuth } from "./hooks/useAuth";
+import { useFriends, type FriendListItem } from "./hooks/useFriends";
 import { useProfile } from "./hooks/useProfile";
 import { parseBulkStickerText, parseExchangeSections } from "./lib/bulk";
 import {
@@ -45,6 +46,7 @@ import {
 import { createTimestampedFilename, downloadTextFile } from "./lib/files";
 import type {
   Filters,
+  FriendInvite,
   PendingTradeRecord,
   Progress,
   RegistrationEvent,
@@ -66,7 +68,7 @@ const emptyFilters: Filters = {
   status: "all",
 };
 
-type View = "dashboard" | "registro" | "faltantes" | "repetidas" | "paises" | "datos";
+type View = "dashboard" | "registro" | "faltantes" | "repetidas" | "amigos" | "paises" | "datos";
 type BulkAction = "increment" | "owned" | "missing" | "set";
 type ReleaseNote = {
   id: string;
@@ -89,6 +91,7 @@ const views: Array<{ id: View; label: string }> = [
   { id: "registro", label: "Registro" },
   { id: "faltantes", label: "Faltantes" },
   { id: "repetidas", label: "Intercambio" },
+  { id: "amigos", label: "Amigos" },
   { id: "paises", label: "Colecciones" },
   { id: "datos", label: "Importar/Exportar" },
 ];
@@ -197,6 +200,7 @@ function readStoredReleaseNoteIds(): string[] {
 function App() {
   const auth = useAuth();
   const profileState = useProfile({ isCloudEnabled: auth.isConfigured, user: auth.user });
+  const friendsState = useFriends({ isCloudEnabled: auth.isConfigured, profile: profileState.profile, userId: auth.user?.id });
   const [catalog, setCatalog] = useState<Sticker[]>([]);
   const [catalogError, setCatalogError] = useState("");
   const [activeView, setActiveView] = useState<View>("dashboard");
@@ -537,6 +541,25 @@ function App() {
           setProgress={setProgress}
         />
       ) : null}
+      {activeView === "amigos" ? (
+        <FriendsView
+          acceptedFriends={friendsState.acceptedFriends}
+          activeInvites={friendsState.activeInvites}
+          friendsMessage={friendsState.friendsMessage}
+          incomingRequests={friendsState.incomingRequests}
+          isCloudEnabled={auth.isConfigured}
+          isLoading={friendsState.isLoadingFriends}
+          isSignedIn={Boolean(auth.user)}
+          isUpdating={friendsState.isUpdatingFriends}
+          outgoingRequests={friendsState.outgoingRequests}
+          onCreateInvite={friendsState.createInvite}
+          onRedeemInvite={friendsState.redeemInvite}
+          onRefresh={friendsState.refreshFriends}
+          onRemoveFriend={friendsState.removeFriend}
+          onRespondRequest={friendsState.respondToRequest}
+          onRevokeInvite={friendsState.revokeInvite}
+        />
+      ) : null}
       {activeView === "paises" ? (
         <CollectionsView
           catalog={catalog}
@@ -678,6 +701,225 @@ function PwaUpdateBanner({ onDismiss, onUpdate }: { onDismiss: () => void; onUpd
           Después
         </button>
       </div>
+    </section>
+  );
+}
+
+function FriendsView({
+  acceptedFriends,
+  activeInvites,
+  friendsMessage,
+  incomingRequests,
+  isCloudEnabled,
+  isLoading,
+  isSignedIn,
+  isUpdating,
+  onCreateInvite,
+  onRedeemInvite,
+  onRefresh,
+  onRemoveFriend,
+  onRespondRequest,
+  onRevokeInvite,
+  outgoingRequests,
+}: {
+  acceptedFriends: FriendListItem[];
+  activeInvites: FriendInvite[];
+  friendsMessage: { type: "success" | "warning" | "error"; text: string } | null;
+  incomingRequests: FriendListItem[];
+  isCloudEnabled: boolean;
+  isLoading: boolean;
+  isSignedIn: boolean;
+  isUpdating: boolean;
+  onCreateInvite: () => Promise<void>;
+  onRedeemInvite: (code: string) => Promise<void>;
+  onRefresh: () => void;
+  onRemoveFriend: (friendshipId: string) => Promise<void>;
+  onRespondRequest: (friendshipId: string, action: "accept" | "reject") => Promise<void>;
+  onRevokeInvite: (inviteId: string) => Promise<void>;
+  outgoingRequests: FriendListItem[];
+}) {
+  const requestCount = incomingRequests.length + outgoingRequests.length;
+  const [friendCode, setFriendCode] = useState("");
+  const [copiedInviteId, setCopiedInviteId] = useState("");
+  const [isInviteOpen, setIsInviteOpen] = useState(true);
+  const [isAddFriendOpen, setIsAddFriendOpen] = useState(true);
+  const [isRequestsOpen, setIsRequestsOpen] = useState(requestCount > 0);
+  const [isFriendsOpen, setIsFriendsOpen] = useState(acceptedFriends.length > 0);
+
+  useEffect(() => {
+    if (requestCount > 0) {
+      setIsRequestsOpen(true);
+    }
+  }, [requestCount]);
+
+  useEffect(() => {
+    if (acceptedFriends.length > 0) {
+      setIsFriendsOpen(true);
+    }
+  }, [acceptedFriends.length]);
+
+  const copyInviteCode = async (invite: FriendInvite) => {
+    await navigator.clipboard.writeText(invite.code);
+    setCopiedInviteId(invite.id);
+    window.setTimeout(() => setCopiedInviteId(""), 1800);
+  };
+
+  const redeemCode = async () => {
+    const normalizedCode = friendCode.trim().toUpperCase();
+
+    if (!normalizedCode) {
+      return;
+    }
+
+    await onRedeemInvite(normalizedCode);
+    setFriendCode("");
+  };
+
+  const removeFriend = (friend: FriendListItem) => {
+    if (window.confirm(`¿Eliminar a ${friend.displayName} de tus amigos?`)) {
+      void onRemoveFriend(friend.id);
+    }
+  };
+
+  if (!isCloudEnabled || !isSignedIn) {
+    return (
+      <section className="view-stack">
+        <article className="panel friends-empty-panel">
+          <p className="eyebrow">Amigos</p>
+          <h2>Compara álbumes automáticamente</h2>
+          <p>Inicia sesión con Google para crear códigos de amigo, aceptar solicitudes y comparar faltantes contra repetidas.</p>
+          <p className="history-note">Sin sesión, el intercambio manual y el comparador por texto siguen funcionando.</p>
+        </article>
+      </section>
+    );
+  }
+
+  return (
+    <section className="view-stack">
+      <div className="friends-toolbar">
+        <div>
+          <p className="eyebrow">Amigos</p>
+          <h2>Conecta por código y compara sin pegar listas</h2>
+        </div>
+        <button className="ghost-button small" type="button" onClick={onRefresh} disabled={isLoading || isUpdating}>
+          {isLoading ? "Actualizando..." : "Actualizar"}
+        </button>
+      </div>
+
+      {friendsMessage ? (
+        <p className={friendsMessage.type === "success" ? "toast-message compact-message" : "warning-message compact-message"}>
+          {friendsMessage.text}
+        </p>
+      ) : null}
+
+      <CollapsibleSection
+        title="Mi código de amigo"
+        meta={`Activos: ${activeInvites.length}`}
+        isOpen={isInviteOpen}
+        onToggle={() => setIsInviteOpen((current) => !current)}
+      >
+        <div className="friends-code-panel">
+          <div>
+            <h3>Comparte un código</h3>
+            <p className="history-note">El código expira en 7 días y crea una solicitud pendiente para que tú aceptes.</p>
+          </div>
+          <button className="primary-button small" type="button" onClick={() => void onCreateInvite()} disabled={isUpdating}>
+            Crear código
+          </button>
+        </div>
+        {activeInvites.length === 0 ? <p className="empty-state">No tienes códigos activos.</p> : null}
+        <div className="friend-card-grid">
+          {activeInvites.map((invite) => (
+            <article className="friend-card" key={invite.id}>
+              <strong className="friend-code">{invite.code}</strong>
+              <p>Expira: {formatDisplayDate(invite.expiresAt)}</p>
+              <div className="quick-actions">
+                <button className="ghost-button small" type="button" onClick={() => void copyInviteCode(invite)}>
+                  {copiedInviteId === invite.id ? "Copiado" : "Copiar"}
+                </button>
+                <button className="danger-button small" type="button" onClick={() => void onRevokeInvite(invite.id)} disabled={isUpdating}>
+                  Revocar
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Agregar amigo"
+        meta="Código de invitación"
+        isOpen={isAddFriendOpen}
+        onToggle={() => setIsAddFriendOpen((current) => !current)}
+      >
+        <div className="friend-code-form">
+          <label>
+            <span>Código de amigo</span>
+            <input value={friendCode} placeholder="ABCDE-12345" onChange={(event) => setFriendCode(event.target.value.toUpperCase())} />
+          </label>
+          <button className="primary-button" type="button" onClick={() => void redeemCode()} disabled={isUpdating || !friendCode.trim()}>
+            Enviar solicitud
+          </button>
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Solicitudes pendientes"
+        meta={`Solicitudes: ${requestCount}`}
+        isOpen={isRequestsOpen}
+        onToggle={() => setIsRequestsOpen((current) => !current)}
+      >
+        <div className="friend-card-grid">
+          {incomingRequests.map((request) => (
+            <article className="friend-card" key={request.id}>
+              <h3>{request.displayName}</h3>
+              <p>Quiere agregarte como amigo.</p>
+              <div className="quick-actions">
+                <button className="primary-button small" type="button" onClick={() => void onRespondRequest(request.id, "accept")} disabled={isUpdating}>
+                  Aceptar
+                </button>
+                <button className="danger-button small" type="button" onClick={() => void onRespondRequest(request.id, "reject")} disabled={isUpdating}>
+                  Rechazar
+                </button>
+              </div>
+            </article>
+          ))}
+          {outgoingRequests.map((request) => (
+            <article className="friend-card muted" key={request.id}>
+              <h3>{request.displayName}</h3>
+              <p>Solicitud enviada. Falta que la acepte.</p>
+            </article>
+          ))}
+        </div>
+        {requestCount === 0 ? <p className="empty-state">No hay solicitudes pendientes.</p> : null}
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Mis amigos"
+        meta={`Amigos: ${acceptedFriends.length}`}
+        isOpen={isFriendsOpen}
+        onToggle={() => setIsFriendsOpen((current) => !current)}
+      >
+        <div className="friend-card-grid">
+          {acceptedFriends.map((friend) => (
+            <article className="friend-card" key={friend.id}>
+              <div>
+                <h3>{friend.displayName}</h3>
+                <p>{friend.profileUpdatedAt ? `Perfil actualizado: ${formatDisplayDate(friend.profileUpdatedAt)}` : "Perfil pendiente de sincronizar."}</p>
+              </div>
+              <div className="quick-actions">
+                <button className="ghost-button small" type="button" disabled>
+                  Comparación pronto
+                </button>
+                <button className="danger-button small" type="button" onClick={() => removeFriend(friend)} disabled={isUpdating}>
+                  Eliminar amigo
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+        {acceptedFriends.length === 0 ? <p className="empty-state">Todavía no tienes amigos aceptados.</p> : null}
+      </CollapsibleSection>
     </section>
   );
 }
