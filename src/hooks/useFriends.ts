@@ -119,6 +119,20 @@ export function useFriends({
   const [isUpdatingFriends, setIsUpdatingFriends] = useState(false);
   const [friendsMessage, setFriendsMessage] = useState<FriendsMessage | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
+  const displayName = getProfileDisplayName(profile);
+  const localSnapshot = useMemo(
+    () =>
+      catalog.length > 0 && userId
+        ? createFriendExchangeSnapshot({
+            catalog,
+            displayName,
+            pendingTrades,
+            progress,
+            userId,
+          })
+        : null,
+    [catalog, displayName, pendingTrades, progress, userId],
+  );
 
   const refreshFriends = () => setRefreshToken((currentToken) => currentToken + 1);
 
@@ -191,8 +205,6 @@ export function useFriends({
       return;
     }
 
-    const displayName = getProfileDisplayName(profile);
-
     upsertRemoteFriendPublicProfile({
       displayName,
       updatedAt: new Date().toISOString(),
@@ -200,30 +212,21 @@ export function useFriends({
     }).catch((error) => {
       setFriendsMessage({ type: "warning", text: getFriendlyFriendsError(error) });
     });
-  }, [isCloudEnabled, profile?.fullName, profile?.nickname, userId]);
+  }, [displayName, isCloudEnabled, userId]);
 
   useEffect(() => {
-    if (!isCloudEnabled || !userId || catalog.length === 0) {
+    if (!isCloudEnabled || !localSnapshot) {
       return;
     }
 
-    const displayName = getProfileDisplayName(profile);
     const timeoutId = window.setTimeout(() => {
-      const snapshot = createFriendExchangeSnapshot({
-        catalog,
-        displayName,
-        pendingTrades,
-        progress,
-        userId,
-      });
-
-      upsertRemoteFriendExchangeSnapshot(snapshot).catch((error) => {
+      upsertRemoteFriendExchangeSnapshot(localSnapshot).catch((error) => {
         setFriendsMessage({ type: "warning", text: getFriendlyFriendsError(error) });
       });
     }, 1800);
 
     return () => window.clearTimeout(timeoutId);
-  }, [catalog, isCloudEnabled, pendingTrades, profile?.fullName, profile?.nickname, progress, userId]);
+  }, [isCloudEnabled, localSnapshot]);
 
   const profilesByUserId = useMemo(() => new Map(profiles.map((friendProfile) => [friendProfile.userId, friendProfile])), [profiles]);
   const snapshotsByUserId = useMemo(() => new Map(snapshots.map((snapshot) => [snapshot.userId, snapshot])), [snapshots]);
@@ -302,6 +305,7 @@ export function useFriends({
     invites,
     isLoadingFriends,
     isUpdatingFriends,
+    localSnapshot,
     outgoingRequests: friendItems.filter((friendship) => friendship.status === "pending" && friendship.requesterUserId === userId),
     redeemInvite,
     refreshFriends,

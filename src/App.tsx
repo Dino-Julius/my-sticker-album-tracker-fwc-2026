@@ -46,6 +46,7 @@ import {
 import { createTimestampedFilename, downloadTextFile } from "./lib/files";
 import type {
   Filters,
+  FriendExchangeSnapshot,
   FriendInvite,
   PendingTradeRecord,
   Progress,
@@ -77,6 +78,12 @@ type ReleaseNote = {
   summary: string;
   items: string[];
   wikiUrl?: string;
+};
+
+type ComparisonSelectionTransfer = {
+  id: string;
+  gaveCodes: string[];
+  receivedCodes: string[];
 };
 
 const bulkActionToRegistrationAction: Record<BulkAction, RegistrationEventAction> = {
@@ -210,6 +217,7 @@ function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [showReleaseNotes, setShowReleaseNotes] = useState(false);
   const [pwaUpdateWorker, setPwaUpdateWorker] = useState<ServiceWorker | null>(null);
+  const [comparisonSelectionTransfer, setComparisonSelectionTransfer] = useState<ComparisonSelectionTransfer | null>(null);
   const {
     addPendingTrade,
     addRegistrationEvent,
@@ -544,6 +552,7 @@ function App() {
           onAddTrade={addTrade}
           onDeletePendingTrade={deletePendingTrade}
           onDeleteTrade={deleteTrade}
+          incomingComparisonSelection={comparisonSelectionTransfer}
           onUpdatePendingTrade={updatePendingTrade}
           setProgress={setProgress}
         />
@@ -552,13 +561,22 @@ function App() {
         <FriendsView
           acceptedFriends={friendsState.acceptedFriends}
           activeInvites={friendsState.activeInvites}
+          catalog={catalog}
           friendsMessage={friendsState.friendsMessage}
           incomingRequests={friendsState.incomingRequests}
           isCloudEnabled={auth.isConfigured}
           isLoading={friendsState.isLoadingFriends}
           isSignedIn={Boolean(auth.user)}
           isUpdating={friendsState.isUpdatingFriends}
+          mySnapshot={friendsState.localSnapshot}
           outgoingRequests={friendsState.outgoingRequests}
+          onApplyComparisonSelection={(selection) => {
+            setComparisonSelectionTransfer({
+              ...selection,
+              id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
+            });
+            setActiveView("repetidas");
+          }}
           onCreateInvite={friendsState.createInvite}
           onRedeemInvite={friendsState.redeemInvite}
           onRefresh={friendsState.refreshFriends}
@@ -715,12 +733,15 @@ function PwaUpdateBanner({ onDismiss, onUpdate }: { onDismiss: () => void; onUpd
 function FriendsView({
   acceptedFriends,
   activeInvites,
+  catalog,
   friendsMessage,
   incomingRequests,
   isCloudEnabled,
   isLoading,
   isSignedIn,
   isUpdating,
+  mySnapshot,
+  onApplyComparisonSelection,
   onCreateInvite,
   onRedeemInvite,
   onRefresh,
@@ -731,12 +752,15 @@ function FriendsView({
 }: {
   acceptedFriends: FriendListItem[];
   activeInvites: FriendInvite[];
+  catalog: Sticker[];
   friendsMessage: { type: "success" | "warning" | "error"; text: string } | null;
   incomingRequests: FriendListItem[];
   isCloudEnabled: boolean;
   isLoading: boolean;
   isSignedIn: boolean;
   isUpdating: boolean;
+  mySnapshot: FriendExchangeSnapshot | null;
+  onApplyComparisonSelection: (selection: { gaveCodes: string[]; receivedCodes: string[] }) => void;
   onCreateInvite: () => Promise<void>;
   onRedeemInvite: (code: string) => Promise<void>;
   onRefresh: () => void;
@@ -752,6 +776,8 @@ function FriendsView({
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(true);
   const [isRequestsOpen, setIsRequestsOpen] = useState(requestCount > 0);
   const [isFriendsOpen, setIsFriendsOpen] = useState(acceptedFriends.length > 0);
+  const [isFriendComparisonOpen, setIsFriendComparisonOpen] = useState(acceptedFriends.some((friend) => friend.snapshot));
+  const [selectedFriendId, setSelectedFriendId] = useState("");
 
   useEffect(() => {
     if (requestCount > 0) {
@@ -764,6 +790,14 @@ function FriendsView({
       setIsFriendsOpen(true);
     }
   }, [acceptedFriends.length]);
+
+  useEffect(() => {
+    if (!selectedFriendId && acceptedFriends.length > 0) {
+      setSelectedFriendId(acceptedFriends[0].id);
+    }
+  }, [acceptedFriends, selectedFriendId]);
+
+  const selectedFriend = acceptedFriends.find((friend) => friend.id === selectedFriendId) ?? acceptedFriends[0];
 
   const copyInviteCode = async (invite: FriendInvite) => {
     await navigator.clipboard.writeText(invite.code);
@@ -925,8 +959,16 @@ function FriendsView({
                 )}
               </div>
               <div className="quick-actions">
-                <button className="ghost-button small" type="button" disabled>
-                  Comparación pronto
+                <button
+                  className="primary-button small"
+                  type="button"
+                  disabled={!friend.snapshot || !mySnapshot}
+                  onClick={() => {
+                    setSelectedFriendId(friend.id);
+                    setIsFriendComparisonOpen(true);
+                  }}
+                >
+                  Comparar
                 </button>
                 <button className="danger-button small" type="button" onClick={() => removeFriend(friend)} disabled={isUpdating}>
                   Eliminar amigo
@@ -937,7 +979,226 @@ function FriendsView({
         </div>
         {acceptedFriends.length === 0 ? <p className="empty-state">Todavía no tienes amigos aceptados.</p> : null}
       </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Comparar con amigo"
+        meta={selectedFriend?.snapshot ? selectedFriend.displayName : "Elige un amigo"}
+        isOpen={isFriendComparisonOpen}
+        onToggle={() => setIsFriendComparisonOpen((current) => !current)}
+      >
+        {acceptedFriends.length > 0 ? (
+          <FriendSnapshotComparison
+            catalog={catalog}
+            friends={acceptedFriends}
+            mySnapshot={mySnapshot}
+            selectedFriendId={selectedFriend?.id ?? ""}
+            onApplySelection={onApplyComparisonSelection}
+            onSelectFriend={setSelectedFriendId}
+          />
+        ) : (
+          <p className="empty-state">Agrega y acepta un amigo para comparar automáticamente.</p>
+        )}
+      </CollapsibleSection>
     </section>
+  );
+}
+
+function FriendSnapshotComparison({
+  catalog,
+  friends,
+  mySnapshot,
+  onApplySelection,
+  onSelectFriend,
+  selectedFriendId,
+}: {
+  catalog: Sticker[];
+  friends: FriendListItem[];
+  mySnapshot: FriendExchangeSnapshot | null;
+  onApplySelection: (selection: { gaveCodes: string[]; receivedCodes: string[] }) => void;
+  onSelectFriend: (friendshipId: string) => void;
+  selectedFriendId: string;
+}) {
+  const [selectedFriendCodes, setSelectedFriendCodes] = useState<string[]>([]);
+  const [selectedMyCodes, setSelectedMyCodes] = useState<string[]>([]);
+  const [copiedComparison, setCopiedComparison] = useState<"summary" | "trade" | "friend" | "mine" | "possible" | "">("");
+  const selectedFriend = friends.find((friend) => friend.id === selectedFriendId) ?? friends[0];
+  const friendSnapshot = selectedFriend?.snapshot;
+  const catalogByCode = useMemo(() => new Map(catalog.map((sticker) => [sticker.code, sticker])), [catalog]);
+  const catalogIndex = useMemo(() => new Map(catalog.map((sticker, index) => [sticker.code, index])), [catalog]);
+  const sortCandidates = (candidates: ExchangeCandidate[]) =>
+    [...candidates].sort((a, b) => (catalogIndex.get(a.code) ?? Number.MAX_SAFE_INTEGER) - (catalogIndex.get(b.code) ?? Number.MAX_SAFE_INTEGER));
+  const myMissingCodes = new Set(mySnapshot?.missingCodes ?? []);
+  const friendMissingCodes = new Set(friendSnapshot?.missingCodes ?? []);
+  const friendCanGive = sortCandidates(
+    Object.entries(friendSnapshot?.extras ?? {})
+      .filter(([code, quantity]) => quantity > 0 && myMissingCodes.has(code))
+      .map<ExchangeCandidate>(([code, quantity]) => {
+        const sticker = catalogByCode.get(code);
+        return {
+          category: sticker ? getExchangeCategory(sticker) : "Otros",
+          code,
+          friendQuantity: quantity,
+          label: sticker ? formatCollectionCodeLabel(catalog, getCollectionName(sticker)) : code,
+        };
+      }),
+  );
+  const iCanGive = sortCandidates(
+    Object.entries(mySnapshot?.extras ?? {})
+      .filter(([code, quantity]) => quantity > 0 && friendMissingCodes.has(code))
+      .map<ExchangeCandidate>(([code, quantity]) => {
+        const sticker = catalogByCode.get(code);
+        return {
+          available: quantity,
+          category: sticker ? getExchangeCategory(sticker) : "Otros",
+          code,
+          label: sticker ? formatCollectionCodeLabel(catalog, getCollectionName(sticker)) : code,
+        };
+      }),
+  );
+  const visibleFriendCodes = new Set(friendCanGive.map((candidate) => candidate.code));
+  const visibleMyCodes = new Set(iCanGive.map((candidate) => candidate.code));
+  const selectedReceivedCodes = selectedFriendCodes.filter((code) => visibleFriendCodes.has(code));
+  const selectedGaveCodes = selectedMyCodes.filter((code) => visibleMyCodes.has(code));
+  const possibleGroups = groupExchangeCandidates([...friendCanGive, ...iCanGive]);
+
+  const clearSelection = () => {
+    setSelectedFriendCodes([]);
+    setSelectedMyCodes([]);
+  };
+  const toggleSelectedCode = (side: "friend" | "mine", code: string) => {
+    const setter = side === "friend" ? setSelectedFriendCodes : setSelectedMyCodes;
+    setter((codes) => (codes.includes(code) ? codes.filter((candidateCode) => candidateCode !== code) : [...codes, code]));
+  };
+  const applySelection = () => {
+    onApplySelection({ gaveCodes: selectedGaveCodes, receivedCodes: selectedReceivedCodes });
+    clearSelection();
+  };
+  const copyComparison = async (target: "summary" | "trade" | "friend" | "mine" | "possible", text: string) => {
+    await navigator.clipboard.writeText(text);
+    setCopiedComparison(target);
+    window.setTimeout(() => setCopiedComparison(""), 1800);
+  };
+
+  useEffect(() => {
+    clearSelection();
+  }, [selectedFriend?.id]);
+
+  if (!mySnapshot) {
+    return <p className="empty-state">Tu snapshot de intercambio se sincroniza cuando cargas el catálogo e inicias sesión.</p>;
+  }
+
+  if (!selectedFriend || !friendSnapshot) {
+    return <p className="empty-state">Este amigo todavía no tiene datos de intercambio sincronizados.</p>;
+  }
+
+  return (
+    <div className="exchange-comparison friend-comparison">
+      <label>
+        <span>Amigo</span>
+        <select value={selectedFriend.id} onChange={(event) => onSelectFriend(event.target.value)}>
+          {friends.map((friend) => (
+            <option key={friend.id} value={friend.id}>
+              {friend.displayName}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div className="friend-comparison-summary">
+        <span>{selectedFriend.displayName}</span>
+        <span>{friendSnapshot.completionPercentage}% completo</span>
+        <span>Faltantes: {friendSnapshot.missingCount}</span>
+        <span>Extras: {friendSnapshot.extrasCount}</span>
+        <span>Sync: {formatDisplayDate(friendSnapshot.updatedAt)}</span>
+      </div>
+
+      <div className="exchange-selection-bar">
+        <span>
+          Seleccionadas: Doy {selectedGaveCodes.length} · Recibo {selectedReceivedCodes.length}
+        </span>
+        <div className="exchange-copy-actions">
+          <button
+            className="primary-button small"
+            type="button"
+            disabled={selectedGaveCodes.length === 0 && selectedReceivedCodes.length === 0}
+            onClick={applySelection}
+          >
+            Pasar a Registrar intercambio
+          </button>
+          <button
+            className="ghost-button small"
+            type="button"
+            disabled={selectedGaveCodes.length === 0 && selectedReceivedCodes.length === 0}
+            onClick={clearSelection}
+          >
+            Limpiar selección
+          </button>
+        </div>
+      </div>
+
+      <div className="exchange-copy-actions">
+        <button
+          className="ghost-button small"
+          type="button"
+          onClick={() => void copyComparison("summary", formatExchangeSummary(friendCanGive, iCanGive))}
+        >
+          {copiedComparison === "summary" ? "Resumen copiado" : "Copiar resumen"}
+        </button>
+        <button
+          className="primary-button small"
+          type="button"
+          onClick={() => void copyComparison("trade", formatTradeReadyExchangeSummary(friendCanGive, iCanGive))}
+        >
+          {copiedComparison === "trade" ? "Lista copiada" : "Copiar para intercambio"}
+        </button>
+      </div>
+
+      <ExchangeCandidateList
+        title="Me puede dar"
+        emptyText="No hay coincidencias con tus faltantes."
+        candidates={friendCanGive}
+        copyLabel={copiedComparison === "friend" ? "Copiado" : "Copiar Me puede dar"}
+        mode="friend"
+        selectedCodes={new Set(selectedReceivedCodes)}
+        onCopy={() => void copyComparison("friend", `Me puede dar\n${formatExchangeCandidateLines(friendCanGive, "friend", "trade")}`)}
+        onToggle={(code) => toggleSelectedCode("friend", code)}
+      />
+      <ExchangeCandidateList
+        title="Le puedo dar"
+        emptyText="No hay coincidencias con sus faltantes."
+        candidates={iCanGive}
+        copyLabel={copiedComparison === "mine" ? "Copiado" : "Copiar Le puedo dar"}
+        mode="mine"
+        selectedCodes={new Set(selectedGaveCodes)}
+        onCopy={() => void copyComparison("mine", `Le puedo dar\n${formatExchangeCandidateLines(iCanGive, "mine", "trade")}`)}
+        onToggle={(code) => toggleSelectedCode("mine", code)}
+      />
+      <section className="exchange-result-card">
+        <div className="section-heading flush">
+          <h3>Posibles intercambios</h3>
+          <button
+            className="ghost-button small"
+            type="button"
+            onClick={() => void copyComparison("possible", `Posibles intercambios\n${formatPossibleExchangeGroups(friendCanGive, iCanGive, "trade")}`)}
+          >
+            {copiedComparison === "possible" ? "Copiado" : "Copiar"}
+          </button>
+        </div>
+        {[...possibleGroups.entries()].length === 0 ? <p className="empty-state">No hay candidatos todavía.</p> : null}
+        {[...possibleGroups.entries()].map(([category, candidates]) => (
+          <div className="exchange-category" key={category}>
+            <strong>{category}</strong>
+            <div className="trade-code-list">
+              {candidates.map((candidate) => (
+                <span key={`${category}-${candidate.code}`}>
+                  {formatExchangeCandidate(candidate, candidate.friendQuantity ? "friend" : "mine")}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </section>
+    </div>
   );
 }
 
@@ -2369,6 +2630,7 @@ function ExchangeCandidateList({
 
 function RepeatedView({
   catalog,
+  incomingComparisonSelection,
   pendingTrades,
   progress,
   tradeHistory,
@@ -2380,6 +2642,7 @@ function RepeatedView({
   setProgress,
 }: {
   catalog: Sticker[];
+  incomingComparisonSelection: ComparisonSelectionTransfer | null;
   pendingTrades: PendingTradeRecord[];
   progress: Progress;
   tradeHistory: TradeRecord[];
@@ -2409,6 +2672,7 @@ function RepeatedView({
   const [editingPendingTradeId, setEditingPendingTradeId] = useState("");
   const [copiedTradeId, setCopiedTradeId] = useState("");
   const [copiedPendingTradeId, setCopiedPendingTradeId] = useState("");
+  const [appliedComparisonTransferId, setAppliedComparisonTransferId] = useState("");
   const editingPendingTrade = pendingTrades.find((trade) => trade.id === editingPendingTradeId);
   const reservedExtrasByCode = useMemo(
     () =>
@@ -2540,6 +2804,18 @@ function RepeatedView({
     setIsFormOpen(true);
     setTradeMessage(["Selección pasada a Registrar intercambio.", ...warnings].join(" "));
   };
+
+  useEffect(() => {
+    if (!incomingComparisonSelection || incomingComparisonSelection.id === appliedComparisonTransferId) {
+      return;
+    }
+
+    addComparisonSelectionToForm({
+      gaveCodes: incomingComparisonSelection.gaveCodes,
+      receivedCodes: incomingComparisonSelection.receivedCodes,
+    });
+    setAppliedComparisonTransferId(incomingComparisonSelection.id);
+  }, [incomingComparisonSelection, appliedComparisonTransferId]);
 
   const addBulkTradeItems = (side: "gave" | "received") => {
     const text = side === "gave" ? gaveBulkText : receivedBulkText;

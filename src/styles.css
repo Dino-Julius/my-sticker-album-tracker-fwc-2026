@@ -307,6 +307,21 @@ h3 {
   letter-spacing: 0.04em;
 }
 
+.friend-comparison-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.friend-comparison-summary span {
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #075985;
+  padding: 6px 10px;
+  font-size: 0.84rem;
+  font-weight: 850;
+}
+
 @media (max-width: 679px) {
   .friends-toolbar,
   .friends-code-panel,
