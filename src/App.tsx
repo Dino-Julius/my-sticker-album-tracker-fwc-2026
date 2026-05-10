@@ -94,11 +94,11 @@ const views: Array<{ id: View; label: string }> = [
 ];
 
 const DASHBOARD_METRIC_HELP = {
-  total: "Todas las estampas del catálogo del álbum, incluyendo FWC, Coca-Cola y selecciones.",
-  owned: "Estampas que ya tienes al menos una vez. Equivale a cantidad 1 o más.",
-  missing: "Estampas que todavía no tienes registradas. Equivale a cantidad 0.",
+  total: "Todas las estampas del catálogo del álbum..",
+  owned: "Estampas que ya tienes al menos una vez.",
+  missing: "Estampas que todavía no tienes registradas.",
   repeated: "Copias extra disponibles para cambiar. Se calcula como cantidad total menos una copia para tu álbum.",
-  completion: "Porcentaje del álbum que ya tienes registrado, contando una copia por estampa.",
+  completion: "Porcentaje del álbum que ya tienes completado.",
 } satisfies Record<string, string>;
 
 const formatDateTimeLocal = (date: Date) => {
@@ -1846,16 +1846,20 @@ function formatReservedStatus(available: number, reserved: number) {
 function ExchangeComparisonPanel({
   catalog,
   getAvailableExtras,
+  onApplySelection,
   progress,
 }: {
   catalog: Sticker[];
   getAvailableExtras: (code: string) => number;
+  onApplySelection: (selection: { gaveCodes: string[]; receivedCodes: string[] }) => void;
   progress: Progress;
 }) {
   const [combinedText, setCombinedText] = useState("");
   const [friendSwapsText, setFriendSwapsText] = useState("");
   const [friendMissingText, setFriendMissingText] = useState("");
   const [copiedComparison, setCopiedComparison] = useState<"summary" | "trade" | "friend" | "mine" | "possible" | "">("");
+  const [selectedFriendCodes, setSelectedFriendCodes] = useState<string[]>([]);
+  const [selectedMyCodes, setSelectedMyCodes] = useState<string[]>([]);
   const [showPreferences, setShowPreferences] = useState(false);
   const combined = useMemo(() => parseExchangeSections(combinedText, catalog), [catalog, combinedText]);
   const friendSwaps = useMemo(() => parseBulkStickerText(friendSwapsText, catalog), [catalog, friendSwapsText]);
@@ -1896,10 +1900,26 @@ function ExchangeComparisonPanel({
   const sortedICanGive = sortCandidates(iCanGive);
   const possibleGroups = groupExchangeCandidates([...sortedFriendCanGive, ...sortedICanGive]);
   const hasInput = combinedText.trim() || friendSwapsText.trim() || friendMissingText.trim();
+  const visibleFriendCodes = new Set(sortedFriendCanGive.map((candidate) => candidate.code));
+  const visibleMyCodes = new Set(sortedICanGive.map((candidate) => candidate.code));
+  const selectedReceivedCodes = selectedFriendCodes.filter((code) => visibleFriendCodes.has(code));
+  const selectedGaveCodes = selectedMyCodes.filter((code) => visibleMyCodes.has(code));
   const copyComparison = async (target: "summary" | "trade" | "friend" | "mine" | "possible", text: string) => {
     await navigator.clipboard.writeText(text);
     setCopiedComparison(target);
     window.setTimeout(() => setCopiedComparison(""), 1800);
+  };
+  const toggleSelectedCode = (side: "friend" | "mine", code: string) => {
+    const setter = side === "friend" ? setSelectedFriendCodes : setSelectedMyCodes;
+    setter((codes) => (codes.includes(code) ? codes.filter((candidateCode) => candidateCode !== code) : [...codes, code]));
+  };
+  const clearSelection = () => {
+    setSelectedFriendCodes([]);
+    setSelectedMyCodes([]);
+  };
+  const applySelection = () => {
+    onApplySelection({ gaveCodes: selectedGaveCodes, receivedCodes: selectedReceivedCodes });
+    clearSelection();
   };
 
   return (
@@ -1950,6 +1970,29 @@ function ExchangeComparisonPanel({
       ) : null}
       {hasInput ? (
         <div className="exchange-results">
+          <div className="exchange-selection-bar">
+            <span>
+              Seleccionadas: Doy {selectedGaveCodes.length} · Recibo {selectedReceivedCodes.length}
+            </span>
+            <div className="exchange-copy-actions">
+              <button
+                className="primary-button small"
+                type="button"
+                disabled={selectedGaveCodes.length === 0 && selectedReceivedCodes.length === 0}
+                onClick={applySelection}
+              >
+                Pasar a Registrar intercambio
+              </button>
+              <button
+                className="ghost-button small"
+                type="button"
+                disabled={selectedGaveCodes.length === 0 && selectedReceivedCodes.length === 0}
+                onClick={clearSelection}
+              >
+                Limpiar selección
+              </button>
+            </div>
+          </div>
           <div className="exchange-copy-actions">
             <button
               className="ghost-button small"
@@ -1972,7 +2015,9 @@ function ExchangeComparisonPanel({
             candidates={sortedFriendCanGive}
             copyLabel={copiedComparison === "friend" ? "Copiado" : "Copiar Me puede dar"}
             mode="friend"
+            selectedCodes={new Set(selectedReceivedCodes)}
             onCopy={() => void copyComparison("friend", `Me puede dar\n${formatExchangeCandidateLines(sortedFriendCanGive, "friend", "trade")}`)}
+            onToggle={(code) => toggleSelectedCode("friend", code)}
           />
           <ExchangeCandidateList
             title="Le puedo dar"
@@ -1980,7 +2025,9 @@ function ExchangeComparisonPanel({
             candidates={sortedICanGive}
             copyLabel={copiedComparison === "mine" ? "Copiado" : "Copiar Le puedo dar"}
             mode="mine"
+            selectedCodes={new Set(selectedGaveCodes)}
             onCopy={() => void copyComparison("mine", `Le puedo dar\n${formatExchangeCandidateLines(sortedICanGive, "mine", "trade")}`)}
+            onToggle={(code) => toggleSelectedCode("mine", code)}
           />
           <section className="exchange-result-card">
             <div className="section-heading flush">
@@ -2021,6 +2068,8 @@ function ExchangeCandidateList({
   emptyText,
   mode,
   onCopy,
+  onToggle,
+  selectedCodes,
   title,
 }: {
   candidates: ExchangeCandidate[];
@@ -2028,6 +2077,8 @@ function ExchangeCandidateList({
   emptyText: string;
   mode: "friend" | "mine";
   onCopy: () => void;
+  onToggle: (code: string) => void;
+  selectedCodes: Set<string>;
   title: string;
 }) {
   return (
@@ -2041,9 +2092,16 @@ function ExchangeCandidateList({
       {candidates.length === 0 ? <p className="empty-state">{emptyText}</p> : null}
       <div className="trade-code-list">
         {candidates.map((candidate) => (
-          <span key={candidate.code}>
+          <button
+            className={`exchange-suggestion-chip ${selectedCodes.has(candidate.code) ? "selected" : ""}`}
+            key={candidate.code}
+            type="button"
+            aria-pressed={selectedCodes.has(candidate.code)}
+            onClick={() => onToggle(candidate.code)}
+          >
+            {selectedCodes.has(candidate.code) ? "✓ " : ""}
             {formatExchangeCandidate(candidate, mode)}
-          </span>
+          </button>
         ))}
       </div>
     </section>
@@ -2171,6 +2229,57 @@ function RepeatedView({
     return [...quantities.entries()]
       .map(([code, quantity]) => ({ code, quantity }))
       .sort((a, b) => a.code.localeCompare(b.code));
+  };
+
+  const mergeTradeItemsByMax = (items: TradeItem[], additions: TradeItem[]) => {
+    const quantities = new Map(items.map((item) => [item.code, item.quantity]));
+
+    additions.forEach((item) => {
+      quantities.set(item.code, Math.max(quantities.get(item.code) ?? 0, item.quantity));
+    });
+
+    return [...quantities.entries()]
+      .map(([code, quantity]) => ({ code, quantity }))
+      .sort((a, b) => a.code.localeCompare(b.code));
+  };
+
+  const addComparisonSelectionToForm = ({ gaveCodes, receivedCodes }: { gaveCodes: string[]; receivedCodes: string[] }) => {
+    if (gaveCodes.length === 0 && receivedCodes.length === 0) {
+      setTradeMessage("Selecciona estampas del comparador antes de pasarlas al formulario.");
+      return;
+    }
+
+    if ((gave.length > 0 || received.length > 0) && !window.confirm("Ya tienes estampas en el formulario. ¿Quieres agregar esta selección?")) {
+      return;
+    }
+
+    const currentGaveCodes = new Set(gave.map((item) => item.code));
+    const warnings: string[] = [];
+    const gaveAdditions = [...new Set(gaveCodes)].reduce<TradeItem[]>((items, code) => {
+      if (currentGaveCodes.has(code) || getAvailableExtras(code) > 0) {
+        return [...items, { code, quantity: 1 }];
+      }
+
+      warnings.push(`Ya no tienes extra disponible de ${code}.`);
+      return items;
+    }, []);
+    const receivedAdditions = [...new Set(receivedCodes)].map((code) => ({ code, quantity: 1 }));
+
+    if (gaveAdditions.length === 0 && receivedAdditions.length === 0) {
+      setTradeMessage(warnings.join(" ") || "No hay estampas válidas para pasar al formulario.");
+      return;
+    }
+
+    if (gaveAdditions.length > 0) {
+      setGave((items) => mergeTradeItemsByMax(items, gaveAdditions));
+    }
+
+    if (receivedAdditions.length > 0) {
+      setReceived((items) => mergeTradeItemsByMax(items, receivedAdditions));
+    }
+
+    setIsFormOpen(true);
+    setTradeMessage(["Selección pasada a Registrar intercambio.", ...warnings].join(" "));
   };
 
   const addBulkTradeItems = (side: "gave" | "received") => {
@@ -2447,7 +2556,12 @@ function RepeatedView({
         isOpen={isComparisonOpen}
         onToggle={() => setIsComparisonOpen((current) => !current)}
       >
-        <ExchangeComparisonPanel catalog={catalog} progress={progress} getAvailableExtras={getAvailableExtras} />
+        <ExchangeComparisonPanel
+          catalog={catalog}
+          progress={progress}
+          getAvailableExtras={getAvailableExtras}
+          onApplySelection={addComparisonSelectionToForm}
+        />
       </CollapsibleSection>
 
       <CollapsibleSection
