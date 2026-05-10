@@ -20,6 +20,18 @@ Si. Puedes editar con quien intercambias, notas, lo que das y lo que recibes.
 
 Sirve para pegar la lista de un amigo y ver que te puede dar y que le puedes dar. No crea intercambios automaticamente.
 
+## Para que sirve Amigos?
+
+Sirve para conectar con otra persona por codigo y comparar albumes automaticamente, sin pegar listas. Solo funciona con amigos aceptados.
+
+## Mis amigos pueden ver mi email?
+
+No. Amigos muestra un nombre visible y datos minimos para comparar, pero no comparte tu email, notas ni historiales.
+
+## La comparacion con amigos confirma intercambios sola?
+
+No. Puedes pasar una seleccion a **Registrar intercambio**, pero tu decides si la editas, la apartas o la confirmas.
+
 ## Que formatos acepta?
 
 Acepta codigos simples como `MEX12`, formato agrupado como `MEX: 1, 2, 3`, y listas con encabezados `Me faltan`, `Mis repetidas`, `I need` o `Swaps`.

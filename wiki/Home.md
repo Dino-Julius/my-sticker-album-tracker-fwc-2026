@@ -10,6 +10,7 @@ Esta app te ayuda a registrar tu album, revisar faltantes, ver repetidas, compar
 - [Funciones principales](Funciones-principales)
 - [Registro y carga rapida](Registro-y-bulk)
 - [Intercambios y apartados](Intercambios-y-apartados)
+- [Amigos y comparacion automatica](Amigos-y-comparacion)
 - [Sincronizacion y cuenta](Sincronizacion-y-cuenta)
 - [Importar y exportar](Importar-y-exportar)
 - [Preguntas frecuentes](Preguntas-frecuentes)
@@ -28,6 +29,7 @@ Esta app te ayuda a registrar tu album, revisar faltantes, ver repetidas, compar
 - **Repetidas**: estampas con cantidad 2 o mas.
 - **Extras para cambiar**: cantidad menos 1.
 - **Apartado**: extra reservado para un intercambio futuro.
+- **Amigos**: contactos agregados con codigo para comparar albumes sin pegar listas.
 
 ## Nota importante
 

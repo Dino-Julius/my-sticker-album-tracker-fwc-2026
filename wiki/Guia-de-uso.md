@@ -26,6 +26,16 @@ En **Intercambio** puedes:
 - editar, confirmar o cancelar apartados,
 - revisar el historial confirmado.
 
+## Amigos
+
+En **Amigos** puedes crear un codigo de invitacion o ingresar el codigo de otra persona. Cuando la solicitud queda aceptada, la app compara automaticamente:
+
+- que repetidas de tu amigo te sirven,
+- que extras tuyos le sirven a tu amigo,
+- posibles intercambios por tipo de estampa.
+
+La comparacion por amigos no confirma nada sola. Puedes pasar una seleccion a **Registrar intercambio** y revisarla antes de confirmar o apartar.
+
 ## Cuenta
 
 El panel de cuenta aparece compacto. Abre **Ver cuenta** para editar tu apodo, ver ultimas fechas, tocar **Sincronizar ahora** o cerrar sesion.

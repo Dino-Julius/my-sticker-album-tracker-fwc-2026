@@ -52,3 +52,5 @@ La funcion de **Amigos** esta pensada para comparar albumes sin compartir datos 
 - no verán tu email, notas, historial de registro, historial de intercambios ni detalles de apartados.
 
 Los apartados se toman en cuenta para no ofrecer estampas que ya reservaste para otro intercambio.
+
+La comparacion usa tu ultima sincronizacion. Si acabas de registrar o apartar estampas, espera unos segundos o toca **Sincronizar ahora** para que tus amigos vean datos recientes.

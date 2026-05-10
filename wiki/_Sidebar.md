@@ -5,6 +5,7 @@
 - [Funciones principales](Funciones-principales)
 - [Registro y carga rapida](Registro-y-bulk)
 - [Intercambios y apartados](Intercambios-y-apartados)
+- [Amigos y comparacion](Amigos-y-comparacion)
 - [Sincronizacion y cuenta](Sincronizacion-y-cuenta)
 - [Importar y exportar](Importar-y-exportar)
 - [Preguntas frecuentes](Preguntas-frecuentes)

@@ -37,6 +37,18 @@ La comparacion muestra:
 - **Le puedo dar**: tus extras disponibles que tu amigo necesita.
 - **Posibles intercambios**: candidatos agrupados por tipo.
 
+Puedes seleccionar estampas del resultado y usar **Pasar a Registrar intercambio**. Eso solo llena el formulario: todavia puedes editar cantidades, notas, confirmar o apartar.
+
+## Comparar con amigos de la app
+
+Si agregas amigos desde la pestaña **Amigos**, ya no tienes que pegar listas. La app usa la ultima sincronizacion de tu amigo para mostrar lo mismo:
+
+- **Me puede dar**,
+- **Le puedo dar**,
+- **Posibles intercambios**.
+
+Los apartados se descuentan de los extras disponibles, para no sugerir estampas que ya estan reservadas.
+
 ## Preferencias de intercambio
 
 Son sugerencias, no reglas:
