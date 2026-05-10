@@ -57,6 +57,49 @@ export type UserProfile = {
   updatedAt?: string;
 };
 
+export type FriendInviteStatus = "active" | "used" | "expired" | "revoked";
+
+export type FriendInvite = {
+  id: string;
+  code: string;
+  createdByUserId: string;
+  createdAt: string;
+  expiresAt: string;
+  usedByUserId?: string;
+  usedAt?: string;
+  status: FriendInviteStatus;
+};
+
+export type FriendshipStatus = "pending" | "accepted" | "rejected" | "removed" | "blocked";
+
+export type Friendship = {
+  id: string;
+  requesterUserId: string;
+  receiverUserId: string;
+  status: FriendshipStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type FriendPublicProfile = {
+  userId: string;
+  displayName: string;
+  updatedAt: string;
+};
+
+export type FriendExchangeSnapshot = {
+  userId: string;
+  displayName: string;
+  completionPercentage: number;
+  ownedCount: number;
+  missingCount: number;
+  repeatedCount: number;
+  extrasCount: number;
+  missingCodes: string[];
+  extras: Record<string, number>;
+  updatedAt: string;
+};
+
 export type SyncIssueArea = "progress" | "trades" | "registration-events" | "pending-trades" | "profile";
 export type SyncIssueOperation = "load" | "save" | "delete";
 
