@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import type { FriendInvite, FriendPublicProfile, Friendship, UserProfile } from "../types";
+import type { FriendExchangeSnapshot, FriendInvite, FriendPublicProfile, Friendship, PendingTradeRecord, Progress, Sticker, UserProfile } from "../types";
+import { getCompletionPercentage, getMissingStickers, getOwnedStickers, getRepeatedStickers, getStickerQuantity } from "../lib/album";
 import {
   createRemoteFriendInvite,
+  loadRemoteFriendExchangeSnapshots,
   loadRemoteFriendInvites,
   loadRemoteFriendPublicProfiles,
   loadRemoteFriendships,
@@ -9,6 +11,7 @@ import {
   removeRemoteFriendship,
   respondRemoteFriendRequest,
   revokeRemoteFriendInvite,
+  upsertRemoteFriendExchangeSnapshot,
   upsertRemoteFriendPublicProfile,
 } from "../lib/remoteFriends";
 
@@ -16,6 +19,7 @@ export type FriendListItem = Friendship & {
   friendUserId: string;
   displayName: string;
   profileUpdatedAt?: string;
+  snapshot?: FriendExchangeSnapshot;
 };
 
 type FriendsMessage = {
@@ -44,18 +48,73 @@ function getFriendlyFriendsError(error: unknown) {
   return "No se pudo actualizar Amigos. Intenta de nuevo.";
 }
 
-export function useFriends({
-  isCloudEnabled,
-  profile,
+function getReservedExtrasByCode(pendingTrades: PendingTradeRecord[]) {
+  return pendingTrades.reduce<Record<string, number>>((reserved, trade) => {
+    trade.gave.forEach((item) => {
+      reserved[item.code] = (reserved[item.code] ?? 0) + item.quantity;
+    });
+
+    return reserved;
+  }, {});
+}
+
+function createFriendExchangeSnapshot({
+  catalog,
+  displayName,
+  pendingTrades,
+  progress,
   userId,
 }: {
+  catalog: Sticker[];
+  displayName: string;
+  pendingTrades: PendingTradeRecord[];
+  progress: Progress;
+  userId: string;
+}): FriendExchangeSnapshot {
+  const reservedExtras = getReservedExtrasByCode(pendingTrades);
+  const extras = catalog.reduce<Record<string, number>>((availableExtras, sticker) => {
+    const available = Math.max(0, getStickerQuantity(sticker.code, progress) - 1 - (reservedExtras[sticker.code] ?? 0));
+
+    if (available > 0) {
+      availableExtras[sticker.code] = available;
+    }
+
+    return availableExtras;
+  }, {});
+
+  return {
+    completionPercentage: getCompletionPercentage(catalog, progress),
+    displayName,
+    extras,
+    extrasCount: Object.values(extras).reduce((total, quantity) => total + quantity, 0),
+    missingCodes: getMissingStickers(catalog, progress).map((sticker) => sticker.code),
+    missingCount: getMissingStickers(catalog, progress).length,
+    ownedCount: getOwnedStickers(catalog, progress).length,
+    repeatedCount: getRepeatedStickers(catalog, progress).length,
+    updatedAt: new Date().toISOString(),
+    userId,
+  };
+}
+
+export function useFriends({
+  catalog,
+  isCloudEnabled,
+  pendingTrades,
+  profile,
+  progress,
+  userId,
+}: {
+  catalog: Sticker[];
   isCloudEnabled: boolean;
+  pendingTrades: PendingTradeRecord[];
   profile: UserProfile | null;
+  progress: Progress;
   userId?: string;
 }) {
   const [invites, setInvites] = useState<FriendInvite[]>([]);
   const [friendships, setFriendships] = useState<Friendship[]>([]);
   const [profiles, setProfiles] = useState<FriendPublicProfile[]>([]);
+  const [snapshots, setSnapshots] = useState<FriendExchangeSnapshot[]>([]);
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
   const [isUpdatingFriends, setIsUpdatingFriends] = useState(false);
   const [friendsMessage, setFriendsMessage] = useState<FriendsMessage | null>(null);
@@ -67,6 +126,7 @@ export function useFriends({
     setInvites([]);
     setFriendships([]);
     setProfiles([]);
+    setSnapshots([]);
     setFriendsMessage(null);
 
     if (!isCloudEnabled || !userId) {
@@ -87,13 +147,26 @@ export function useFriends({
         const friendUserIds = [...new Set(nextFriendships.map((friendship) => getOtherUserId(friendship, userId)))];
 
         try {
-          const nextProfiles = await loadRemoteFriendPublicProfiles(friendUserIds);
+          const [nextProfiles, nextSnapshots] = await Promise.all([
+            loadRemoteFriendPublicProfiles(friendUserIds),
+            loadRemoteFriendExchangeSnapshots(
+              friendUserIds.filter((friendUserId) =>
+                nextFriendships.some(
+                  (friendship) =>
+                    friendship.status === "accepted" &&
+                    (friendship.requesterUserId === friendUserId || friendship.receiverUserId === friendUserId),
+                ),
+              ),
+            ),
+          ]);
           if (isActive) {
             setProfiles(nextProfiles);
+            setSnapshots(nextSnapshots);
           }
         } catch {
           if (isActive) {
             setProfiles([]);
+            setSnapshots([]);
           }
         }
       })
@@ -129,7 +202,31 @@ export function useFriends({
     });
   }, [isCloudEnabled, profile?.fullName, profile?.nickname, userId]);
 
+  useEffect(() => {
+    if (!isCloudEnabled || !userId || catalog.length === 0) {
+      return;
+    }
+
+    const displayName = getProfileDisplayName(profile);
+    const timeoutId = window.setTimeout(() => {
+      const snapshot = createFriendExchangeSnapshot({
+        catalog,
+        displayName,
+        pendingTrades,
+        progress,
+        userId,
+      });
+
+      upsertRemoteFriendExchangeSnapshot(snapshot).catch((error) => {
+        setFriendsMessage({ type: "warning", text: getFriendlyFriendsError(error) });
+      });
+    }, 1800);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [catalog, isCloudEnabled, pendingTrades, profile?.fullName, profile?.nickname, progress, userId]);
+
   const profilesByUserId = useMemo(() => new Map(profiles.map((friendProfile) => [friendProfile.userId, friendProfile])), [profiles]);
+  const snapshotsByUserId = useMemo(() => new Map(snapshots.map((snapshot) => [snapshot.userId, snapshot])), [snapshots]);
 
   const friendItems = useMemo<FriendListItem[]>(() => {
     if (!userId) {
@@ -139,15 +236,17 @@ export function useFriends({
     return friendships.map((friendship) => {
       const friendUserId = getOtherUserId(friendship, userId);
       const friendProfile = profilesByUserId.get(friendUserId);
+      const snapshot = snapshotsByUserId.get(friendUserId);
 
       return {
         ...friendship,
-        displayName: friendProfile?.displayName || "Amigo",
+        displayName: snapshot?.displayName || friendProfile?.displayName || "Amigo",
         friendUserId,
         profileUpdatedAt: friendProfile?.updatedAt,
+        snapshot,
       };
     });
-  }, [friendships, profilesByUserId, userId]);
+  }, [friendships, profilesByUserId, snapshotsByUserId, userId]);
 
   const runFriendAction = async (action: () => Promise<void>, successMessage: string) => {
     if (!isCloudEnabled || !userId) {

@@ -200,7 +200,6 @@ function readStoredReleaseNoteIds(): string[] {
 function App() {
   const auth = useAuth();
   const profileState = useProfile({ isCloudEnabled: auth.isConfigured, user: auth.user });
-  const friendsState = useFriends({ isCloudEnabled: auth.isConfigured, profile: profileState.profile, userId: auth.user?.id });
   const [catalog, setCatalog] = useState<Sticker[]>([]);
   const [catalogError, setCatalogError] = useState("");
   const [activeView, setActiveView] = useState<View>("dashboard");
@@ -238,6 +237,14 @@ function App() {
     useCloudData,
   } = useAlbumData({
     isCloudEnabled: auth.isConfigured,
+    userId: auth.user?.id,
+  });
+  const friendsState = useFriends({
+    catalog,
+    isCloudEnabled: auth.isConfigured,
+    pendingTrades,
+    profile: profileState.profile,
+    progress,
     userId: auth.user?.id,
   });
   const combinedSyncIssues = [...syncIssues, ...profileState.syncIssues];
@@ -905,7 +912,17 @@ function FriendsView({
             <article className="friend-card" key={friend.id}>
               <div>
                 <h3>{friend.displayName}</h3>
-                <p>{friend.profileUpdatedAt ? `Perfil actualizado: ${formatDisplayDate(friend.profileUpdatedAt)}` : "Perfil pendiente de sincronizar."}</p>
+                {friend.snapshot ? (
+                  <>
+                    <p>
+                      Álbum: {friend.snapshot.completionPercentage}% · Faltantes: {friend.snapshot.missingCount} · Extras:{" "}
+                      {friend.snapshot.extrasCount}
+                    </p>
+                    <p>Última sincronización: {formatDisplayDate(friend.snapshot.updatedAt)}</p>
+                  </>
+                ) : (
+                  <p>{friend.profileUpdatedAt ? `Perfil actualizado: ${formatDisplayDate(friend.profileUpdatedAt)}` : "Perfil pendiente de sincronizar."}</p>
+                )}
               </div>
               <div className="quick-actions">
                 <button className="ghost-button small" type="button" disabled>
