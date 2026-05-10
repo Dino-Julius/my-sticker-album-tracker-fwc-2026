@@ -41,3 +41,14 @@ Con **Ver cuenta** puedes:
 ## Nueva version
 
 Cuando haya una actualizacion, puede aparecer **Nueva versión disponible**. Toca **Actualizar**.
+
+## Amigos y privacidad
+
+La funcion de **Amigos** esta pensada para comparar albumes sin compartir datos privados de mas. Cuando este activa:
+
+- te conectarás con otra persona usando un código de invitación,
+- solo los amigos aceptados podrán comparar listas,
+- tus amigos verán un resumen, tus faltantes y tus extras disponibles,
+- no verán tu email, notas, historial de registro, historial de intercambios ni detalles de apartados.
+
+Los apartados se toman en cuenta para no ofrecer estampas que ya reservaste para otro intercambio.
