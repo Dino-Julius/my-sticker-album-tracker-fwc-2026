@@ -18,6 +18,7 @@ import { parseBulkStickerText, parseExchangeSections } from "./lib/bulk";
 import {
   applyFilters,
   applyTradeToProgress,
+  createTradingText,
   createTradeSummary,
   exportMissingToCsv,
   exportMissingToMarkdown,
@@ -2731,6 +2732,7 @@ function RepeatedView({
   const [tradeBulkMessage, setTradeBulkMessage] = useState<{ type: "success" | "warning"; text: string } | null>(null);
   const [tradeMessage, setTradeMessage] = useState("");
   const [editingPendingTradeId, setEditingPendingTradeId] = useState("");
+  const [copiedTradingList, setCopiedTradingList] = useState(false);
   const [copiedTradeId, setCopiedTradeId] = useState("");
   const [copiedPendingTradeId, setCopiedPendingTradeId] = useState("");
   const [appliedComparisonTransferId, setAppliedComparisonTransferId] = useState("");
@@ -3147,6 +3149,12 @@ function RepeatedView({
     window.setTimeout(() => setCopiedTradeId(""), 1800);
   };
 
+  const copyTradingList = async () => {
+    await navigator.clipboard.writeText(createTradingText(catalog, progress));
+    setCopiedTradingList(true);
+    window.setTimeout(() => setCopiedTradingList(false), 1800);
+  };
+
   const deleteTradeRecord = (tradeId: string) => {
     if (window.confirm("¿Eliminar este intercambio del historial?")) {
       onDeleteTrade(tradeId);
@@ -3159,6 +3167,17 @@ function RepeatedView({
 
   return (
     <section className="view-stack">
+      <section className="panel exchange-list-copy-panel">
+        <div>
+          <p className="eyebrow">Lista de intercambio</p>
+          <h2>Comparte tus faltantes y repetidas</h2>
+          <p className="history-note">Copia el formato público con “Me faltan” y “Mis repetidas”.</p>
+        </div>
+        <button className="primary-button" type="button" onClick={() => void copyTradingList()}>
+          {copiedTradingList ? "Lista copiada" : "Copiar lista de intercambio"}
+        </button>
+      </section>
+
       <CollapsibleSection
         title="Comparar intercambio"
         meta="Cruza listas con un amigo"

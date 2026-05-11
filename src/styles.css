@@ -325,7 +325,8 @@ h3 {
 @media (max-width: 679px) {
   .friends-toolbar,
   .friends-code-panel,
-  .friend-code-form {
+  .friend-code-form,
+  .exchange-list-copy-panel {
     display: grid;
     align-items: stretch;
   }
@@ -1450,6 +1451,18 @@ textarea {
 .trade-builder {
   display: grid;
   gap: 14px;
+}
+
+.exchange-list-copy-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.exchange-list-copy-panel h2,
+.exchange-list-copy-panel p {
+  margin-bottom: 0;
 }
 
 .trade-builder {
