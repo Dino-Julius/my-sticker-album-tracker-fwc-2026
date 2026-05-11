@@ -81,6 +81,7 @@ type ReleaseNote = {
 };
 
 type ComparisonSelectionTransfer = {
+  friendName?: string;
   id: string;
   gaveCodes: string[];
   receivedCodes: string[];
@@ -91,6 +92,11 @@ const bulkActionToRegistrationAction: Record<BulkAction, RegistrationEventAction
   missing: "set-missing",
   owned: "set-owned",
   set: "set-quantity",
+};
+
+type BulkResultDetails = {
+  newCodes: string[];
+  repeatedItems: TradeItem[];
 };
 
 const views: Array<{ id: View; label: string }> = [
@@ -151,6 +157,26 @@ function createRegistrationEvent(
     items,
     note,
   };
+}
+
+function formatLimitedCodes(codes: string[], limit = 16) {
+  if (codes.length === 0) {
+    return "";
+  }
+
+  const visibleCodes = codes.slice(0, limit).join(", ");
+  const remaining = codes.length > limit ? ` y ${codes.length - limit} más` : "";
+  return `${visibleCodes}${remaining}`;
+}
+
+function formatBulkRepeatedItems(items: TradeItem[], limit = 16) {
+  if (items.length === 0) {
+    return "";
+  }
+
+  const visibleItems = items.slice(0, limit).map((item) => `${item.code} x${item.quantity}`).join(", ");
+  const remaining = items.length > limit ? ` y ${items.length - limit} más` : "";
+  return `${visibleItems}${remaining}`;
 }
 
 const IMPORT_EXAMPLE = `{
@@ -573,6 +599,7 @@ function App() {
           onApplyComparisonSelection={(selection) => {
             setComparisonSelectionTransfer({
               ...selection,
+              friendName: selection.friendName,
               id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
             });
             setActiveView("repetidas");
@@ -760,7 +787,7 @@ function FriendsView({
   isSignedIn: boolean;
   isUpdating: boolean;
   mySnapshot: FriendExchangeSnapshot | null;
-  onApplyComparisonSelection: (selection: { gaveCodes: string[]; receivedCodes: string[] }) => void;
+  onApplyComparisonSelection: (selection: { friendName?: string; gaveCodes: string[]; receivedCodes: string[] }) => void;
   onCreateInvite: () => Promise<void>;
   onRedeemInvite: (code: string) => Promise<void>;
   onRefresh: () => void;
@@ -1014,7 +1041,7 @@ function FriendSnapshotComparison({
   catalog: Sticker[];
   friends: FriendListItem[];
   mySnapshot: FriendExchangeSnapshot | null;
-  onApplySelection: (selection: { gaveCodes: string[]; receivedCodes: string[] }) => void;
+  onApplySelection: (selection: { friendName?: string; gaveCodes: string[]; receivedCodes: string[] }) => void;
   onSelectFriend: (friendshipId: string) => void;
   selectedFriendId: string;
 }) {
@@ -1070,7 +1097,7 @@ function FriendSnapshotComparison({
     setter((codes) => (codes.includes(code) ? codes.filter((candidateCode) => candidateCode !== code) : [...codes, code]));
   };
   const applySelection = () => {
-    onApplySelection({ gaveCodes: selectedGaveCodes, receivedCodes: selectedReceivedCodes });
+    onApplySelection({ friendName: selectedFriend.displayName, gaveCodes: selectedGaveCodes, receivedCodes: selectedReceivedCodes });
     clearSelection();
   };
   const copyComparison = async (target: "summary" | "trade" | "friend" | "mine" | "possible", text: string) => {
@@ -1898,6 +1925,7 @@ function BulkRegisterPanel({
   const [bulkAction, setBulkAction] = useState<BulkAction>("increment");
   const [fixedQuantity, setFixedQuantity] = useState(1);
   const [bulkMessage, setBulkMessage] = useState<{ type: "success" | "warning"; text: string } | null>(null);
+  const [bulkResultDetails, setBulkResultDetails] = useState<BulkResultDetails | null>(null);
   const parsedBulk = useMemo(() => parseBulkStickerText(bulkText, catalog), [bulkText, catalog]);
   const selectedCodeSet = useMemo(() => new Set(selectedCodes), [selectedCodes]);
   const selectedQuantities = useMemo(() => {
@@ -1926,6 +1954,7 @@ function BulkRegisterPanel({
     setBulkText("");
     setSelectedCodes([]);
     setBulkMessage(null);
+    setBulkResultDetails(null);
   };
 
   const applyBulkAction = () => {
@@ -1950,8 +1979,26 @@ function BulkRegisterPanel({
 
       return nextUpdates;
     }, {});
+    const newCodes = Object.entries(updates)
+      .filter(([code, quantity]) => getStickerQuantity(code, progress) === 0 && quantity > 0)
+      .map(([code]) => code)
+      .sort((a, b) => a.localeCompare(b));
+    const repeatedItems = Object.entries(updates)
+      .filter(([, quantity]) => quantity > 1)
+      .map(([code, quantity]) => ({ code, quantity }))
+      .sort((a, b) => a.code.localeCompare(b.code));
+    const bulkNoteParts = [`Registro rápido: ${selectedTotal} estampas seleccionadas.`];
 
-    onSetQuantities(updates, "bulk", bulkActionToRegistrationAction[bulkAction], `Registro rápido: ${selectedTotal} estampas seleccionadas.`);
+    if (newCodes.length > 0) {
+      bulkNoteParts.push(`Nuevas: ${formatLimitedCodes(newCodes)}.`);
+    }
+
+    if (repeatedItems.length > 0) {
+      bulkNoteParts.push(`Repetidas ahora: ${formatBulkRepeatedItems(repeatedItems)}.`);
+    }
+
+    onSetQuantities(updates, "bulk", bulkActionToRegistrationAction[bulkAction], bulkNoteParts.join(" "));
+    setBulkResultDetails({ newCodes, repeatedItems });
 
     notifyBulk(`${selectedTotal} ${selectedTotal === 1 ? "estampa actualizada" : "estampas actualizadas"}.`);
   };
@@ -2047,6 +2094,20 @@ function BulkRegisterPanel({
             </button>
           </div>
           {bulkMessage ? <p className={bulkMessage.type === "success" ? "toast-message" : "warning-message"}>{bulkMessage.text}</p> : null}
+          {bulkResultDetails ? (
+            <div className="bulk-result-details" aria-live="polite">
+              <div>
+                <strong>Nuevas</strong>
+                <span>{bulkResultDetails.newCodes.length > 0 ? formatLimitedCodes(bulkResultDetails.newCodes) : "Ninguna"}</span>
+              </div>
+              <div>
+                <strong>Repetidas ahora</strong>
+                <span>
+                  {bulkResultDetails.repeatedItems.length > 0 ? formatBulkRepeatedItems(bulkResultDetails.repeatedItems) : "Ninguna"}
+                </span>
+              </div>
+            </div>
+          ) : null}
         </div>
       ) : null}
     </section>
@@ -2371,7 +2432,7 @@ function ExchangeComparisonPanel({
 }: {
   catalog: Sticker[];
   getAvailableExtras: (code: string) => number;
-  onApplySelection: (selection: { gaveCodes: string[]; receivedCodes: string[] }) => void;
+  onApplySelection: (selection: { friendName?: string; gaveCodes: string[]; receivedCodes: string[] }) => void;
   progress: Progress;
 }) {
   const [combinedText, setCombinedText] = useState("");
@@ -2766,7 +2827,15 @@ function RepeatedView({
       .sort((a, b) => a.code.localeCompare(b.code));
   };
 
-  const addComparisonSelectionToForm = ({ gaveCodes, receivedCodes }: { gaveCodes: string[]; receivedCodes: string[] }) => {
+  const addComparisonSelectionToForm = ({
+    friendName,
+    gaveCodes,
+    receivedCodes,
+  }: {
+    friendName?: string;
+    gaveCodes: string[];
+    receivedCodes: string[];
+  }) => {
     if (gaveCodes.length === 0 && receivedCodes.length === 0) {
       setTradeMessage("Selecciona estampas del comparador antes de pasarlas al formulario.");
       return;
@@ -2801,6 +2870,10 @@ function RepeatedView({
       setReceived((items) => mergeTradeItemsByMax(items, receivedAdditions));
     }
 
+    if (friendName?.trim()) {
+      setTradedWith(friendName.trim());
+    }
+
     setIsFormOpen(true);
     setTradeMessage(["Selección pasada a Registrar intercambio.", ...warnings].join(" "));
   };
@@ -2811,6 +2884,7 @@ function RepeatedView({
     }
 
     addComparisonSelectionToForm({
+      friendName: incomingComparisonSelection.friendName,
       gaveCodes: incomingComparisonSelection.gaveCodes,
       receivedCodes: incomingComparisonSelection.receivedCodes,
     });
