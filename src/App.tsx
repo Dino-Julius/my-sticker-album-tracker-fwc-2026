@@ -2875,7 +2875,7 @@ function RepeatedView({
     }
 
     setIsFormOpen(true);
-    setTradeMessage(["Selección pasada a Registrar intercambio.", ...warnings].join(" "));
+    setTradeMessage(warnings.join(" "));
   };
 
   useEffect(() => {

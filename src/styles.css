@@ -826,6 +826,8 @@ input,
 select,
 textarea {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   background: #fff;
@@ -1433,6 +1435,14 @@ textarea {
 .trade-builder-grid {
   display: grid;
   gap: 10px;
+}
+
+.trade-meta-grid label {
+  min-width: 0;
+}
+
+.trade-meta-grid input[type="datetime-local"] {
+  min-width: 0;
 }
 
 .trade-form,
