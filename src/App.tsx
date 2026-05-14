@@ -26,6 +26,7 @@ import {
   exportRepeatedToCsv,
   exportRepeatedToMarkdown,
   formatCollectionCodeLabel,
+  formatTradeSettlement,
   formatTradeItems,
   getCompletionPercentage,
   getCollectionName,
@@ -40,6 +41,7 @@ import {
   getStatsByCollection,
   getStickerQuantity,
   getTradeItemTotal,
+  normalizeTradeSettlement,
   groupByCountry,
   importProgressFromJson,
   serializeFullProgress,
@@ -60,6 +62,7 @@ import type {
   Sticker,
   TradeItem,
   TradeRecord,
+  TradeSettlement,
   UserProfile,
 } from "./types";
 
@@ -2728,6 +2731,9 @@ function RepeatedView({
   const [notes, setNotes] = useState("");
   const [gave, setGave] = useState<TradeItem[]>([]);
   const [received, setReceived] = useState<TradeItem[]>([]);
+  const [settlementType, setSettlementType] = useState<TradeSettlement["type"]>("stickers");
+  const [moneyAmount, setMoneyAmount] = useState("");
+  const [moneyCurrency, setMoneyCurrency] = useState("MXN");
   const [gaveBulkText, setGaveBulkText] = useState("");
   const [receivedBulkText, setReceivedBulkText] = useState("");
   const [tradeBulkMessage, setTradeBulkMessage] = useState<{ type: "success" | "warning"; text: string } | null>(null);
@@ -2772,6 +2778,9 @@ function RepeatedView({
     setNotes("");
     setGave([]);
     setReceived([]);
+    setSettlementType("stickers");
+    setMoneyAmount("");
+    setMoneyCurrency("MXN");
     setGaveBulkText("");
     setReceivedBulkText("");
     setTradeBulkMessage(null);
@@ -2830,6 +2839,50 @@ function RepeatedView({
       .sort((a, b) => a.code.localeCompare(b.code));
   };
 
+  const buildTradeSettlement = (): TradeSettlement => {
+    if (settlementType === "money") {
+      return {
+        amount: Number(moneyAmount),
+        currency: moneyCurrency.trim().toUpperCase() || "MXN",
+        type: "money",
+      };
+    }
+
+    if (settlementType === "gift") {
+      return { type: "gift" };
+    }
+
+    return { type: "stickers" };
+  };
+
+  const loadSettlementIntoForm = (trade: TradeRecord) => {
+    const settlement = normalizeTradeSettlement(trade);
+    setSettlementType(settlement.type);
+
+    if (settlement.type === "money") {
+      setMoneyAmount(String(settlement.amount || ""));
+      setMoneyCurrency(settlement.currency || "MXN");
+      setReceived([]);
+      return;
+    }
+
+    setMoneyAmount("");
+    setMoneyCurrency("MXN");
+  };
+
+  const changeSettlementType = (nextType: TradeSettlement["type"]) => {
+    setSettlementType(nextType);
+
+    if (nextType !== "stickers") {
+      setReceived([]);
+    }
+
+    if (nextType !== "money") {
+      setMoneyAmount("");
+      setMoneyCurrency("MXN");
+    }
+  };
+
   const addComparisonSelectionToForm = ({
     friendName,
     gaveCodes,
@@ -2870,6 +2923,7 @@ function RepeatedView({
     }
 
     if (receivedAdditions.length > 0) {
+      changeSettlementType("stickers");
       setReceived((items) => mergeTradeItemsByMax(items, receivedAdditions));
     }
 
@@ -2985,11 +3039,20 @@ function RepeatedView({
   };
 
   const validateTrade = () => {
-    if (gave.length === 0 || received.length === 0) {
+    if (gave.length === 0) {
+      return "Agrega al menos una estampa en Doy.";
+    }
+
+    if (settlementType === "stickers" && received.length === 0) {
       return "Agrega al menos una estampa en Doy y una en Recibo.";
     }
 
-    const invalidQuantity = [...gave, ...received].find((item) => !Number.isInteger(item.quantity) || item.quantity < 1);
+    if (settlementType === "money" && (!Number.isFinite(Number(moneyAmount)) || Number(moneyAmount) <= 0)) {
+      return "El monto recibido debe ser mayor a 0.";
+    }
+
+    const settlementReceived = settlementType === "stickers" ? received : [];
+    const invalidQuantity = [...gave, ...settlementReceived].find((item) => !Number.isInteger(item.quantity) || item.quantity < 1);
 
     if (invalidQuantity) {
       return "Las cantidades deben ser enteros positivos.";
@@ -3019,7 +3082,8 @@ function RepeatedView({
       tradedWith: tradedWith.trim() || undefined,
       notes: notes.trim() || undefined,
       gave,
-      received,
+      received: settlementType === "stickers" ? received : [],
+      settlement: buildTradeSettlement(),
     };
 
     setProgress((currentProgress) => applyTradeToProgress(currentProgress, trade));
@@ -3044,7 +3108,8 @@ function RepeatedView({
       tradedWith: tradedWith.trim() || undefined,
       notes: notes.trim() || undefined,
       gave,
-      received,
+      received: settlementType === "stickers" ? received : [],
+      settlement: buildTradeSettlement(),
     };
 
     onAddPendingTrade(pendingTrade);
@@ -3060,6 +3125,7 @@ function RepeatedView({
     setNotes(trade.notes ?? "");
     setGave(trade.gave);
     setReceived(trade.received);
+    loadSettlementIntoForm(trade);
     setGaveBulkText("");
     setReceivedBulkText("");
     setTradeBulkMessage(null);
@@ -3084,7 +3150,8 @@ function RepeatedView({
       createdAt: dateTime || editingPendingTrade.createdAt,
       gave,
       notes: notes.trim() || undefined,
-      received,
+      received: settlementType === "stickers" ? received : [],
+      settlement: buildTradeSettlement(),
       tradedWith: tradedWith.trim() || undefined,
     });
     resetTradeForm();
@@ -3118,6 +3185,7 @@ function RepeatedView({
       notes: trade.notes,
       gave: trade.gave,
       received: trade.received,
+      settlement: normalizeTradeSettlement(trade),
     };
 
     setProgress((currentProgress) => applyTradeToProgress(currentProgress, confirmedTrade));
@@ -3163,7 +3231,15 @@ function RepeatedView({
   };
 
   const gaveTotal = getTradeItemTotal(gave);
-  const receivedTotal = getTradeItemTotal(received);
+  const isStickerSettlement = settlementType === "stickers";
+  const receivedTotal = isStickerSettlement ? getTradeItemTotal(received) : 0;
+  const currentSettlement = buildTradeSettlement();
+  const settlementMeta =
+    currentSettlement.type === "money"
+      ? `Recibo: $${Number(moneyAmount || 0)} ${currentSettlement.currency}`
+      : currentSettlement.type === "gift"
+        ? "Regalo"
+        : `Recibo: ${receivedTotal} estampas`;
   const repeatedExtras = getRepeatedExtras(stickers, progress);
 
   return (
@@ -3196,11 +3272,11 @@ function RepeatedView({
       <CollapsibleSection
         className="trade-form"
         title={editingPendingTrade ? "Editar apartado" : "Registrar intercambio"}
-        meta={`Doy: ${gaveTotal} estampas · Recibo: ${receivedTotal} estampas`}
+        meta={`Doy: ${gaveTotal} estampas · ${settlementMeta}`}
         isOpen={isFormOpen}
         onToggle={() => setIsFormOpen((current) => !current)}
       >
-          {gaveTotal !== receivedTotal && gaveTotal > 0 && receivedTotal > 0 ? <p className="trade-note">Intercambio no parejo</p> : null}
+          {isStickerSettlement && gaveTotal !== receivedTotal && gaveTotal > 0 && receivedTotal > 0 ? <p className="trade-note">Intercambio no parejo</p> : null}
 
           <div className="trade-meta-grid">
             <label>
@@ -3227,6 +3303,30 @@ function RepeatedView({
             />
           </label>
 
+          <div className="settlement-panel">
+            <label>
+              <span>Qué recibo</span>
+              <select value={settlementType} onChange={(event) => changeSettlementType(event.target.value as TradeSettlement["type"])}>
+                <option value="stickers">Recibir estampas</option>
+                <option value="money">Recibir dinero</option>
+                <option value="gift">Regalar</option>
+              </select>
+            </label>
+            {settlementType === "money" ? (
+              <div className="trade-meta-grid">
+                <label>
+                  <span>Monto</span>
+                  <input min="0" step="1" type="number" value={moneyAmount} onChange={(event) => setMoneyAmount(event.target.value)} />
+                </label>
+                <label>
+                  <span>Moneda</span>
+                  <input value={moneyCurrency} placeholder="MXN" onChange={(event) => setMoneyCurrency(event.target.value.toUpperCase())} />
+                </label>
+              </div>
+            ) : null}
+            {settlementType === "gift" ? <p className="history-note">Regalo: no recibo nada a cambio.</p> : null}
+          </div>
+
           <div className="trade-bulk-grid">
             <TradeBulkInput
               buttonLabel="Agregar a Doy"
@@ -3237,15 +3337,17 @@ function RepeatedView({
               onAdd={() => addBulkTradeItems("gave")}
               onChange={setGaveBulkText}
             />
-            <TradeBulkInput
-              buttonLabel="Agregar a Recibo"
-              label="Pegar códigos que recibo"
-              placeholder="Ej. FWC5, BRA7, CC1, MEX10-MEX12"
-              summary="Carga rápida: Recibo"
-              value={receivedBulkText}
-              onAdd={() => addBulkTradeItems("received")}
-              onChange={setReceivedBulkText}
-            />
+            {isStickerSettlement ? (
+              <TradeBulkInput
+                buttonLabel="Agregar a Recibo"
+                label="Pegar códigos que recibo"
+                placeholder="Ej. FWC5, BRA7, CC1, MEX10-MEX12"
+                summary="Carga rápida: Recibo"
+                value={receivedBulkText}
+                onAdd={() => addBulkTradeItems("received")}
+                onChange={setReceivedBulkText}
+              />
+            ) : null}
           </div>
           {tradeBulkMessage ? (
             <p className={tradeBulkMessage.type === "success" ? "toast-message compact-message" : "warning-message compact-message"}>
@@ -3264,16 +3366,18 @@ function RepeatedView({
               onUpdateQuantity={(code, quantity) => updateTradeItem("gave", code, quantity)}
               onRemove={(code) => removeTradeItem("gave", code)}
             />
-            <SelectedTradeGallery
-              title="Recibo"
-              mode="received"
-              catalog={catalog}
-              getAvailableExtras={getAvailableExtras}
-              progress={progress}
-              items={received}
-              onUpdateQuantity={(code, quantity) => updateTradeItem("received", code, quantity)}
-              onRemove={(code) => removeTradeItem("received", code)}
-            />
+            {isStickerSettlement ? (
+              <SelectedTradeGallery
+                title="Recibo"
+                mode="received"
+                catalog={catalog}
+                getAvailableExtras={getAvailableExtras}
+                progress={progress}
+                items={received}
+                onUpdateQuantity={(code, quantity) => updateTradeItem("received", code, quantity)}
+                onRemove={(code) => removeTradeItem("received", code)}
+              />
+            ) : null}
           </div>
 
           <div className="trade-builder-grid">
@@ -3287,16 +3391,18 @@ function RepeatedView({
               items={gave}
               onAdd={(code) => addTradeItem("gave", code)}
             />
-            <TradeBuilder
-              title="Recibo"
-              mode="received"
-              catalog={catalog}
-              getAvailableExtras={getAvailableExtras}
-              getReservedExtras={getReservedExtras}
-              progress={progress}
-              items={received}
-              onAdd={(code) => addTradeItem("received", code)}
-            />
+            {isStickerSettlement ? (
+              <TradeBuilder
+                title="Recibo"
+                mode="received"
+                catalog={catalog}
+                getAvailableExtras={getAvailableExtras}
+                getReservedExtras={getReservedExtras}
+                progress={progress}
+                items={received}
+                onAdd={(code) => addTradeItem("received", code)}
+              />
+            ) : null}
           </div>
 
           {editingPendingTrade ? (
@@ -3365,7 +3471,8 @@ function RepeatedView({
         {pendingTrades.length === 0 ? <p className="empty-state">No tienes intercambios apartados.</p> : null}
         <div className="trade-history-list">
           {pendingTrades.map((trade) => {
-            const uneven = getTradeItemTotal(trade.gave) !== getTradeItemTotal(trade.received);
+            const uneven =
+              normalizeTradeSettlement(trade).type === "stickers" && getTradeItemTotal(trade.gave) !== getTradeItemTotal(trade.received);
 
             return (
               <article className="trade-history-card pending-trade-card" key={trade.id}>
@@ -3379,7 +3486,15 @@ function RepeatedView({
                   <strong>Doy apartado:</strong> {formatTradeItems(trade.gave)}
                 </p>
                 <p>
-                  <strong>Recibiré:</strong> {formatTradeItems(trade.received)}
+                  {normalizeTradeSettlement(trade).type === "stickers" ? (
+                    <>
+                      <strong>Recibiré:</strong> {formatTradeItems(trade.received)}
+                    </>
+                  ) : (
+                    <>
+                      <strong>Acuerdo:</strong> {formatTradeSettlement(trade)}
+                    </>
+                  )}
                 </p>
                 {trade.notes ? <p>Notas: {trade.notes}</p> : null}
                 <div className="quick-actions">
@@ -3413,7 +3528,8 @@ function RepeatedView({
         {tradeHistory.length === 0 ? <p className="empty-state">Todavía no hay intercambios registrados.</p> : null}
         <div className="trade-history-list">
           {tradeHistory.map((trade) => {
-            const uneven = getTradeItemTotal(trade.gave) !== getTradeItemTotal(trade.received);
+            const uneven =
+              normalizeTradeSettlement(trade).type === "stickers" && getTradeItemTotal(trade.gave) !== getTradeItemTotal(trade.received);
 
             return (
               <article className="trade-history-card" key={trade.id}>
@@ -3426,7 +3542,15 @@ function RepeatedView({
                   <strong>Di:</strong> {formatTradeItems(trade.gave)}
                 </p>
                 <p>
-                  <strong>Recibí:</strong> {formatTradeItems(trade.received)}
+                  {normalizeTradeSettlement(trade).type === "stickers" ? (
+                    <>
+                      <strong>Recibí:</strong> {formatTradeItems(trade.received)}
+                    </>
+                  ) : (
+                    <>
+                      <strong>Acuerdo:</strong> {formatTradeSettlement(trade)}
+                    </>
+                  )}
                 </p>
                 {trade.notes ? <p>Notas: {trade.notes}</p> : null}
                 <div className="quick-actions">

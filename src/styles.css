@@ -1523,6 +1523,15 @@ textarea {
   font-weight: 750;
 }
 
+.settlement-panel {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #f8fcff;
+  padding: 10px;
+}
+
 .trade-bulk-panel {
   border: 1px solid #dbeafe;
   border-radius: 8px;
