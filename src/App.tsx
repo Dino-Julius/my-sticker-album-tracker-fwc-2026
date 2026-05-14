@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -353,6 +354,7 @@ function App() {
   };
 
   const unreadReleaseCount = releaseNotes.filter((note) => !readReleaseNoteIds.includes(note.id)).length;
+  const clearComparisonSelectionTransfer = useCallback(() => setComparisonSelectionTransfer(null), []);
   const markReleaseNotesAsRead = () => {
     const nextReadIds = [...new Set([...readReleaseNoteIds, ...releaseNotes.map((note) => note.id)])];
     localStorage.setItem(READ_RELEASE_NOTES_STORAGE_KEY, JSON.stringify(nextReadIds));
@@ -587,6 +589,7 @@ function App() {
           onDeletePendingTrade={deletePendingTrade}
           onDeleteTrade={deleteTrade}
           incomingComparisonSelection={comparisonSelectionTransfer}
+          onComparisonSelectionConsumed={clearComparisonSelectionTransfer}
           onUpdateTrade={updateTrade}
           onUpdatePendingTrade={updatePendingTrade}
           setProgress={setProgress}
@@ -2706,6 +2709,7 @@ function RepeatedView({
   tradeHistory,
   onAddPendingTrade,
   onAddTrade,
+  onComparisonSelectionConsumed,
   onDeletePendingTrade,
   onDeleteTrade,
   onUpdatePendingTrade,
@@ -2719,6 +2723,7 @@ function RepeatedView({
   tradeHistory: TradeRecord[];
   onAddPendingTrade: (trade: PendingTradeRecord) => void;
   onAddTrade: (trade: TradeRecord) => void;
+  onComparisonSelectionConsumed: () => void;
   onDeletePendingTrade: (tradeId: string, shouldRestoreOnFailure?: boolean) => void;
   onDeleteTrade: (tradeId: string, nextProgress?: Progress) => void;
   onUpdatePendingTrade: (trade: PendingTradeRecord) => void;
@@ -2966,7 +2971,8 @@ function RepeatedView({
       receivedCodes: incomingComparisonSelection.receivedCodes,
     });
     setAppliedComparisonTransferId(incomingComparisonSelection.id);
-  }, [incomingComparisonSelection, appliedComparisonTransferId]);
+    onComparisonSelectionConsumed();
+  }, [incomingComparisonSelection, appliedComparisonTransferId, onComparisonSelectionConsumed]);
 
   const addBulkTradeItems = (side: "gave" | "received") => {
     const text = side === "gave" ? gaveBulkText : receivedBulkText;
