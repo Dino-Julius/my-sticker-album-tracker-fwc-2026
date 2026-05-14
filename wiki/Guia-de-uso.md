@@ -22,9 +22,17 @@ En **Intercambio** puedes:
 - copiar tu lista publica con **Me faltan** y **Mis repetidas**,
 - comparar una lista de un amigo,
 - registrar intercambios confirmados,
+- registrar ventas con **Recibir dinero**,
+- registrar regalos con **Regalar**,
 - crear apartados para intercambios futuros,
 - editar, confirmar o cancelar apartados,
 - revisar el historial confirmado.
+
+Si editas o eliminas un intercambio del historial, la app recalcula el inventario para reflejar el cambio.
+
+## Colecciones
+
+En **Colecciones** puedes buscar por nombre o por codigo. Por ejemplo: `MEX`, `ARG`, `ENG`, `SCO`, `FWC` o `CC`.
 
 ## Amigos
 

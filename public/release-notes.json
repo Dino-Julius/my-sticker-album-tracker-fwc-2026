@@ -1,5 +1,19 @@
 [
   {
+    "id": "v2.3.0",
+    "date": "2026-05-14",
+    "title": "Intercambios con dinero, regalos y edicion segura",
+    "summary": "Intercambio ahora permite ventas o regalos, editar historial restaurando inventario y buscar colecciones por codigo.",
+    "items": [
+      "Buscar colecciones por codigo como MEX, ARG, ENG, SCO, FWC o CC.",
+      "Registrar intercambios donde recibes dinero.",
+      "Registrar regalos sin recibir estampas.",
+      "Editar o eliminar historial recalculando el inventario.",
+      "Las selecciones desde Amigos se pasan una sola vez al formulario."
+    ],
+    "wikiUrl": "https://github.com/Dino-Julius/my-sticker-album-tracker-fwc-2026/wiki/Intercambios-y-apartados"
+  },
+  {
     "id": "v2.2.0",
     "date": "2026-05-04",
     "title": "Comparador de intercambios y apartados editables",

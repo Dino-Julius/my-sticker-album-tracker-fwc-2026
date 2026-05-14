@@ -39,6 +39,8 @@ La comparacion muestra:
 
 Puedes seleccionar estampas del resultado y usar **Pasar a Registrar intercambio**. Eso solo llena el formulario: todavia puedes editar cantidades, notas, confirmar o apartar.
 
+Cuando una seleccion viene desde **Amigos**, se pasa una sola vez al formulario. Si cancelas o cambias de pestaña, no se guarda como apartado ni vuelve a aparecer despues.
+
 ## Comparar con amigos de la app
 
 Si agregas amigos desde la pestaña **Amigos**, ya no tienes que pegar listas. La app usa la ultima sincronizacion de tu amigo para mostrar lo mismo:
@@ -71,6 +73,15 @@ Puedes:
 
 Las estampas reservadas muestran estado **Apartado** o el conteo reservado. Cancelar un apartado no cambia el album.
 
+Tambien puedes apartar ventas o regalos:
+
+- **Recibir dinero**: das estampas y registras monto/moneda.
+- **Regalar**: das estampas sin recibir nada a cambio.
+
+En ambos casos, las estampas que das quedan reservadas hasta confirmar o cancelar.
+
 ## Historial
 
-El historial guarda intercambios confirmados. Borrar un intercambio del historial no revierte cantidades.
+El historial guarda intercambios confirmados. Puedes editar un intercambio pasado o eliminarlo.
+
+Al editar, la app deshace el intercambio guardado y aplica la nueva version. Al eliminar, restaura las cantidades como si ese intercambio no hubiera ocurrido.

@@ -16,6 +16,14 @@ Significa que un extra esta reservado para un intercambio futuro. No cambia el a
 
 Si. Puedes editar con quien intercambias, notas, lo que das y lo que recibes.
 
+## Puedo registrar ventas o regalos?
+
+Si. En **Registrar intercambio**, cambia **Que recibo** a **Recibir dinero** o **Regalar**. En esos modos solo se descuentan las estampas que das.
+
+## Que pasa si edito o elimino un intercambio del historial?
+
+La app recalcula el inventario. Al editar, deshace la version anterior y aplica la nueva. Al eliminar, restaura las cantidades como si el intercambio no hubiera ocurrido.
+
 ## Para que sirve Comparar intercambio?
 
 Sirve para pegar la lista de un amigo y ver que te puede dar y que le puedes dar. No crea intercambios automaticamente.
@@ -35,6 +43,10 @@ No. Puedes pasar una seleccion a **Registrar intercambio**, pero tu decides si l
 ## Que formatos acepta?
 
 Acepta codigos simples como `MEX12`, formato agrupado como `MEX: 1, 2, 3`, y listas con encabezados `Me faltan`, `Mis repetidas`, `I need` o `Swaps`.
+
+## Puedo buscar colecciones por codigo?
+
+Si. En **Colecciones** puedes buscar `MEX`, `ARG`, `ENG`, `SCO`, `FWC`, `CC` o el nombre completo.
 
 ## Que pasa si dice Cambios pendientes?
 
