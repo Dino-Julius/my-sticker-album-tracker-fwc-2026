@@ -281,6 +281,44 @@ export function formatCollectionCodeLabel(
   return `${metadata.code}${metadata.emoji ? ` ${metadata.emoji}` : ""}`;
 }
 
+export function getCollectionSearchText(
+  catalog: Sticker[],
+  collectionName: string,
+) {
+  const metadata = getCollectionMetadata(catalog, collectionName);
+  const prefixes = new Set<string>();
+  const countryNames = new Set<string>();
+  const aliases: Record<string, string[]> = {
+    CC: ["Coca Cola", "Coca-Cola"],
+    ENG: ["England", "Inglaterra"],
+    FWC: ["FIFA", "FWC", SPECIAL_COLLECTION_NAME],
+    SCO: ["Scotland", "Escocia"],
+  };
+
+  catalog
+    .filter((sticker) => getCollectionName(sticker) === collectionName)
+    .forEach((sticker) => {
+      prefixes.add(getStickerCodePrefix(sticker));
+      countryNames.add(sticker.country);
+      countryNames.add(sticker.section);
+    });
+
+  return [
+    collectionName,
+    metadata.code,
+    metadata.displayName,
+    metadata.label,
+    formatCollectionCodeLabel(catalog, collectionName),
+    ...prefixes,
+    ...countryNames,
+    ...(aliases[metadata.code] ?? []),
+    ...[...prefixes].flatMap((prefix) => aliases[prefix] ?? []),
+  ]
+    .filter(Boolean)
+    .map((value) => normalize(String(value)))
+    .join(" ");
+}
+
 export function formatStickerCollectionLabel(sticker: Sticker) {
   const prefix = getStickerCodePrefix(sticker);
   const metadata = COLLECTION_METADATA_BY_PREFIX[prefix];

@@ -29,6 +29,7 @@ import {
   formatTradeItems,
   getCompletionPercentage,
   getCollectionName,
+  getCollectionSearchText,
   getCollectionType,
   getRealGroups,
   getMissingStickers,
@@ -3723,12 +3724,12 @@ function CollectionsView({
   );
   const normalizedCollectionQuery = normalizeText(collectionQuery);
   const visibleCollections = normalizedCollectionQuery
-    ? stats.filter((item) => normalizeText(item.name).includes(normalizedCollectionQuery))
+    ? stats.filter((item) => getCollectionSearchText(catalog, item.name).includes(normalizedCollectionQuery))
     : stats;
   const selectOptions = visibleCollections.length > 0 ? visibleCollections : stats;
 
   useEffect(() => {
-    const exactMatch = stats.find((item) => normalizeText(item.name) === normalizedCollectionQuery);
+    const exactMatch = stats.find((item) => getCollectionSearchText(catalog, item.name).split(" ").includes(normalizedCollectionQuery));
     const singleMatch = visibleCollections.length === 1 ? visibleCollections[0] : undefined;
     const nextCollection = exactMatch ?? singleMatch;
 
