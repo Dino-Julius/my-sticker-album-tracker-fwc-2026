@@ -885,14 +885,45 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     }
   };
 
-  const deleteTrade = (tradeId: string) => {
-    setTradeHistory((currentHistory) => currentHistory.filter((trade) => trade.id !== tradeId));
+  const updateTrade = (oldTrade: TradeRecord, nextTrade: TradeRecord, nextProgress: Progress) => {
+    const nextTrades = [nextTrade, ...tradeHistory.filter((trade) => trade.id !== oldTrade.id)].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    setTradeHistory(nextTrades);
 
     if (isCloudEnabled && userId) {
-      deleteRemoteTrade(userId, tradeId)
-        .then(() => clearSyncIssue("trades", "delete"))
+      saveProgressAndTradesRemote(nextProgress, nextTrades).catch(() => {
+        // saveProgressAndTradesRemote already records the sync issue.
+      });
+    }
+  };
+
+  const deleteTrade = (tradeId: string, nextProgress?: Progress) => {
+    setTradeHistory(tradeHistory.filter((trade) => trade.id !== tradeId));
+
+    if (isCloudEnabled && userId) {
+      let progressSaved = false;
+      const deleteRemote = async () => {
+        if (nextProgress) {
+          const updatedAt = await saveRemoteProgress(userId, nextProgress);
+          progressSaved = true;
+          lastSavedProgress.current = serializeProgressSnapshot(nextProgress);
+          setLastCloudSyncAt(updatedAt);
+          setLastLocalUpdateAt(writeLocalMeta(updatedAt));
+          updatePendingCloudChanges(false);
+        }
+
+        await deleteRemoteTrade(userId, tradeId);
+        clearSyncIssue("trades", "delete");
+        clearSyncIssue("progress", "save");
+        setSyncStatus("cloud");
+      };
+
+      clearSaveTimer();
+      setSyncStatus("saving");
+      updatePendingCloudChanges(Boolean(nextProgress));
+      deleteRemote()
         .catch(() => {
-          addSyncIssue(createSyncIssue("trades", "delete"));
+          addSyncIssue(createSyncIssue(nextProgress && !progressSaved ? "progress" : "trades", nextProgress && !progressSaved ? "save" : "delete"));
+          updatePendingCloudChanges(nextProgress ? serializeProgressSnapshot(nextProgress) !== lastSavedProgress.current : hasPendingCloudChangesRef.current);
           setSyncStatus("error");
         });
     }
@@ -933,6 +964,7 @@ export function useAlbumData({ isCloudEnabled, userId }: { isCloudEnabled: boole
     syncNow: () => flushPendingProgress(undefined, true),
     syncStatus,
     tradeHistory,
+    updateTrade,
     updatePendingTrade,
     uploadLocalData,
     useCloudData,

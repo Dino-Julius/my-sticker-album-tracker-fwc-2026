@@ -42,6 +42,8 @@ import {
   getStickerQuantity,
   getTradeItemTotal,
   normalizeTradeSettlement,
+  replaceTradeInProgress,
+  reverseTradeFromProgress,
   groupByCountry,
   importProgressFromJson,
   serializeFullProgress,
@@ -271,6 +273,7 @@ function App() {
     syncNow,
     syncStatus,
     tradeHistory,
+    updateTrade,
     updatePendingTrade,
     uploadLocalData,
     useCloudData,
@@ -584,6 +587,7 @@ function App() {
           onDeletePendingTrade={deletePendingTrade}
           onDeleteTrade={deleteTrade}
           incomingComparisonSelection={comparisonSelectionTransfer}
+          onUpdateTrade={updateTrade}
           onUpdatePendingTrade={updatePendingTrade}
           setProgress={setProgress}
         />
@@ -2705,6 +2709,7 @@ function RepeatedView({
   onDeletePendingTrade,
   onDeleteTrade,
   onUpdatePendingTrade,
+  onUpdateTrade,
   setProgress,
 }: {
   catalog: Sticker[];
@@ -2715,8 +2720,9 @@ function RepeatedView({
   onAddPendingTrade: (trade: PendingTradeRecord) => void;
   onAddTrade: (trade: TradeRecord) => void;
   onDeletePendingTrade: (tradeId: string, shouldRestoreOnFailure?: boolean) => void;
-  onDeleteTrade: (tradeId: string) => void;
+  onDeleteTrade: (tradeId: string, nextProgress?: Progress) => void;
   onUpdatePendingTrade: (trade: PendingTradeRecord) => void;
+  onUpdateTrade: (oldTrade: TradeRecord, nextTrade: TradeRecord, nextProgress: Progress) => void;
   setProgress: Dispatch<SetStateAction<Progress>>;
 }) {
   const stickers = getRepeatedStickers(catalog, progress);
@@ -2743,7 +2749,9 @@ function RepeatedView({
   const [copiedTradeId, setCopiedTradeId] = useState("");
   const [copiedPendingTradeId, setCopiedPendingTradeId] = useState("");
   const [appliedComparisonTransferId, setAppliedComparisonTransferId] = useState("");
+  const [editingTradeId, setEditingTradeId] = useState("");
   const editingPendingTrade = pendingTrades.find((trade) => trade.id === editingPendingTradeId);
+  const editingTrade = tradeHistory.find((trade) => trade.id === editingTradeId);
   const reservedExtrasByCode = useMemo(
     () =>
       pendingTrades.reduce<Record<string, number>>((reserved, trade) => {
@@ -2762,9 +2770,20 @@ function RepeatedView({
       }, {}) ?? {},
     [editingPendingTrade],
   );
+  const editingTradeGaveExtrasByCode = useMemo(
+    () =>
+      editingTrade?.gave.reduce<Record<string, number>>((reserved, item) => {
+        reserved[item.code] = (reserved[item.code] ?? 0) + item.quantity;
+        return reserved;
+      }, {}) ?? {},
+    [editingTrade],
+  );
   const getReservedExtras = (code: string) => reservedExtrasByCode[code] ?? 0;
   const getAvailableExtras = (code: string) =>
-    Math.max(0, getStickerQuantity(code, progress) - 1 - getReservedExtras(code) + (editingReservedExtrasByCode[code] ?? 0));
+    Math.max(
+      0,
+      getStickerQuantity(code, progress) - 1 - getReservedExtras(code) + (editingReservedExtrasByCode[code] ?? 0) + (editingTradeGaveExtrasByCode[code] ?? 0),
+    );
 
   useEffect(() => {
     if (pendingTrades.length > 0) {
@@ -2785,6 +2804,7 @@ function RepeatedView({
     setReceivedBulkText("");
     setTradeBulkMessage(null);
     setEditingPendingTradeId("");
+    setEditingTradeId("");
   };
 
   const addTradeItem = (side: "gave" | "received", code: string) => {
@@ -3068,6 +3088,16 @@ function RepeatedView({
     return "";
   };
 
+  const buildTradeRecordFromForm = (base?: TradeRecord): TradeRecord => ({
+    id: base?.id ?? globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
+    createdAt: dateTime || base?.createdAt || formatDateTimeLocal(new Date()),
+    tradedWith: tradedWith.trim() || undefined,
+    notes: notes.trim() || undefined,
+    gave,
+    received: settlementType === "stickers" ? received : [],
+    settlement: buildTradeSettlement(),
+  });
+
   const confirmTrade = () => {
     const validationMessage = validateTrade();
 
@@ -3076,15 +3106,7 @@ function RepeatedView({
       return;
     }
 
-    const trade: TradeRecord = {
-      id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
-      createdAt: dateTime || formatDateTimeLocal(new Date()),
-      tradedWith: tradedWith.trim() || undefined,
-      notes: notes.trim() || undefined,
-      gave,
-      received: settlementType === "stickers" ? received : [],
-      settlement: buildTradeSettlement(),
-    };
+    const trade = buildTradeRecordFromForm();
 
     setProgress((currentProgress) => applyTradeToProgress(currentProgress, trade));
     onAddTrade(trade);
@@ -3120,6 +3142,7 @@ function RepeatedView({
 
   const startEditingPendingTrade = (trade: PendingTradeRecord) => {
     setEditingPendingTradeId(trade.id);
+    setEditingTradeId("");
     setDateTime(trade.createdAt);
     setTradedWith(trade.tradedWith ?? "");
     setNotes(trade.notes ?? "");
@@ -3156,6 +3179,43 @@ function RepeatedView({
     });
     resetTradeForm();
     setTradeMessage("Apartado actualizado.");
+    setIsFormOpen(false);
+  };
+
+  const startEditingTrade = (trade: TradeRecord) => {
+    setEditingTradeId(trade.id);
+    setEditingPendingTradeId("");
+    setDateTime(trade.createdAt);
+    setTradedWith(trade.tradedWith ?? "");
+    setNotes(trade.notes ?? "");
+    setGave(trade.gave);
+    setReceived(trade.received);
+    loadSettlementIntoForm(trade);
+    setGaveBulkText("");
+    setReceivedBulkText("");
+    setTradeBulkMessage(null);
+    setTradeMessage("");
+    setIsFormOpen(true);
+  };
+
+  const saveEditedTrade = () => {
+    if (!editingTrade) {
+      return;
+    }
+
+    const validationMessage = validateTrade();
+
+    if (validationMessage) {
+      setTradeMessage(validationMessage);
+      return;
+    }
+
+    const nextTrade = buildTradeRecordFromForm(editingTrade);
+    const nextProgress = replaceTradeInProgress(progress, editingTrade, nextTrade);
+    setProgress(nextProgress);
+    onUpdateTrade(editingTrade, nextTrade, nextProgress);
+    resetTradeForm();
+    setTradeMessage("Intercambio actualizado. El inventario se recalculó.");
     setIsFormOpen(false);
   };
 
@@ -3225,8 +3285,21 @@ function RepeatedView({
   };
 
   const deleteTradeRecord = (tradeId: string) => {
-    if (window.confirm("¿Eliminar este intercambio del historial?")) {
-      onDeleteTrade(tradeId);
+    const trade = tradeHistory.find((currentTrade) => currentTrade.id === tradeId);
+
+    if (!trade) {
+      return;
+    }
+
+    if (window.confirm("Esto eliminará el historial y restaurará las cantidades como si el intercambio no hubiera ocurrido.")) {
+      const nextProgress = reverseTradeFromProgress(progress, trade);
+      setProgress(nextProgress);
+      onDeleteTrade(tradeId, nextProgress);
+      setTradeMessage("Intercambio eliminado. El inventario se restauró.");
+
+      if (editingTradeId === tradeId) {
+        resetTradeForm();
+      }
     }
   };
 
@@ -3240,6 +3313,7 @@ function RepeatedView({
       : currentSettlement.type === "gift"
         ? "Regalo"
         : `Recibo: ${receivedTotal} estampas`;
+  const formTitle = editingTrade ? "Editar intercambio" : editingPendingTrade ? "Editar apartado" : "Registrar intercambio";
   const repeatedExtras = getRepeatedExtras(stickers, progress);
 
   return (
@@ -3271,7 +3345,7 @@ function RepeatedView({
 
       <CollapsibleSection
         className="trade-form"
-        title={editingPendingTrade ? "Editar apartado" : "Registrar intercambio"}
+        title={formTitle}
         meta={`Doy: ${gaveTotal} estampas · ${settlementMeta}`}
         isOpen={isFormOpen}
         onToggle={() => setIsFormOpen((current) => !current)}
@@ -3405,7 +3479,16 @@ function RepeatedView({
             ) : null}
           </div>
 
-          {editingPendingTrade ? (
+          {editingTrade ? (
+            <>
+              <button className="primary-button wide-button" onClick={saveEditedTrade}>
+                Guardar intercambio
+              </button>
+              <button className="ghost-button wide-button" onClick={cancelTrade}>
+                Cancelar edición
+              </button>
+            </>
+          ) : editingPendingTrade ? (
             <>
               <button className="primary-button wide-button" onClick={saveEditedPendingTrade}>
                 Guardar apartado
@@ -3524,7 +3607,7 @@ function RepeatedView({
         isOpen={isTradeHistoryOpen}
         onToggle={() => setIsTradeHistoryOpen((current) => !current)}
       >
-        <p className="history-note">Eliminar del historial no revierte las cantidades del álbum.</p>
+        <p className="history-note">Puedes editar o eliminar un intercambio. Si lo eliminas, se restaura el inventario como si no hubiera pasado.</p>
         {tradeHistory.length === 0 ? <p className="empty-state">Todavía no hay intercambios registrados.</p> : null}
         <div className="trade-history-list">
           {tradeHistory.map((trade) => {
@@ -3557,8 +3640,11 @@ function RepeatedView({
                   <button className="ghost-button" onClick={() => copyTradeRecord(trade)}>
                     {copiedTradeId === trade.id ? "Resumen copiado" : "Copiar resumen"}
                   </button>
+                  <button className="ghost-button" onClick={() => startEditingTrade(trade)}>
+                    Editar intercambio
+                  </button>
                   <button className="danger-button" onClick={() => deleteTradeRecord(trade.id)}>
-                    Eliminar del historial
+                    Eliminar y restaurar inventario
                   </button>
                 </div>
               </article>
