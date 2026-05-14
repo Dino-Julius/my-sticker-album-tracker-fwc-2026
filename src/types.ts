@@ -17,6 +17,11 @@ export type TradeItem = {
   quantity: number;
 };
 
+export type TradeSettlement =
+  | { type: "stickers" }
+  | { type: "money"; amount: number; currency: string }
+  | { type: "gift" };
+
 export type TradeRecord = {
   id: string;
   createdAt: string;
@@ -24,6 +29,7 @@ export type TradeRecord = {
   notes?: string;
   gave: TradeItem[];
   received: TradeItem[];
+  settlement?: TradeSettlement;
 };
 
 export type PendingTradeRecord = TradeRecord & {

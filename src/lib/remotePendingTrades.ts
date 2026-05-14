@@ -1,4 +1,5 @@
-import type { PendingTradeRecord, TradeItem } from "../types";
+import type { PendingTradeRecord, TradeItem, TradeSettlement } from "../types";
+import { normalizeTradeSettlement } from "./album";
 import { supabase } from "./supabase";
 
 type PendingTradeRow = {
@@ -9,6 +10,7 @@ type PendingTradeRow = {
   notes: string | null;
   gave: TradeItem[];
   received: TradeItem[];
+  settlement: TradeSettlement | null;
   saved_at: string;
 };
 
@@ -21,6 +23,7 @@ function toPendingTrade(row: PendingTradeRow): PendingTradeRecord {
     notes: row.notes ?? undefined,
     gave: row.gave,
     received: row.received,
+    settlement: normalizeTradeSettlement({ settlement: row.settlement ?? undefined }),
   };
 }
 
@@ -33,6 +36,7 @@ function toPendingTradeRow(userId: string, trade: PendingTradeRecord): PendingTr
     notes: trade.notes ?? null,
     gave: trade.gave,
     received: trade.received,
+    settlement: normalizeTradeSettlement(trade),
     saved_at: trade.reservedAt,
   };
 }
@@ -44,7 +48,7 @@ export async function loadRemotePendingTrades(userId: string): Promise<PendingTr
 
   const { data, error } = await supabase
     .from("pending_trades")
-    .select("user_id,id,created_at,traded_with,notes,gave,received,saved_at")
+    .select("user_id,id,created_at,traded_with,notes,gave,received,settlement,saved_at")
     .eq("user_id", userId)
     .order("saved_at", { ascending: false });
 

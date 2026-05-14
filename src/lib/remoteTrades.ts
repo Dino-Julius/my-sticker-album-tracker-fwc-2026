@@ -1,4 +1,5 @@
-import type { TradeItem, TradeRecord } from "../types";
+import type { TradeItem, TradeRecord, TradeSettlement } from "../types";
+import { normalizeTradeSettlement } from "./album";
 import { supabase } from "./supabase";
 
 type TradeRecordRow = {
@@ -9,6 +10,7 @@ type TradeRecordRow = {
   notes: string | null;
   gave: TradeItem[];
   received: TradeItem[];
+  settlement: TradeSettlement | null;
   saved_at: string;
 };
 
@@ -20,6 +22,7 @@ function toTradeRecord(row: TradeRecordRow): TradeRecord {
     notes: row.notes ?? undefined,
     gave: row.gave,
     received: row.received,
+    settlement: normalizeTradeSettlement({ settlement: row.settlement ?? undefined }),
   };
 }
 
@@ -32,6 +35,7 @@ function toTradeRecordRow(userId: string, trade: TradeRecord): Omit<TradeRecordR
     notes: trade.notes ?? null,
     gave: trade.gave,
     received: trade.received,
+    settlement: normalizeTradeSettlement(trade),
   };
 }
 
@@ -42,7 +46,7 @@ export async function loadRemoteTrades(userId: string): Promise<TradeRecord[]> {
 
   const { data, error } = await supabase
     .from("trade_records")
-    .select("user_id,id,created_at,traded_with,notes,gave,received,saved_at")
+    .select("user_id,id,created_at,traded_with,notes,gave,received,settlement,saved_at")
     .eq("user_id", userId)
     .order("saved_at", { ascending: false });
 

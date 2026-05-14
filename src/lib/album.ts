@@ -9,6 +9,7 @@ import type {
   StickerStatus,
   TradeItem,
   TradeRecord,
+  TradeSettlement,
 } from "../types";
 
 export const STATUS_LABELS: Record<StickerStatus, string> = {
@@ -891,12 +892,53 @@ export function getTradeItemTotal(items: TradeItem[]) {
 }
 
 export function formatTradeItems(items: TradeItem[]) {
-  return items.map((item) => `${item.code} x${item.quantity}`).join(", ");
+  return items.length > 0 ? items.map((item) => `${item.code} x${item.quantity}`).join(", ") : "Sin estampas";
+}
+
+function normalizeMoneyAmount(value: unknown) {
+  const amount = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(amount) && amount > 0 ? amount : 0;
+}
+
+export function normalizeTradeSettlement(trade: Partial<Pick<TradeRecord, "settlement">>): TradeSettlement {
+  const settlement = trade.settlement;
+
+  if (settlement?.type === "money") {
+    return {
+      amount: normalizeMoneyAmount(settlement.amount),
+      currency: typeof settlement.currency === "string" && settlement.currency.trim() ? settlement.currency.trim().toUpperCase() : "MXN",
+      type: "money",
+    };
+  }
+
+  if (settlement?.type === "gift") {
+    return { type: "gift" };
+  }
+
+  return { type: "stickers" };
+}
+
+export function getTradeReceivedItems(trade: Pick<TradeRecord, "received" | "settlement">) {
+  return normalizeTradeSettlement(trade).type === "stickers" ? trade.received : [];
+}
+
+export function formatTradeSettlement(trade: Pick<TradeRecord, "received" | "settlement">) {
+  const settlement = normalizeTradeSettlement(trade);
+
+  if (settlement.type === "money") {
+    return `Recibo dinero: $${settlement.amount} ${settlement.currency}`;
+  }
+
+  if (settlement.type === "gift") {
+    return "Regalo: no recibo nada a cambio";
+  }
+
+  return `Recibí: ${formatTradeItems(trade.received)}`;
 }
 
 export function applyTradeToProgress(
   progress: Progress,
-  trade: Pick<TradeRecord, "gave" | "received">,
+  trade: Pick<TradeRecord, "gave" | "received" | "settlement">,
 ): Progress {
   const nextProgress = { ...progress };
 
@@ -907,7 +949,7 @@ export function applyTradeToProgress(
     );
   });
 
-  trade.received.forEach((item) => {
+  getTradeReceivedItems(trade).forEach((item) => {
     nextProgress[item.code] =
       getStickerQuantity(item.code, nextProgress) + item.quantity;
   });
@@ -915,17 +957,47 @@ export function applyTradeToProgress(
   return nextProgress;
 }
 
+export function reverseTradeFromProgress(
+  progress: Progress,
+  trade: Pick<TradeRecord, "gave" | "received" | "settlement">,
+): Progress {
+  const nextProgress = { ...progress };
+
+  trade.gave.forEach((item) => {
+    nextProgress[item.code] =
+      getStickerQuantity(item.code, nextProgress) + item.quantity;
+  });
+
+  getTradeReceivedItems(trade).forEach((item) => {
+    nextProgress[item.code] = Math.max(
+      0,
+      getStickerQuantity(item.code, nextProgress) - item.quantity,
+    );
+  });
+
+  return nextProgress;
+}
+
+export function replaceTradeInProgress(
+  progress: Progress,
+  oldTrade: Pick<TradeRecord, "gave" | "received" | "settlement">,
+  nextTrade: Pick<TradeRecord, "gave" | "received" | "settlement">,
+) {
+  return applyTradeToProgress(reverseTradeFromProgress(progress, oldTrade), nextTrade);
+}
+
 export function createTradeSummary(trade: TradeRecord) {
   const title = trade.tradedWith
     ? `Intercambio con ${trade.tradedWith}`
     : "Intercambio";
   const uneven =
+    normalizeTradeSettlement(trade).type === "stickers" &&
     getTradeItemTotal(trade.gave) !== getTradeItemTotal(trade.received)
       ? "\nIntercambio no parejo"
       : "";
   const notes = trade.notes ? `\nNotas: ${trade.notes}` : "";
 
-  return `${title}\nFecha: ${trade.createdAt.replace("T", " ")}${uneven}\nDi:\n${formatTradeItems(trade.gave)}\nRecibí:\n${formatTradeItems(
-    trade.received,
+  return `${title}\nFecha: ${trade.createdAt.replace("T", " ")}${uneven}\nDi:\n${formatTradeItems(trade.gave)}\n${formatTradeSettlement(
+    trade,
   )}${notes}`;
 }
